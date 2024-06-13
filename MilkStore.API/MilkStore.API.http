@@ -1,0 +1,6 @@
+@MilkStore.API_HostAddress = http://localhost:5095
+
+GET {{MilkStore.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
