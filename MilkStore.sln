@@ -3,7 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.API", "MilkStore.API\MilkStore.API.csproj", "{94D7166A-47B6-4025-BE69-29C4D3768031}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MilkStore.API", "MilkStore.API\MilkStore.API.csproj", "{94D7166A-47B6-4025-BE69-29C4D3768031}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.Domain", "MilkStore.Domain\MilkStore.Domain.csproj", "{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.Repository", "MilkStore.Repository\MilkStore.Repository.csproj", "{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.Service", "MilkStore.Service\MilkStore.Service.csproj", "{E50BB0C9-447B-4E92-960E-1C54D35B6102}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +21,18 @@ Global
 		{94D7166A-47B6-4025-BE69-29C4D3768031}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94D7166A-47B6-4025-BE69-29C4D3768031}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94D7166A-47B6-4025-BE69-29C4D3768031}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E50BB0C9-447B-4E92-960E-1C54D35B6102}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E50BB0C9-447B-4E92-960E-1C54D35B6102}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E50BB0C9-447B-4E92-960E-1C54D35B6102}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E50BB0C9-447B-4E92-960E-1C54D35B6102}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
