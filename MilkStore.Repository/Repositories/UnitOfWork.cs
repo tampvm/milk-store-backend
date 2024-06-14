@@ -14,7 +14,7 @@ namespace MilkStore.Repository.Repositories
         //private readonly IAcccountRepository _accountRepository;
         //private readonly IRoleRepository _roleRepository;
 
-        public UnitOfWork(AppDbContext dbContext, /*IAcccountRepository accountRepository, IRoleRepository roleRepository*/)
+        public UnitOfWork(AppDbContext dbContext/*, IAcccountRepository accountRepository, IRoleRepository roleRepository*/)
         {
             _dbContext = dbContext;
             //_accountRepository = accountRepository;

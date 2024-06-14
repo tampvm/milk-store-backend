@@ -19,4 +19,10 @@
     <ProjectReference Include="..\MilkStore.Repository\MilkStore.Repository.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+    <Folder Include="Models\" />
+    <Folder Include="Utils\" />
+  </ItemGroup>
+
 </Project>

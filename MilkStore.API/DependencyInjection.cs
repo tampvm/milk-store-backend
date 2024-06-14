@@ -3,6 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
+using MilkStore.Repository.Interfaces;
+using MilkStore.Repository.Repositories;
+using MilkStore.Service.Mappers;
+using MilkStore.Service.Services;
 
 namespace MilkStore.API
 {
@@ -62,7 +66,13 @@ namespace MilkStore.API
 
         public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, string databaseConnection)
         {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICurrentTime, CurrentTime>();
+            services.AddScoped<IClaimsService, ClaimsService>();
+
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
+
+            services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
 
             return services;
         }
