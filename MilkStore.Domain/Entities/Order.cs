@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Domain.Entities
 {
-	[Table("Order")]
+	//[Table("Order")]
 	public class Order : BaseEntity
 	{
 		[Key]
@@ -20,16 +20,16 @@ namespace MilkStore.Domain.Entities
 		public string Status { get; set; }
 		public string PaymentMethod { get; set; }
 		public string PaymentStatus { get; set; }
-		public int PointUsed { get; set; } // Diem da dung trong don hang nay
+		public int? PointUsed { get; set; } // Diem da dung trong don hang nay
 		public int PointSaved { get; set; } // Diem kiem duoc trong don hang nay
 
 		// OrderDate = CreatedDate
-		[ForeignKey("Customer")]
-		public string CustomerId { get; set; }
-		[ForeignKey("AccountVoucher")]
-		public int AccountVoucherId { get; set; }
+		//[ForeignKey("Account")]
+		public string AccountId { get; set; }
+		//[ForeignKey("AccountVoucher")]
+		public int? AccountVoucherId { get; set; }
 
-		public virtual Account Customer { get; set; }
+		public virtual Account Account { get; set; }
 		public virtual AccountVoucher AccountVoucher { get; set; }
 		public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 		public virtual ICollection<Point> Points { get; set; } = new List<Point>();

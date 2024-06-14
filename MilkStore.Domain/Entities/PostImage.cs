@@ -17,9 +17,9 @@ namespace MilkStore.Domain.Entities
 
 		// Foreign keys
 		[ForeignKey("Post")]
-		public string PostId { get; set; }
+		public int PostId { get; set; }
 		[ForeignKey("Image")]
-		public string ImageId { get; set; }
+		public int ImageId { get; set; }
 
 		// Navigation properties
 		public virtual Post Post { get; set; }

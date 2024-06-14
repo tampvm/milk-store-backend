@@ -13,10 +13,11 @@ namespace MilkStore.Domain.Entities
     {
         // Primary Key
         [Key]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         // Attributes
-        public string Name { get; set; }
+        public string Sku { get; set; }
+		public string Name { get; set; }
         public string? Description { get; set; }
         public decimal Price { get; set; }
         public decimal Discount { get; set; }
@@ -36,7 +37,7 @@ namespace MilkStore.Domain.Entities
         public bool Active { get; set; }
 
         // Navigation Properties
-        public virtual Type Type { get; set; }
+        public virtual ProductType Type { get; set; }
         public virtual AgeRange AgeRange { get; set; }
         public virtual Brand Brand { get; set; }
 		public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();

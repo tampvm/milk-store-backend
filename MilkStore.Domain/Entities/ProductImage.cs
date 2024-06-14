@@ -19,7 +19,7 @@ namespace MilkStore.Domain.Entities
         [ForeignKey("Product")]
         public string ProductId { get; set; }
         [ForeignKey("Image")]
-        public string ImageId { get; set; }
+        public int ImageId { get; set; }
 
         // Navigation properties
         public virtual Product Product { get; set; }

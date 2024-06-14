@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Domain.Entities
 {
-    [Table("Type")]
-    public class Type : BaseEntity
+    [Table("ProductType")]
+    public class ProductType : BaseEntity
     {
         [Key]
         public int Id { get; set; }

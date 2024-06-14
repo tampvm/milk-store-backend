@@ -21,5 +21,6 @@ namespace MilkStore.Domain.Entities
 		public int VoucherId { get; set; }
 		public virtual Account Account { get; set; }
 		public virtual Voucher Voucher { get; set; }
-	}
+		public virtual Order Order { get; set; }
+}
 }
