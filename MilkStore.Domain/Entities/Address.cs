@@ -11,9 +11,11 @@ namespace MilkStore.Domain.Entities
     [Table("Address")]
     public class Address : BaseEntity
     {
+        // Primary key
         [Key]
         public int Id { get; set; }
 
+        // Attributes
         public string AddressLine { get; set; }
 
         public string City { get; set; }
@@ -24,9 +26,11 @@ namespace MilkStore.Domain.Entities
 
         //public string PhoneNumber { get; set; }
 
+        // Foreign Key
         [ForeignKey("Account")]
         public string AccountId { get; set; }
 
+        // Navigation Property
         public virtual Account Account { get; set; }
     }
 }

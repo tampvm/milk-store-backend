@@ -13,10 +13,14 @@ namespace MilkStore.Domain.Entities
 	{
 		[Key]
 		public int Id { get; set; }
+
 		[ForeignKey("Product")]
 		public string ProductId { get; set; }
+
 		public int Quantity { get; set; }
+
 		public decimal UnitPrice { get; set; } // gia cua tung san pham. De tinh tong thi UnitPrice * Quantity
+		
 		[ForeignKey("Order")]
 		public string OrderId { get; set; }
 

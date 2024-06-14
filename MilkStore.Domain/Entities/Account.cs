@@ -14,7 +14,7 @@ namespace MilkStore.Domain.Entities
         // Attributes
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public bool Gender { get; set; }
+        public bool Gender { get; set; } // false la nam, true la nu
         public string Status { get; set; }
         public DateTime? LastLogin { get; set; }
         public string? RefreshToken { get; set; }
@@ -28,7 +28,7 @@ namespace MilkStore.Domain.Entities
         public string? UpdatedBy { get; set; }
         public DateTime? DeletedAt { get; set; }
         public string? DeletedBy { get; set; }
-        public bool IsDeleted { get; set; }
+        public bool IsDeleted { get; set; } // duoc tao mac dinh false
 
         // Foreign Keys
         public int? AvatarId { get; set; }

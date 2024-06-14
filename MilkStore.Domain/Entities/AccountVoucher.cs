@@ -11,15 +11,23 @@ namespace MilkStore.Domain.Entities
 	[Table("AccountVoucher")]
 	public class AccountVoucher : BaseEntity
 	{
-		[Key]
+        // Primary Key
+        [Key]
 		public int Id { get; set; }
-		public string Status { get; set; }
+
+        // Attributes
+        public string Status { get; set; }
 		public DateTime? UsedDate { get; set; }
-		[ForeignKey("Account")]
+
+        // Foreign Key
+        [ForeignKey("Account")]
 		public string AccountId { get; set; }
+
 		[ForeignKey("Voucher")]
 		public int VoucherId { get; set; }
-		public virtual Account Account { get; set; }
+
+        // Navigation Property
+        public virtual Account Account { get; set; }
 		public virtual Voucher Voucher { get; set; }
 		public virtual Order Order { get; set; }
 }

@@ -17,8 +17,8 @@ namespace MilkStore.Domain.Entities
 
         // Foreign Key
         [ForeignKey("Account")]
-
 		public string AccountId { get; set; }
+
         [ForeignKey("Post")]
         public int PostId { get; set; }
 
