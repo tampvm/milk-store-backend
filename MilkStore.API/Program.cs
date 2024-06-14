@@ -1,28 +1,28 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using MilkStore.API;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
+using MilkStore.Service.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-	options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//	options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
 
-// Add Identity
-builder.Services.AddIdentity<Account, Role>(/* options => options.SignIn.RequireConfirmedAccount = true */)
-	.AddEntityFrameworkStores<AppDbContext>()
-	.AddDefaultTokenProviders()
-	.AddSignInManager()
-	.AddRoles<Role>();
-
-// Add services to the container.
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var configuration = builder.Configuration.Get<AppConfiguration>();
+builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
+builder.Services.AddWebAPIService();
+builder.Services.AddSingleton(configuration);
 
 var app = builder.Build();
+
+// Call this method to seed data
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var seedData = services.GetRequiredService<SeedData>();
+    await seedData.Initialize(services, services.GetRequiredService<RoleManager<Role>>(), services.GetRequiredService<UserManager<Account>>());
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
