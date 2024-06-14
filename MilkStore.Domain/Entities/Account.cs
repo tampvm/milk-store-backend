@@ -32,7 +32,7 @@ namespace MilkStore.Domain.Entities
 
         // Foreign Keys
         public int? AvatarId { get; set; }
-        public int? BackgroundId { get; set; }
+		public int? BackgroundId { get; set; }
 
         // Navigation Properties
         public virtual Image Avatar { get; set; }
@@ -42,8 +42,11 @@ namespace MilkStore.Domain.Entities
         public virtual ICollection<CommentPost> CommentPosts { get; set; } = new List<CommentPost>();
         public virtual ICollection<LikePost> LikePosts { get; set; } = new List<LikePost>();
         public virtual ICollection<FollowBrand> FollowBrands { get; set; } = new List<FollowBrand>();
+        public virtual ICollection<CommentBrand> CommentBrands { get; set; } = new List<CommentBrand>();
+        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+        public virtual ICollection<Point> Points { get; set; } = new List<Point>();
+        public virtual ICollection<AccountVoucher> AccountVouchers { get; set; } = new List<AccountVoucher>();
 
-        //public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
         //public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
         //public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 

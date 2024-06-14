@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MilkStore.Domain.Entities
 {
+    [Table("CommentPost")]
     public class CommentPost : BaseEntity
     {
         // Primary Key
+        [Key]
         public int CommentId { get; set; }
 
         // Attributes
@@ -16,14 +20,17 @@ namespace MilkStore.Domain.Entities
         public bool Active { get; set; }
 
         // Foreign Key
+        [ForeignKey("ParentComment")]
         public int? ParentCommentId { get; set; }
+        [ForeignKey("Account")]
         public string AccountId { get; set; }
-        public int PostId { get; set; }
+		[ForeignKey("Post")]
+		public int PostId { get; set; }
 
         // Navigation Property
-        public Post Post { get; set; }
-        public Account Account { get; set; }
-        public CommentPost ParentComment { get; set; }
-        public ICollection<CommentPost> ChildComments { get; set; } = new List<CommentPost>();
+        public virtual Post Post { get; set; }
+        public virtual Account Account { get; set; }
+        public virtual CommentPost ParentComment { get; set; }
+        public virtual ICollection<CommentPost> ChildComments { get; set; } = new List<CommentPost>();
     }
 }
