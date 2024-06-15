@@ -8,6 +8,7 @@ using MilkStore.Repository.Data;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Repository.Repositories;
 using MilkStore.Service.Common;
+using MilkStore.Service.Interfaces;
 using MilkStore.Service.Mappers;
 using MilkStore.Service.Services;
 using System.Text;
@@ -95,6 +96,8 @@ namespace MilkStore.API
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICurrentTime, CurrentTime>();
             services.AddScoped<IClaimsService, ClaimsService>();
+
+            services.AddScoped<IAuthService, AuthService>();
 
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
