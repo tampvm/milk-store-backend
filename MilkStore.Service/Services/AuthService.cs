@@ -29,9 +29,9 @@ namespace MilkStore.Service.Services
             AppConfiguration appConfiguration,
             SignInManager<Account> signInManager,
             UserManager<Account> userManager,
-            //ISmsSender smsSender,
+            ISmsSender smsSender,
             IMemoryCache cache)
-            : base(unitOfWork, mapper, currentTime, claimsService, appConfiguration, /*smsSender,*/ cache)
+            : base(unitOfWork, mapper, currentTime, claimsService, appConfiguration, smsSender, cache)
         {
             _signInManager = signInManager;
             _userManager = userManager;

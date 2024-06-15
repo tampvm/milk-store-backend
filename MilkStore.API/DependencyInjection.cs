@@ -11,6 +11,7 @@ using MilkStore.Service.Common;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Mappers;
 using MilkStore.Service.Services;
+using MilkStore.Service.Utils;
 using System.Text;
 
 namespace MilkStore.API
@@ -96,6 +97,7 @@ namespace MilkStore.API
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICurrentTime, CurrentTime>();
             services.AddScoped<IClaimsService, ClaimsService>();
+            services.AddScoped<ISmsSender, TwilioSmsSender>();
 
             services.AddScoped<IAuthService, AuthService>();
 

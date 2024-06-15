@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Common;
+using MilkStore.Service.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace MilkStore.Service.Services
         protected readonly ICurrentTime _currentTime;
         protected readonly IClaimsService _claimsService;
         protected readonly AppConfiguration _appConfiguration;
-        //protected readonly ISmsSender _smsSender;
+        protected readonly ISmsSender _smsSender;
         protected readonly IMemoryCache _cache;
 
         protected BaseService(
@@ -26,7 +27,7 @@ namespace MilkStore.Service.Services
             ICurrentTime currentTime,
             IClaimsService claimsService,
             AppConfiguration appConfiguration,
-            //ISmsSender smsSender,
+            ISmsSender smsSender,
             IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
@@ -34,7 +35,7 @@ namespace MilkStore.Service.Services
             _currentTime = currentTime;
             _claimsService = claimsService;
             _appConfiguration = appConfiguration;
-            //_smsSender = smsSender;
+            _smsSender = smsSender;
             _cache = cache;
         }
     }
