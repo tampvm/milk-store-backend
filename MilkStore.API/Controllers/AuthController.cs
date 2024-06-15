@@ -63,5 +63,32 @@ namespace MilkStore.API.Controllers
                 Errors = errors.Values.ToList()
             });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> LoginAsync(LoginDTO model)
+        {
+            if (ModelState.IsValid)
+            {
+                var respone = await _authService.LoginAsync(model);
+
+                if (respone.Success)
+                {
+                    return Ok(respone);
+                }
+
+                return Unauthorized(respone);
+            }
+
+            var errors = ModelState.ToDictionary(
+                key => key.Key,
+                value => string.Join("; ", value.Value.Errors.Select(e => e.ErrorMessage)));
+
+            return BadRequest(new ErrorResponseModel<Dictionary<string, string>>
+            {
+                Success = false,
+                Message = "Invalid request",
+                Errors = errors.Values.ToList()
+            });
+        }
     }
 }

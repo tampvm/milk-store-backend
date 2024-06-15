@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -113,6 +114,75 @@ namespace MilkStore.Service.Services
             };
         }
 
+        // Login
+        public async Task<ResponseModel> LoginAsync(LoginDTO model)
+        {
+            var user = await FindByUsernameOrEmailOrPhoneNumberAsync(model.Username);
+
+            if (user != null)
+            {
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, isPersistent: false, lockoutOnFailure: false);
+
+                if (result.Succeeded)
+                {
+                    var accessToken = GenerateJsonWebToken(user, out DateTime tokenExpiryTime);
+                    var refreshToken = GenerateRefreshToken();
+
+                    user.RefreshToken = refreshToken;
+                    user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_appConfiguration.JWT.RefreshTokenDurationInDays);
+                    user.LastLogin = _currentTime.GetCurrentTime();
+
+                    await _userManager.UpdateAsync(user);
+
+                    return new AuthenticationResponseModel
+                    {
+                        Success = true,
+                        Message = "Login success",
+                        AccessToken = accessToken,
+                        RefreshToken = refreshToken,
+                        TokenExpiryTime = tokenExpiryTime
+                    };
+                }
+                else
+                {
+                    return new AuthenticationResponseModel
+                    {
+                        Success = false,
+                        Message = "Wrong password!",
+                    };
+                }
+            }
+            else
+            {
+                return new AuthenticationResponseModel
+                {
+                    Success = false,
+                    Message = "User not found by username, email, or phone number",
+                };
+            }
+        }
+
+        // Find user by username, email, or phone number
+        private async Task<Account> FindByUsernameOrEmailOrPhoneNumberAsync(string username)
+        {
+            // Thử tìm người dùng bằng tên người dùng (username)
+            var user = await _userManager.FindByNameAsync(username);
+
+            // Nếu không tìm thấy, thử tìm bằng email
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(username);
+            }
+
+            // Nếu không tìm thấy, thử tìm bằng số điện thoại
+            if (user == null)
+            {
+                user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(username);
+            }
+
+            return user;
+        }
+
         // Send verification code to user's phone number when user register
         public async Task<ResponseModel> SendRegisterVerificationCodeAsync(RegisterPhoneNumberDTO model)
         {
@@ -184,7 +254,7 @@ namespace MilkStore.Service.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                //new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                 new Claim(ClaimTypes.Name, user.UserName),
                 //new Claim(ClaimTypes.Sid, user.Id.ToString()),
@@ -209,6 +279,17 @@ namespace MilkStore.Service.Services
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        // Generate refresh token
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
         }
     }
 }
