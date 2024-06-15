@@ -98,6 +98,7 @@ namespace MilkStore.API
             services.AddScoped<ICurrentTime, CurrentTime>();
             services.AddScoped<IClaimsService, ClaimsService>();
             services.AddScoped<ISmsSender, TwilioSmsSender>();
+            services.AddScoped<IZaloService, ZaloService>();
 
             services.AddScoped<IAuthService, AuthService>();
 
