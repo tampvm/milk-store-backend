@@ -19,8 +19,4 @@
     <ProjectReference Include="..\MilkStore.Repository\MilkStore.Repository.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\ViewModels\" />
-  </ItemGroup>
-
 </Project>
