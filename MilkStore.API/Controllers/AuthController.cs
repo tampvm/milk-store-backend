@@ -16,7 +16,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendRegisterVerificationCodeAsync(RegisterPhoneNumberDTO model)
+        public async Task<IActionResult> SendRegisterVerificationCodeAsync(PhoneNumberDTO model)
         {
             var response = await _authService.SendRegisterVerificationCodeAsync(model);
             if (response.Success)
@@ -101,6 +101,39 @@ namespace MilkStore.API.Controllers
                 return Ok(response);
             }
 
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendForgotPasswordVerificationCodeByPhoneNumberAsync(PhoneNumberDTO model)
+        {
+            var response = await _authService.SendForgotPasswordVerificationCodeByPhoneNumberAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyPhoneNumberDTO model)
+        {
+            var response = await _authService.VerifyForgotPasswordCodeByPhoneNumberAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPasswordByPhoneNumberAsync(ResetPasswordByPhoneNumberDTO model)
+        {
+            var response = await _authService.ResetPasswordByPhoneNumberAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
             return BadRequest(response);
         }
     }

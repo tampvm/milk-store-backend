@@ -11,10 +11,12 @@ namespace MilkStore.Service.Interfaces
     public interface IAuthService
     {
         Task<ResponseModel> RegisterAsync(RegisterDTO model);
-        Task<ResponseModel> SendRegisterVerificationCodeAsync(RegisterPhoneNumberDTO model);
+        Task<ResponseModel> SendRegisterVerificationCodeAsync(PhoneNumberDTO model);
         Task<ResponseModel> VerifyRegisterCodeAsync(VerifyPhoneNumberDTO model);
         Task<ResponseModel> LoginAsync(LoginDTO model);
         Task<ResponseModel> RefreshTokenAsync(RefreshTokenDTO model);
-
+        Task<ResponseModel> SendForgotPasswordVerificationCodeByPhoneNumberAsync(PhoneNumberDTO model);
+        Task<ResponseModel> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyPhoneNumberDTO model);
+        Task<ResponseModel> ResetPasswordByPhoneNumberAsync(ResetPasswordByPhoneNumberDTO model);
     }
 }

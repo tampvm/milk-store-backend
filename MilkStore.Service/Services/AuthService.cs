@@ -184,7 +184,7 @@ namespace MilkStore.Service.Services
         }
 
         // Send verification code to user's phone number when user register
-        public async Task<ResponseModel> SendRegisterVerificationCodeAsync(RegisterPhoneNumberDTO model)
+        public async Task<ResponseModel> SendRegisterVerificationCodeAsync(PhoneNumberDTO model)
         {
             //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
             var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
@@ -372,6 +372,114 @@ namespace MilkStore.Service.Services
                     Message = "Failed to refresh token"
                 };
             }
+        }
+
+        // Gửi mã xác thực đến số điện thoại của người dùng khi người dùng quên mật khẩu
+        public async Task<ResponseModel> SendForgotPasswordVerificationCodeByPhoneNumberAsync(PhoneNumberDTO model)
+        {
+            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+
+            if (user is null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Phone number not found."
+                };
+            }
+
+            var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+            await _smsSender.SendSmsAsync(model.PhoneNumber, $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 3 phút.");
+
+            // Cache code with a timeout (optional)
+            _cache.Set(model.PhoneNumber, code, TimeSpan.FromMinutes(3)); // Lưu mã xác thực vào bộ đệm với thời gian hết hạn 3 phút
+
+            return new ResponseModel
+            {
+                Success = true,
+                Message = "Verification code sent."
+            };
+        }
+
+        // Xác thực số điện thoại của người dùng khi người dùng quên mật khẩu
+        public async Task<ResponseModel> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyPhoneNumberDTO model)
+        {
+            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+
+            if (user is null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Phone number not found."
+                };
+            }
+
+            // Retrieve the code from the cache
+            if (_cache.TryGetValue(model.PhoneNumber, out string? cachedCode) && cachedCode == model.Code)
+            {
+                var isTokenValid = await _userManager.VerifyChangePhoneNumberTokenAsync(user, model.Code, model.PhoneNumber);
+                if (!isTokenValid)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid verification code."
+                    };
+                }
+
+                // Code is verified, you can now redirect the user to the password reset page
+                // Here, you might generate a token and send it to the client to allow password reset
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+                return new SuccessResponseModel<string>
+                {
+                    Success = true,
+                    Message = "Verification successful. Proceed to password reset.",
+                    Data = resetToken
+                };
+            }
+
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "Invalid verification code."
+            };
+        }
+
+        // Reset mật khẩu của người dùng
+        public async Task<ResponseModel> ResetPasswordByPhoneNumberAsync(ResetPasswordByPhoneNumberDTO model)
+        {
+            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+            var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+
+            if (user is null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.ResetToken, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return new ResponseModel
+                {
+                    Success = true,
+                    Message = "Password has been reset successfully."
+                };
+            }
+
+            return new ErrorResponseModel<List<string>>
+            {
+                Success = false,
+                Message = "Failed to reset password.",
+                Errors = result.Errors.Select(e => e.Description).ToList()
+            };
         }
     }
 }
