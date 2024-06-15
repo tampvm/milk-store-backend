@@ -14,6 +14,7 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> SendRegisterVerificationCodeAsync(RegisterPhoneNumberDTO model);
         Task<ResponseModel> VerifyRegisterCodeAsync(VerifyPhoneNumberDTO model);
         Task<ResponseModel> LoginAsync(LoginDTO model);
+        Task<ResponseModel> RefreshTokenAsync(RefreshTokenDTO model);
 
     }
 }

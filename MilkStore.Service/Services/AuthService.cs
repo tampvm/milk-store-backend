@@ -291,5 +291,87 @@ namespace MilkStore.Service.Services
                 return Convert.ToBase64String(randomNumber);
             }
         }
+
+        // Get principal from expired token
+        private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_appConfiguration.JWT.JWTSecretKey)),
+                ValidateLifetime = false // Không cần kiểm tra thời hạn
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out SecurityToken securityToken);
+
+            var jwtSecurityToken = securityToken as JwtSecurityToken;
+            if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+            {
+                throw new SecurityTokenException("Invalid token");
+            }
+
+            return principal;
+        }
+
+        // Refresh token
+        public async Task<ResponseModel> RefreshTokenAsync(RefreshTokenDTO model)
+        {
+            try
+            {
+                var principal = GetPrincipalFromExpiredToken(model.AccessToken);
+                var username = principal.Identity.Name;
+
+                var user = await FindByUsernameOrEmailOrPhoneNumberAsync(username);
+
+                if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+                {
+                    return new AuthenticationResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid refresh token"
+                    };
+                }
+
+                // Kiểm tra nếu token vẫn còn trong thời hạn sử dụng
+                var validToClaim = principal.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp)?.Value;
+                if (validToClaim != null && DateTime.UtcNow < DateTime.UnixEpoch.AddSeconds(Convert.ToInt64(validToClaim)))
+                {
+                    return new AuthenticationResponseModel
+                    {
+                        Success = false,
+                        Message = "Token is still valid. No need to refresh."
+                    };
+                }
+                await _signInManager.RefreshSignInAsync(user);
+
+                var newAccessToken = GenerateJsonWebToken(user, out DateTime tokenExpiryTime);
+                var newRefreshToken = GenerateRefreshToken();
+
+                user.RefreshToken = newRefreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_appConfiguration.JWT.RefreshTokenDurationInDays);
+
+                await _userManager.UpdateAsync(user);
+
+                return new AuthenticationResponseModel
+                {
+                    Success = true,
+                    Message = "Token refreshed successfully",
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                    TokenExpiryTime = tokenExpiryTime
+                };
+            }
+            catch (Exception)
+            {
+                return new AuthenticationResponseModel
+                {
+                    Success = false,
+                    Message = "Failed to refresh token"
+                };
+            }
+        }
     }
 }

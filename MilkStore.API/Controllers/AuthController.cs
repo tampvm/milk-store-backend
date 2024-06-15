@@ -90,5 +90,18 @@ namespace MilkStore.API.Controllers
                 Errors = errors.Values.ToList()
             });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RefreshTokenAsync(RefreshTokenDTO model)
+        {
+            var response = await _authService.RefreshTokenAsync(model);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
+        }
     }
 }
