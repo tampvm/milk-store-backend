@@ -11,5 +11,6 @@ namespace MilkStore.Service.Common
         public string DatabaseConnection { get; set; }
         public JWTSettings JWT { get; set; }
         public TwilioSettings Twilio { get; set; }
+        public ZaloSettings Zalo { get; set; }
     }
 }
