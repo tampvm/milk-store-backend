@@ -100,6 +100,7 @@ namespace MilkStore.API
             services.AddScoped<ISmsSender, TwilioSmsSender>();
             services.AddScoped<IZaloService, ZaloService>();
 
+            services.AddScoped<IAcccountRepository, AccountRepository>();
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
