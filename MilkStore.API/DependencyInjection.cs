@@ -1,18 +1,22 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Repository.Repositories;
+using MilkStore.Service.Common;
 using MilkStore.Service.Mappers;
 using MilkStore.Service.Services;
+using System.Text;
 
 namespace MilkStore.API
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddWebAPIService(this IServiceCollection services)
+        public static IServiceCollection AddWebAPIService(this IServiceCollection services, JWTSettings jwt)
         {
             // Configure the token lifespan
             services.Configure<DataProtectionTokenProviderOptions>(options =>
@@ -24,6 +28,28 @@ namespace MilkStore.API
                 .AddDefaultTokenProviders()
                 .AddSignInManager()
                 .AddRoles<Role>();
+
+            // Add JWT authentication
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwt.Issuer,
+                    ValidAudience = jwt.Audience,
+                    ClockSkew = TimeSpan.Zero,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.JWTSecretKey))
+                };
+            });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             // Swagger Configuration

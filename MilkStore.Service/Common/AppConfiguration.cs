@@ -9,5 +9,6 @@ namespace MilkStore.Service.Common
     public class AppConfiguration
     {
         public string DatabaseConnection { get; set; }
+        public JWTSettings JWT { get; set; }
     }
 }

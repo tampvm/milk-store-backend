@@ -6,13 +6,31 @@ using MilkStore.Service.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var configuration = builder.Configuration.Get<AppConfiguration>();
+builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
+builder.Services.AddWebAPIService(configuration.JWT);
+builder.Services.AddSingleton(configuration);
+
+// Conection string for database
 //builder.Services.AddDbContext<AppDbContext>(options =>
 //	options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
 
-var configuration = builder.Configuration.Get<AppConfiguration>();
-builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
-builder.Services.AddWebAPIService();
-builder.Services.AddSingleton(configuration);
+// Add JWT authentication
+//var jwtKey = builder.Configuration.GetSection("JWT:JWTSecretKey").Get<string>();
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+// .AddJwtBearer(options =>
+// {
+//     options.TokenValidationParameters = new TokenValidationParameters
+//     {
+//         ValidateIssuer = false,
+//         ValidateAudience = false,
+//         ValidateLifetime = true,
+//         ValidateIssuerSigningKey = true,
+//         //ValidIssuer = jwtIssuer,
+//         //ValidAudience = jwtIssuer,
+//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+//     };
+// });
 
 var app = builder.Build();
 
