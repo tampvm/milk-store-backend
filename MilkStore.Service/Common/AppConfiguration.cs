@@ -12,5 +12,6 @@ namespace MilkStore.Service.Common
         public JWTSettings JWT { get; set; }
         public TwilioSettings Twilio { get; set; }
         public ZaloSettings Zalo { get; set; }
+        public EmailSettings Email { get; set; }
     }
 }
