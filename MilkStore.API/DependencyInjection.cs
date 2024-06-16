@@ -99,6 +99,7 @@ namespace MilkStore.API
             services.AddScoped<IClaimsService, ClaimsService>();
             services.AddScoped<ISmsSender, TwilioSmsSender>();
             services.AddScoped<IZaloService, ZaloService>();
+            services.AddScoped<IEmailSender, EmailSender>();
 
             services.AddScoped<IAcccountRepository, AccountRepository>();
             services.AddScoped<IAuthService, AuthService>();
