@@ -105,9 +105,9 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendForgotPasswordVerificationCodeByPhoneNumberAsync(PhoneNumberDTO model)
+        public async Task<IActionResult> SendForgotPasswordVerificationCodeByPhoneNumberAsync(SendForgotPasswordCodeDTO model)
         {
-            var response = await _authService.SendForgotPasswordVerificationCodeByPhoneNumberAsync(model);
+            var response = await _authService.SendForgotPasswordVerificationCodeByPhoneNumberOrEmailAsync(model);
             if (response.Success)
             {
                 return Ok(response);
@@ -116,9 +116,9 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyPhoneNumberDTO model)
+        public async Task<IActionResult> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyForgotPasswordCodeDTO model)
         {
-            var response = await _authService.VerifyForgotPasswordCodeByPhoneNumberAsync(model);
+            var response = await _authService.VerifyForgotPasswordCodeByPhoneNumberOrEmailAsync(model);
             if (response.Success)
             {
                 return Ok(response);
@@ -127,9 +127,9 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPasswordByPhoneNumberAsync(ResetPasswordByPhoneNumberDTO model)
+        public async Task<IActionResult> ResetPasswordByPhoneNumberAsync(ResetPasswordDTO model)
         {
-            var response = await _authService.ResetPasswordByPhoneNumberAsync(model);
+            var response = await _authService.ResetPasswordAsync(model);
             if (response.Success)
             {
                 return Ok(response);

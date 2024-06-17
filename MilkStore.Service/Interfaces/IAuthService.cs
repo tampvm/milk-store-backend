@@ -15,8 +15,9 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> VerifyRegisterCodeAsync(VerifyPhoneNumberDTO model);
         Task<ResponseModel> LoginAsync(LoginDTO model);
         Task<ResponseModel> RefreshTokenAsync(RefreshTokenDTO model);
-        Task<ResponseModel> SendForgotPasswordVerificationCodeByPhoneNumberAsync(PhoneNumberDTO model);
-        Task<ResponseModel> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyPhoneNumberDTO model);
-        Task<ResponseModel> ResetPasswordByPhoneNumberAsync(ResetPasswordByPhoneNumberDTO model);
+        Task<ResponseModel> SendForgotPasswordVerificationCodeByPhoneNumberOrEmailAsync(SendForgotPasswordCodeDTO model);
+        Task<ResponseModel> VerifyForgotPasswordCodeByPhoneNumberOrEmailAsync(VerifyForgotPasswordCodeDTO model);
+        Task<ResponseModel> ResetPasswordAsync(ResetPasswordDTO model); // Reset Password by custom logic
+        //Task<ResponseModel> ForgotPasswordAsync(ResetPasswordDTO model); // Reset Password by ASP.NET Identity
     }
 }
