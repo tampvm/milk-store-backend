@@ -19,6 +19,7 @@ namespace MilkStore.Service.Services
         protected readonly IClaimsService _claimsService;
         protected readonly AppConfiguration _appConfiguration;
         protected readonly ISmsSender _smsSender;
+        protected readonly IEmailSender _emailSender;
         protected readonly IMemoryCache _cache;
 
         protected BaseService(
@@ -28,6 +29,7 @@ namespace MilkStore.Service.Services
             IClaimsService claimsService,
             AppConfiguration appConfiguration,
             ISmsSender smsSender,
+            IEmailSender emailSender,
             IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
@@ -36,6 +38,7 @@ namespace MilkStore.Service.Services
             _claimsService = claimsService;
             _appConfiguration = appConfiguration;
             _smsSender = smsSender;
+            _emailSender = emailSender;
             _cache = cache;
         }
     }

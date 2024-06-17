@@ -15,14 +15,4 @@ namespace MilkStore.Service.Models.ViewModels.AccountViewModels
     {
         public string Code { get; set; }
     }
-
-    public class ChangePhoneNumberDTO : PhoneNumberDTO
-    {
-        public string Username { get; set; }
-    }
-
-    public class PhoneVerificationRequestDTO : ChangePhoneNumberDTO
-    {
-        public string Code { get; set; }
-    }
 }
