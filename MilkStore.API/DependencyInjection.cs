@@ -104,6 +104,7 @@ namespace MilkStore.API
 
             services.AddScoped<IAcccountRepository, AccountRepository>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IAccountService, AccountService>();
 
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
