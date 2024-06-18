@@ -18,7 +18,7 @@ namespace MilkStore.Service.Utils
         public TwilioSmsSender(AppConfiguration twilioSettings)
         {
             _twilioSettings = twilioSettings;
-            TwilioClient.Init(_twilioSettings.Twilio.AccountSid, _twilioSettings.Twilio.AuthToken);
+            TwilioClient.Init(_twilioSettings.Twilio.AccountSid1 + _twilioSettings.Twilio.AccountSid2, _twilioSettings.Twilio.AuthToken1 + _twilioSettings.Twilio.AuthToken2);
         }
 
         public async Task SendSmsAsync(string number, string message)

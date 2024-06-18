@@ -69,14 +69,20 @@ namespace MilkStore.Service.Services
             }
 
             var code = GenerateVerificationCode();
+            DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10); // Thời gian hết hạn 10 phút từ bây giờ
+
             await _smsSender.SendSmsAsync(model.PhoneNumber, $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
 
             _cache.Set(model.PhoneNumber, code, TimeSpan.FromMinutes(10));
 
-            return new ResponseModel
+            return new SuccessResponseModel<object>
             {
                 Success = true,
-                Message = "Verification code sent."
+                Message = "Verification code sent.",
+                Data = new
+                {
+                    CodeExpiryTime = expiryTime
+                }
             };
         }
 
@@ -95,13 +101,24 @@ namespace MilkStore.Service.Services
                 };
             }
 
+            // Validate verification code
             if (_cache.TryGetValue(model.PhoneNumber, out string savedCode) && savedCode == model.Code)
             {
-                return new SuccessResponseModel<string>
+                // Remove the verification code from cache to prevent reuse
+                _cache.Remove(model.PhoneNumber);
+
+                // Generate register token
+                var registerToken = _tokenService.GenerateToken(model.PhoneNumber, "phone", "register", out DateTime expiryTime); // Generate token by custom logic
+
+                return new SuccessResponseModel<object>
                 {
                     Success = true,
                     Message = "Phone number verified.",
-                    Data = model.PhoneNumber
+                    Data = new
+                    {
+                        Token = registerToken,
+                        TokenExpiryTime = expiryTime
+                    }
                 };
             }
 
@@ -115,8 +132,17 @@ namespace MilkStore.Service.Services
         // Register
         public async Task<ResponseModel> RegisterAsync(RegisterDTO model)
         {
-            var emailExists = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
-            if (emailExists != null)
+            if (!_tokenService.ValidateToken(model.PhoneNumber, "phone", "register", model.RegisterToken))
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Invalid or expired registration token."
+                };
+            }
+
+            var phoneExists = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+            if (phoneExists != null)
             {
                 return new ResponseModel
                 {
@@ -410,6 +436,8 @@ namespace MilkStore.Service.Services
 
             //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
             string code;
+            DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10);
+
             if (model.PhoneNumberOrEmail.Contains("@"))
             {
                 code = GenerateVerificationCode();
@@ -430,7 +458,7 @@ namespace MilkStore.Service.Services
                 Message = "Verification code sent.",
                 Data = new
                 {
-                    CodeExpiryTime = _cache.Get<DateTime>(model.PhoneNumberOrEmail)
+                    CodeExpiryTime =  expiryTime
                 }
             };
         }
@@ -470,7 +498,7 @@ namespace MilkStore.Service.Services
                 // Code is verified, you can now redirect the user to the password reset page
                 // Here, you might generate a token and send it to the client to allow password reset
                 //var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user); // Generate token by ASP.NET Core Identity
-                var resetToken = _tokenService.GenerateToken(model.PhoneNumberOrEmail, model.PhoneNumberOrEmail.Contains("@") ? "email" : "phone"); // Generate token by custom logic
+                var resetToken = _tokenService.GenerateToken(model.PhoneNumberOrEmail, model.PhoneNumberOrEmail.Contains("@") ? "email" : "phone", "reset", out DateTime expiryTime); // Generate token by custom logic
 
                 return new SuccessResponseModel<object>
                 {
@@ -479,7 +507,7 @@ namespace MilkStore.Service.Services
                     Data = new
                     {
                         ResetToken = resetToken,
-                        ResetTokenExpiryTime = _cache.Get<DateTime>(model.PhoneNumberOrEmail)
+                        ResetTokenExpiryTime = expiryTime
                     }
                 };
             }
@@ -506,7 +534,7 @@ namespace MilkStore.Service.Services
             }
 
             string method = model.PhoneNumberOrEmail.Contains("@") ? "email" : "phone";
-            if (!_tokenService.ValidateToken(model.PhoneNumberOrEmail, method, model.ResetToken))
+            if (!_tokenService.ValidateToken(model.PhoneNumberOrEmail, method, "reset", model.ResetToken))
             {
                 return new ResponseModel
                 {
