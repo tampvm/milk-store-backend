@@ -8,7 +8,7 @@ namespace MilkStore.Service.Interfaces
 {
     public interface ITokenService
     {
-        string GenerateToken(string identifier, string method);
-        bool ValidateToken(string identifier, string method, string token);
+        string GenerateToken(string identifier, string method, string type, out DateTime expiryTime);
+        bool ValidateToken(string identifier, string method, string type, string token);
     }
 }
