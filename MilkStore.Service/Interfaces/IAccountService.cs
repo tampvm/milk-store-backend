@@ -13,5 +13,9 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> SendVerificationCodeAsync(NewPhoneNumberDTO model);
         Task<ResponseModel> VerifyNewPhoneNumberAsync(ChangePhoneNumberDTO model);
         Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize);
+        Task<ResponseModel> AddRoleToUserAsync(UpdateUserRolesDTO model);
+        Task<ResponseModel> RemoveRoleToUserAsync(UpdateUserRolesDTO model);
+        Task<ResponseModel> GetUserRolesAsync(string userId);
+        Task<ResponseModel> GetNotAssignedUserRolesAsync(string userId);
     }
 }

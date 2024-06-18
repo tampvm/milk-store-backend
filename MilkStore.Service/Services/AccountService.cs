@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Common;
@@ -13,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static MilkStore.Service.Models.ViewModels.AccountViewModels.UserRolesDTO;
 
 namespace MilkStore.Service.Services
 {
@@ -38,7 +40,7 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
-        #region Change Phone Number
+        #region Update User Phone Number
         // Send verification code to the new phone number when user wants to change phone number
         public async Task<ResponseModel> SendVerificationCodeAsync(NewPhoneNumberDTO model)
         {
@@ -130,6 +132,7 @@ namespace MilkStore.Service.Services
         }
         #endregion
 
+        #region Get All Users For Admin
         // Get all users for admin
         public async Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize)
         {
@@ -164,5 +167,192 @@ namespace MilkStore.Service.Services
                 Data = userDtos
             };
         }
+        #endregion
+
+        #region Update User Roles For Admin
+        // Add role to user
+        public async Task<ResponseModel> AddRoleToUserAsync(UpdateUserRolesDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found.",
+                };
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName);
+            if (!roleExists)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Role does not exist.",
+                };
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userRoles.Contains(model.RoleName))
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User already has this role.",
+                };
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, model.RoleName);
+
+            if (result.Succeeded)
+            {
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                await _userManager.UpdateAsync(user);
+
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Role added to user successfully.",
+                    Data = new 
+                    {
+                        UserId = user.Id,
+                        RoleName = model.RoleName
+                    }
+                };
+            }
+            else
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to add role to user.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+        }
+
+        // Remove role from user
+        public async Task<ResponseModel> RemoveRoleToUserAsync(UpdateUserRolesDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found.",
+                };
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName);
+            if (!roleExists)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Role does not exist.",
+                };
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (!userRoles.Contains(model.RoleName))
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User does not have this role.",
+                };
+            }
+
+            // Check if the user has only one role
+            if (userRoles.Count == 1)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User cannot be without any role.",
+                };
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
+
+            if (result.Succeeded)
+            {
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                await _userManager.UpdateAsync(user);
+
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Role removed from user successfully.",
+                    Data = new 
+                    {
+                        UserId = user.Id,
+                        RoleName = model.RoleName
+                    }
+                };
+            }
+            else
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to remove role from user.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+        }
+
+        // Get a list of user roles
+        public async Task<ResponseModel> GetUserRolesAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Sử dụng AutoMapper để ánh xạ thông tin người dùng sang DTO
+            var userRolesDTO = _mapper.Map<ViewUserRolesDTO>(user);
+
+            // Thêm danh sách vai trò vào DTO
+            userRolesDTO.RoleNames = roles.ToList();
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User roles found.",
+                Data = userRolesDTO
+            };
+        }
+
+        // Get the list of roles that have not been assigned to the user
+        public async Task<ResponseModel> GetNotAssignedUserRolesAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var allRoles = await _roleManager.Roles.ToListAsync();
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var notAssignedRoles = allRoles.Where(role => !userRoles.Contains(role.Name)).Select(role => role.Name).ToList();
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Not assigned user roles found.",
+                Data = notAssignedRoles
+            };
+        }
+        #endregion
     }
 }

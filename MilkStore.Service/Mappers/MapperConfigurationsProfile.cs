@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static MilkStore.Service.Models.ViewModels.AccountViewModels.UserRolesDTO;
 
 namespace MilkStore.Service.Mappers
 {
@@ -41,6 +42,10 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
                 .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt)).ReverseMap();
+
+            CreateMap<Account, ViewUserRolesDTO>()
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id)).ReverseMap();
+            //.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).ToList()));
         }
     }
 }
