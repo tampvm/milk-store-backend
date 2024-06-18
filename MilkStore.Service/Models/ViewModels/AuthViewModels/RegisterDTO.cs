@@ -8,10 +8,11 @@ namespace MilkStore.Service.Models.ViewModels.AccountViewModels
 {
     public class RegisterDTO
     {
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public string PhoneNumber { get; set; }
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string RegisterToken { get; set; } // truyền ẩn trong thẻ input sau khi verify
+        public string PhoneNumber { get; set; } // truyền ẩn trong thẻ input sau khi verify
+        public string FirstName { get; set; } // Nhập
+        public string LastName { get; set; } // Nhập
+        public string Username { get; set; } // Nhập
+        public string Password { get; set; } // Nhập
     }
 }
