@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
 using MilkStore.Domain.Entities;
+using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Common;
 using MilkStore.Service.Interfaces;
@@ -37,6 +38,7 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
+        #region Change Phone Number
         // Send verification code to the new phone number when user wants to change phone number
         public async Task<ResponseModel> SendVerificationCodeAsync(NewPhoneNumberDTO model)
         {
@@ -124,6 +126,42 @@ namespace MilkStore.Service.Services
             {
                 Success = false,
                 Message = "Invalid verification code."
+            };
+        }
+        #endregion
+
+        // Get all users for admin
+        public async Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize)
+        {
+            //var users = await _userManager.Users.ToListAsync(); // Lấy danh sách người dùng từ DB
+
+            var users = await _unitOfWork.AcccountRepository.GetAsync(
+                filter: u => !u.IsDeleted,
+                orderBy: u => u.OrderBy(u => u.Id),
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            var userDtos = _mapper.Map<Pagination<ViewListUserDTO>>(users); // Ánh xạ danh sách người dùng sang ViewListUserDTO
+
+            // Lặp qua từng người dùng để lấy và ánh xạ vai trò
+            foreach (var userDto in userDtos.Items)
+            {
+                var user = await _userManager.FindByIdAsync(userDto.Id); // Tìm người dùng theo Id để lấy vai trò
+                var roles = await _userManager.GetRolesAsync(user); // Lấy danh sách vai trò của người dùng
+
+                // Gán danh sách vai trò vào DTO
+                userDto.Roles = roles;
+                userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
+                userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;
+                userDto.DeletedBy = string.IsNullOrEmpty(user.DeletedBy) ? null : (await _userManager.FindByIdAsync(user.DeletedBy))?.UserName ?? user.DeletedBy;
+            }
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Users found.",
+                Data = userDtos
             };
         }
     }

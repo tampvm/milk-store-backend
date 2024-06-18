@@ -35,5 +35,17 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+
+        [HttpGet]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsersForAdminAsync(int pageInndex = 0, int pageSize = 10)
+        {
+            var response = await _accountService.GetAllUsersForAdminAsync(pageInndex, pageSize);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
