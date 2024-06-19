@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
@@ -33,6 +34,7 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
+        // Get all active roles
         public async Task<ResponseModel> GetActiveRolesAsync(int pageIndex, int pageSize)
         {
             var roles = await _unitOfWork.RoleRepository.GetAsync(
@@ -65,6 +67,56 @@ namespace MilkStore.Service.Services
                 Success = true,
                 Message = "Roles retrieved successfully.",
                 Data = roleDtos
+            };
+        }
+
+        // Create a new role
+        public async Task<ResponseModel> CreateRoleAsync(CreateRoleDTO model)
+        {
+            // Tìm kiếm role theo tên, kể cả role đã bị xóa mềm
+            var existingRole = await _roleManager.Roles
+                .FirstOrDefaultAsync(r => r.Name == model.RoleName);
+
+            if (existingRole != null)
+            {
+                if (existingRole.IsDeleted)
+                {
+                    // Role đã bị xóa mềm, cập nhật lại role này
+                    existingRole.IsDeleted = false;
+                    existingRole.DeletedAt = null;
+                    existingRole.DeletedBy = null;
+                    existingRole.Description = model.Description;
+                    existingRole.UpdatedAt = _currentTime.GetCurrentTime();
+                    existingRole.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                    var updateResult = await _roleManager.UpdateAsync(existingRole);
+
+                    return new SuccessResponseModel<string>
+                    {
+                        Success = updateResult.Succeeded,
+                        Message = updateResult.Succeeded ? "Role restored successfully." : "Failed to restore role.",
+                        Data = updateResult.Succeeded ? existingRole.Id : null
+                    };
+                }
+                else
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Role already exists.",
+                    };
+                }
+            }
+
+            var createBy = _claimsService.GetCurrentUserId().ToString();
+            var role = new Role(model.RoleName, model.Description, false, _currentTime.GetCurrentTime(), createBy, false);
+            var result = await _roleManager.CreateAsync(role);
+
+            return new SuccessResponseModel<string>
+            {
+                Success = result.Succeeded,
+                Message = result.Succeeded ? "Role created successfully." : "Failed to create role.",
+                Data = result.Succeeded ? role.Id : null
             };
         }
     }
