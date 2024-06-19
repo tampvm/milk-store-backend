@@ -9,7 +9,7 @@ namespace MilkStore.Repository.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         IAcccountRepository AcccountRepository { get; }
-        //IRoleRepository RoleRepository { get; }
+        IRoleRepository RoleRepository { get; }
         Task<int> SaveChangeAsync();
     }
 }
