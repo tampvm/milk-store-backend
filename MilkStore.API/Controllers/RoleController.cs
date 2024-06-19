@@ -46,5 +46,29 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
+
+        [HttpPut]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRoleAsync(UpdateRoleDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Xử lý lỗi nếu dữ liệu không hợp lệ
+                return BadRequest(ModelState);
+            }
+
+            var response = await _roleService.UpdateRoleAsync(model);
+
+            if (response.Success)
+            {
+                // Vai trò đã được cập nhật thành công
+                return Ok(response);
+            }
+            else
+            {
+                // Xử lý lỗi nếu việc cập nhật vai trò không thành công
+                return BadRequest(response);
+            }
+        }
     }
 }

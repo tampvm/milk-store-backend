@@ -119,5 +119,61 @@ namespace MilkStore.Service.Services
                 Data = result.Succeeded ? role.Id : null
             };
         }
+
+        // Update a role
+        public async Task<ResponseModel> UpdateRoleAsync(UpdateRoleDTO model)
+        {
+            try
+            {
+                var role = await _roleManager.FindByIdAsync(model.Id);
+
+                if (role is null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Role not found.",
+                    };
+                }
+
+                // Kiểm tra xem role đã bị xóa hay chưa
+                if (role.IsDeleted)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Cannot update a deleted role.",
+                    };
+                }
+
+                // Check if the new role name is already taken by another role
+                if (await _roleManager.Roles.AnyAsync(r => r.Name == model.RoleName && r.Id != model.Id))
+                {
+                    return new ResponseModel { Success = false, Message = "Role name already exists." };
+                }
+
+                var updateRole = _mapper.Map(model, role);
+
+                updateRole.UpdatedAt = _currentTime.GetCurrentTime();
+                updateRole.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                var result = await _roleManager.UpdateAsync(updateRole);
+
+                return new SuccessResponseModel<string>
+                {
+                    Success = result.Succeeded,
+                    Message = result.Succeeded ? "Role updated successfully." : "Failed to update role.",
+                    Data = result.Succeeded ? role.Id : null
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "An error occurred while updating the role. " + ex.Message
+                };
+            }
+        }
     }
 }

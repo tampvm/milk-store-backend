@@ -57,6 +57,11 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
                 .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
+
+            CreateMap<UpdateRoleDTO, Role>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoleName))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description)).ReverseMap();
         }
     }
 }
