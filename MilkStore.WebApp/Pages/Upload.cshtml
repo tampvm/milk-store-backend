@@ -1,0 +1,18 @@
+﻿@page
+@model MilkStore.WebApp.Pages.UploadModel
+@{
+}
+
+<h2>Upload Image</h2>
+
+<form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <input type="file" name="uploadFile" />
+    </div>
+    <button type="submit" class="btn btn-primary">Upload</button>
+</form>
+
+@if (!string.IsNullOrEmpty(Model.UploadResult))
+{
+    <p>@Model.UploadResult</p>
+}

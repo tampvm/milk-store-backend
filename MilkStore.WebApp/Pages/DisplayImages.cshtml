@@ -1,0 +1,22 @@
+﻿@page
+@model MilkStore.WebApp.Pages.DisplayImagesModel
+@{
+}
+<h2>Images</h2>
+
+@if (Model.Images.Any())
+{
+    <div class="image-gallery">
+        @foreach (var image in Model.Images)
+        {
+            <div class="image-item">
+                <img src="@image.ImageUrl" alt="@image.ImageUrl" style="width:200px; height:200px;" />
+                <p>@image.ImageUrl</p>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p>No images uploaded yet.</p>
+}
