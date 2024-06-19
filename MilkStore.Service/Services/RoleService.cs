@@ -34,6 +34,7 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
+        #region Role Management
         // Get all active roles
         public async Task<ResponseModel> GetActiveRolesAsync(int pageIndex, int pageSize)
         {
@@ -175,5 +176,45 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+
+        // Delete a role (soft delete)
+        public async Task<ResponseModel> DeleteRoleAsync(string roleId)
+        {
+            var role = await _roleManager.FindByIdAsync(roleId);
+
+            if (role is null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Role not found.",
+                };
+            }
+
+            // Kiểm tra xem role có phải là role mặc định không
+            if (role.IsDefault)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Cannot delete default role.",
+                    //Data = null
+                };
+            }
+
+            role.IsDeleted = true;
+            role.DeletedAt = _currentTime.GetCurrentTime();
+            role.DeletedBy = _claimsService.GetCurrentUserId().ToString();
+
+            var result = await _roleManager.UpdateAsync(role);
+
+            return new SuccessResponseModel<string>
+            {
+                Success = result.Succeeded,
+                Message = result.Succeeded ? "Role deleted successfully." : "Failed to delete role.",
+                Data = result.Succeeded ? role.Id : null
+            };
+        }
+        #endregion
     }
 }

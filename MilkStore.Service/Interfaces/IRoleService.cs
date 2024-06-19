@@ -13,5 +13,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> GetActiveRolesAsync(int pageIndex, int pageSize);
         Task<ResponseModel> CreateRoleAsync(CreateRoleDTO model);
         Task<ResponseModel> UpdateRoleAsync(UpdateRoleDTO model);
+        Task<ResponseModel> DeleteRoleAsync(string roleId);
     }
 }

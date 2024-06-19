@@ -15,6 +15,7 @@ namespace MilkStore.API.Controllers
             _roleService = roleService;
         }
 
+        #region Role Management
         [HttpGet]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetActiveRolesAsync(int pageIndex = 0, int pageSize = 10)
@@ -70,5 +71,24 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
+
+        [HttpDelete]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteRoleAsync(string roleId)
+        {
+            var response = await _roleService.DeleteRoleAsync(roleId);
+
+            if (response.Success)
+            {
+                // Vai trò đã được xóa thành công
+                return Ok(response);
+            }
+            else
+            {
+                // Xử lý lỗi nếu việc xóa vai trò không thành công
+                return BadRequest(response);
+            }
+        }
+        #endregion
     }
 }
