@@ -21,5 +21,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> ResetPasswordAsync(ResetPasswordDTO model); // Reset Password by custom logic
         //Task<ResponseModel> ForgotPasswordAsync(ResetPasswordDTO model); // Reset Password by ASP.NET Identity
         Task<ResponseModel> GoogleLoginAsync(GoogleLoginDTO model);
+        Task<ResponseModel> FacebookLoginAsync(FacebookLoginDTO model);
     }
 }

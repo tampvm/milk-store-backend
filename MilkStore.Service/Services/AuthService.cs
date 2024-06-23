@@ -30,6 +30,7 @@ namespace MilkStore.Service.Services
         private readonly ITokenService _tokenService;
         private readonly IAccountService _accountService;
         private readonly IGoogleSerive _googleSerive;
+        private readonly IFacebookService _facebookService;
 
         public AuthService(
             IUnitOfWork unitOfWork,
@@ -44,7 +45,8 @@ namespace MilkStore.Service.Services
             IEmailSender emailSender,
             IMemoryCache cache,
             IAccountService accountService,
-            IGoogleSerive googleSerive)
+            IGoogleSerive googleSerive,
+            IFacebookService facebookService)
             : base(unitOfWork, mapper, currentTime, claimsService, appConfiguration, smsSender, emailSender, cache)
         {
             _signInManager = signInManager;
@@ -52,6 +54,7 @@ namespace MilkStore.Service.Services
             _tokenService = tokenService;
             _accountService = accountService;
             _googleSerive = googleSerive;
+            _facebookService = facebookService;
         }
 
         #region Register
@@ -651,6 +654,32 @@ namespace MilkStore.Service.Services
                 PictureUrl = payload.PictureUrl,
                 ProviderId = payload.Sub,
                 Provider = "Google"
+            };
+
+            return await ProcessSocialLoginAsync(socialLoginDto);
+        }
+
+        // Facebook login
+        public async Task<ResponseModel> FacebookLoginAsync(FacebookLoginDTO model)
+        {
+            var userInfo = await _facebookService.GetUserInfoFromFacebookAsync(model.AccessToken);
+            if (userInfo == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Invalid Facebook access token."
+                };
+            }
+
+            var socialLoginDto = new SocialLoginDTO
+            {
+                Email = userInfo.Email,
+                FirstName = userInfo.FirstName,
+                LastName = userInfo.LastName,
+                PictureUrl = userInfo.Picture.Data.Url,
+                ProviderId = userInfo.Id,
+                Provider = "Facebook"
             };
 
             return await ProcessSocialLoginAsync(socialLoginDto);

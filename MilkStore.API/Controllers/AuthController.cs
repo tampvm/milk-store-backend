@@ -148,5 +148,16 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> FacebookLoginAsync(FacebookLoginDTO model)
+        {
+            var response = await _authService.FacebookLoginAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
