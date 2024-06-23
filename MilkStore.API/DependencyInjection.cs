@@ -101,10 +101,18 @@ namespace MilkStore.API
             services.AddScoped<IZaloService, ZaloService>();
             services.AddScoped<IEmailSender, EmailSender>();
             services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddScoped<IGoogleSerive, GoogleService>();
+            services.AddScoped<IFacebookService, FacebookService>();
 
             services.AddScoped<IAcccountRepository, AccountRepository>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IAccountService, AccountService>();
+
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IRoleService, RoleService>();
+
+            services.AddScoped<IImageRepository, ImageRepository>();
 
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 

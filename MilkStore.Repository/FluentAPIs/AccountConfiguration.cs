@@ -13,8 +13,8 @@ namespace MilkStore.Repository.FluentAPIs
 		public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<Account> builder)
 		{
 			builder.ToTable("Account");
-			builder.Property(x => x.FirstName).HasMaxLength(50).IsRequired();
-			builder.Property(x => x.LastName).HasMaxLength(50).IsRequired();
+			builder.Property(x => x.FirstName).HasMaxLength(50);
+			builder.Property(x => x.LastName).HasMaxLength(50);
 			builder.HasOne(x => x.Avatar)
 				.WithMany(x => x.AccountAvatars)
 				.HasForeignKey(x => x.AvatarId)
