@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
+using MilkStore.Service.Models.ViewModels.AuthViewModels;
 
 namespace MilkStore.API.Controllers
 {
@@ -130,6 +131,17 @@ namespace MilkStore.API.Controllers
         public async Task<IActionResult> ResetPasswordByPhoneNumberAsync(ResetPasswordDTO model)
         {
             var response = await _authService.ResetPasswordAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GoogleLoginAsync(GoogleLoginDTO model)
+        {
+            var response = await _authService.GoogleLoginAsync(model);
             if (response.Success)
             {
                 return Ok(response);

@@ -17,5 +17,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> RemoveRoleToUserAsync(UpdateUserRolesDTO model);
         Task<ResponseModel> GetUserRolesAsync(string userId);
         Task<ResponseModel> GetNotAssignedUserRolesAsync(string userId);
+        Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model);
     }
 }

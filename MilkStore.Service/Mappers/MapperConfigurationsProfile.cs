@@ -3,6 +3,7 @@ using MilkStore.Domain.Entities;
 using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
+using MilkStore.Service.Models.ViewModels.AuthViewModels;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,16 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
                 .ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.MapFrom(src => true))
-                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => false))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => GenderEnums.Unknown.ToString()))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => UserStatusEnums.Active.ToString()))
+                .ForMember(dest => dest.TotalPoints, opt => opt.MapFrom(src => 0))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false)).ReverseMap();
+
+            CreateMap<SocialLoginDTO, Account>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => GenderEnums.Unknown.ToString()))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => UserStatusEnums.Active.ToString()))
                 .ForMember(dest => dest.TotalPoints, opt => opt.MapFrom(src => 0))
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false)).ReverseMap();
@@ -36,7 +46,7 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
                 .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender ? "Female" : "Male"))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
                 .ForMember(dest => dest.LastLogin, opt => opt.MapFrom(src => src.LastLogin))
                 .ForMember(dest => dest.TotalPoints, opt => opt.MapFrom(src => src.TotalPoints))

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Common;
@@ -354,5 +355,56 @@ namespace MilkStore.Service.Services
             };
         }
         #endregion
+
+        public async Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model)
+        {
+            try
+            {
+                // Tìm người dùng dựa trên các tiêu chí tìm kiếm khác nhau
+                var user = await _unitOfWork.AcccountRepository.FindByAnyCriteriaAsync(
+                    model.Email, model.PhoneNumber, model.UserName, model.GoogleEmail, model.FacebookEmail
+                );
+
+                if (user == null)
+                {
+                    return new ResponseModel { Success = false, Message = "User not found." };
+                }
+
+                // Tạo một bản ghi mới cho hình ảnh avatar
+                var newAvatar = new Image
+                {
+                    ImageUrl = model.AvatarUrl,
+                    ThumbnailUrl = model.AvatarUrl,
+                    Type = ImageTypeEnums.Avatar.ToString(),
+                    CreatedBy = user.Id
+                };
+
+                await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+                await _unitOfWork.SaveChangeAsync();
+
+                // Cập nhật avatar cho user
+                user.AvatarId = newAvatar.Id;
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return new ResponseModel { Success = true, Message = "Avatar updated successfully." };
+                }
+                else
+                {
+                    return new ResponseModel { Success = false, Message = "Failed to update user avatar." };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating avatar.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
     }
 }

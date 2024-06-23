@@ -1,5 +1,6 @@
 ﻿using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
+using MilkStore.Service.Models.ViewModels.AuthViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> VerifyForgotPasswordCodeByPhoneNumberOrEmailAsync(VerifyForgotPasswordCodeDTO model);
         Task<ResponseModel> ResetPasswordAsync(ResetPasswordDTO model); // Reset Password by custom logic
         //Task<ResponseModel> ForgotPasswordAsync(ResetPasswordDTO model); // Reset Password by ASP.NET Identity
+        Task<ResponseModel> GoogleLoginAsync(GoogleLoginDTO model);
     }
 }

@@ -114,7 +114,13 @@ namespace MilkStore.Repository.Repositories
         public async Task AddAsync(TEntity entity)
         {
             entity.CreatedAt = _timeService.GetCurrentTime();
-            entity.CreatedBy = _claimsService.GetCurrentUserId().ToString();
+            var currentUserId = _claimsService.GetCurrentUserId();
+
+            // Check if ClaimService is available
+            if (currentUserId != Guid.Empty)
+            {
+                entity.CreatedBy = currentUserId.ToString();
+            }
 
             await _dbSet.AddAsync(entity);
         }

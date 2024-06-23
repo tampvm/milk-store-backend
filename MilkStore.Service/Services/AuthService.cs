@@ -9,6 +9,8 @@ using MilkStore.Service.Common;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
+using MilkStore.Service.Models.ViewModels.AuthViewModels;
+using MilkStore.Service.Utils;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -26,6 +28,8 @@ namespace MilkStore.Service.Services
         private readonly SignInManager<Account> _signInManager;
         private readonly UserManager<Account> _userManager;
         private readonly ITokenService _tokenService;
+        private readonly IAccountService _accountService;
+        private readonly IGoogleSerive _googleSerive;
 
         public AuthService(
             IUnitOfWork unitOfWork,
@@ -38,12 +42,16 @@ namespace MilkStore.Service.Services
             ITokenService tokenService,
             ISmsSender smsSender,
             IEmailSender emailSender,
-            IMemoryCache cache)
+            IMemoryCache cache,
+            IAccountService accountService,
+            IGoogleSerive googleSerive)
             : base(unitOfWork, mapper, currentTime, claimsService, appConfiguration, smsSender, emailSender, cache)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _tokenService = tokenService;
+            _accountService = accountService;
+            _googleSerive = googleSerive;
         }
 
         #region Register
@@ -600,5 +608,152 @@ namespace MilkStore.Service.Services
         //    };
         //}
         #endregion
+
+        #region Social Login
+        // Google login
+        public async Task<ResponseModel> GoogleLoginAsync(GoogleLoginDTO model)
+        {
+            GooglePayload payload;
+
+            if (model.IsCredential)
+            {
+                payload = await _googleSerive.VerifyGoogleTokenAsync(model.GoogleToken);
+            }
+            else
+            {
+                var tokenResponse = await _googleSerive.ExchangeAuthCodeForTokensAsync(model.GoogleToken);
+                if (tokenResponse == null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid Google auth code."
+                    };
+                }
+
+                payload = await _googleSerive.VerifyGoogleTokenAsync(tokenResponse.IdToken);
+            }
+
+            if (payload == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Invalid Google token."
+                };
+            }
+
+            var socialLoginDto = new SocialLoginDTO
+            {
+                Email = payload.Email,
+                FirstName = payload.FirstName,
+                LastName = payload.LastName,
+                PictureUrl = payload.PictureUrl,
+                ProviderId = payload.Sub,
+                Provider = "Google"
+            };
+
+            return await ProcessSocialLoginAsync(socialLoginDto);
+        }
+
+        // Process social login
+        private async Task<ResponseModel> ProcessSocialLoginAsync(SocialLoginDTO dto)
+        {
+            try
+            {
+                // Tìm hoặc tạo người dùng dựa trên GoogleEmail hoặc FacebookEmail
+                var user = await _unitOfWork.AcccountRepository.FindByAnyCriteriaAsync(null, null, null,
+                    dto.Provider == "Google" ? dto.Email : null,
+                    dto.Provider == "Facebook" ? dto.Email : null
+                );
+
+                if (user == null)
+                {
+                    user = _mapper.Map<Account>(dto);
+
+                    // Thiết lập các thuộc tính cho Google hoặc Facebook email
+                    if (dto.Provider == "Google")
+                    {
+                        user.GoogleEmail = dto.Email;
+                    }
+                    else if (dto.Provider == "Facebook")
+                    {
+                        user.FacebookEmail = dto.Email;
+                    }
+
+                    user.CreatedAt = _currentTime.GetCurrentTime();
+                    user.CreatedBy = user.Id;
+                    user.LastLogin = _currentTime.GetCurrentTime();
+
+                    var result = await _userManager.CreateAsync(user);
+
+                    if (!result.Succeeded)
+                    {
+                        return new ResponseModel
+                        {
+                            Success = false,
+                            Message = "Failed to create user."
+                        };
+                    }
+
+                    await _userManager.AddLoginAsync(user, new UserLoginInfo(dto.Provider, dto.ProviderId, dto.Provider));
+                    var role = RoleEnums.Customer.ToString(); // Ví dụ, mặc định đăng ký là Customer
+                    await _userManager.AddToRoleAsync(user, role);
+
+                    // Cập nhật avatar sau khi tạo người dùng
+                    var updateUserAvatarDto = new UpdateUserAvatarDTO
+                    {
+                        GoogleEmail = dto.Provider == "Google" ? dto.Email : null,
+                        FacebookEmail = dto.Provider == "Facebook" ? dto.Email : null,
+                        AvatarUrl = dto.PictureUrl
+                    };
+
+                    // Cập nhật ảnh đại diện
+                    await _accountService.UpdateUserAvatarAsync(updateUserAvatarDto);
+                }
+                else
+                {
+                    // Kiểm tra và thêm thông tin đăng nhập nếu chưa có
+                    var logins = await _userManager.GetLoginsAsync(user);
+                    if (logins.All(l => l.LoginProvider != dto.Provider))
+                    {
+                        await _userManager.AddLoginAsync(user, new UserLoginInfo(dto.Provider, dto.ProviderId, dto.Provider));
+                    }
+                }
+
+                // Đăng nhập người dùng
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                // Tạo JWT token hoặc phản hồi xác thực khác
+                var accessToken = GenerateJsonWebToken(user, out DateTime tokenExpiryTime);
+                var refreshToken = GenerateRefreshToken();
+
+                //user.CreatedBy = user.Id;
+                user.RefreshToken = refreshToken;
+                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_appConfiguration.JWT.RefreshTokenDurationInDays);
+
+                await _userManager.UpdateAsync(user);
+
+                return new AuthenticationResponseModel
+                {
+                    Success = true,
+                    Message = "Login successful.",
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    TokenExpiryTime = tokenExpiryTime
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "An error occurred while processing login."
+                };
+            }
+        }
+        #endregion
+
     }
 }
