@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Service.Common
 {
-    public class AuthenticationSettings
+    public class FacebookSettings
     {
-        public GoogleSettings Google { get; set; }
-        public FacebookSettings Facebook { get; set; }
+        public string AppId { get; set; }
+        public string AppSecret { get; set; }
     }
 }
