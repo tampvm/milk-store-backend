@@ -37,10 +37,10 @@ namespace MilkStore.Repository.Data
             {
                 var adminUser = new Account
                 {
-                    FirstName = "P",
-                    LastName = "T",
                     UserName = "admin",
                     Email = "admin@example.com",
+                    EmailConfirmed = true,
+                    Gender = GenderEnums.Unknown.ToString(),
                     Status = UserStatusEnums.Active.ToString(),
                     CreatedAt = DateTime.UtcNow.ToLocalTime(),
                     CreatedBy = "system"
@@ -57,10 +57,10 @@ namespace MilkStore.Repository.Data
             {
                 var staffUser = new Account
                 {
-                    FirstName = "P",
-                    LastName = "T",
                     UserName = "staff",
                     Email = "staff@example.com",
+                    EmailConfirmed = true,
+                    Gender = GenderEnums.Unknown.ToString(),
                     Status = UserStatusEnums.Active.ToString(),
                     CreatedAt = DateTime.UtcNow.ToLocalTime(),
                     CreatedBy = "system",
@@ -77,10 +77,10 @@ namespace MilkStore.Repository.Data
             {
                 var customerUser = new Account
                 {
-                    FirstName = "P",
-                    LastName = "T",
                     UserName = "customer",
                     Email = "customer@example.com",
+                    EmailConfirmed = true,
+                    Gender = GenderEnums.Unknown.ToString(),
                     Status = UserStatusEnums.Active.ToString(),
                     CreatedAt = DateTime.UtcNow.ToLocalTime(),
                     CreatedBy = "system",

@@ -6,10 +6,15 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Domain.Enums
 {
-    public enum GenderEnums
+    public enum ImageTypeEnums
     {
-        Unknown,
-        Male,
-        Female
+        Avatar,
+        Background,
+        Product,
+        Post,
+        Brand,
+        Voucher,
+        Category,
+        Store
     }
 }

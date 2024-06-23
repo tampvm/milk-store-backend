@@ -12,9 +12,11 @@ namespace MilkStore.Domain.Entities
     public class Account : IdentityUser, IBaseEntity
     {
         // Attributes
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
-        public bool Gender { get; set; } // false la nam, true la nu
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? GoogleEmail { get; set; }
+        public string? FacebookEmail { get; set; }
+        public string Gender { get; set; } // false la nam, true la nu
         public string Status { get; set; }
         public DateTime? LastLogin { get; set; }
         public string? RefreshToken { get; set; }
