@@ -8,8 +8,10 @@ namespace MilkStore.Service.Common
 {
     public class TwilioSettings
     {
-        public string AccountSid { get; set; }
-        public string AuthToken { get; set; }
+        public string AccountSid1 { get; set; }
+        public string AccountSid2 { get; set; }
+        public string AuthToken1 { get; set; }
+        public string AuthToken2 { get; set; }
         public string PhoneNumber { get; set; }
     }
 }

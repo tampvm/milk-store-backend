@@ -1,0 +1,18 @@
+﻿@page
+@model MilkStore.WebApp.Pages.GoogleLoginModel
+
+
+<h2>Login</h2>
+
+<div>
+    <form asp-page="./GoogleLogin" method="post">
+        <button type="submit" name="provider" value="Google">Login with Google</button>
+    </form>
+</div>
+
+@if (Model.Message != null)
+{
+    <h3>Response:</h3>
+    <p>@Model.Message</p>
+}
+  

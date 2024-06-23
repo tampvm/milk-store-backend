@@ -4,12 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MilkStore.Domain.Enums
+namespace MilkStore.Service.Common
 {
-    public enum GenderEnums
+    public class FacebookSettings
     {
-        Unknown,
-        Male,
-        Female
     }
 }

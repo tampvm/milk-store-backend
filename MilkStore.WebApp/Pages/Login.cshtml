@@ -4,6 +4,7 @@
     ViewData["Title"] = "Login";
 }
 
+
 <h1>Login</h1>
 
 <form method="post">
@@ -20,3 +21,14 @@
     </div>
     <button type="submit">Login</button>
 </form>
+
+@* @if (ViewData["UserInfo"] != null)
+{
+    <pre>@ViewData["UserInfo"]</pre>
+}
+else
+{
+    <p>No user information available.</p>
+} *@
+
+<a asp-page-handler="GoogleLogin">Login with Google</a>

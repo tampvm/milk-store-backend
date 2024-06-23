@@ -14,5 +14,6 @@ namespace MilkStore.Service.Common
         public ZaloSettings Zalo { get; set; }
         public EmailSettings Email { get; set; }
         public FirebaseSettings Firebase { get; set; }
+        public AuthenticationSettings Authentication { get; set; }
     }
 }

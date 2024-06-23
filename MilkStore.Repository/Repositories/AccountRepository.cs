@@ -28,6 +28,27 @@ namespace MilkStore.Repository.Repositories
             return user;
         }
 
+        public async Task<Account> GetByGoogleEmailAsync(string googleEmail)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(u => u.GoogleEmail == googleEmail);
+        }
+
+        public async Task<Account> GetByFacebookEmailAsync(string facebookEmail)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(u => u.FacebookEmail == facebookEmail);
+        }
+
+        public async Task<Account> FindByAnyCriteriaAsync(string email, string phoneNumber, string userName, string googleEmail, string facebookEmail)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(a =>
+                (!string.IsNullOrEmpty(email) && a.Email == email) ||
+                (!string.IsNullOrEmpty(phoneNumber) && a.PhoneNumber == phoneNumber) ||
+                (!string.IsNullOrEmpty(userName) && a.UserName == userName) ||
+                (!string.IsNullOrEmpty(googleEmail) && a.GoogleEmail == googleEmail) ||
+                (!string.IsNullOrEmpty(facebookEmail) && a.FacebookEmail == facebookEmail)
+            );
+        }
+
         //public Task<bool> CheckUserNameExited(string username) => _context.Accounts.AnyAsync(u => u.Username == username);
 
         //public async Task<Account> GetUserByUserNameAndPasswordHash(string username, string passwordHash)

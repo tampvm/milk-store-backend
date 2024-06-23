@@ -14,5 +14,8 @@ namespace MilkStore.Repository.Interfaces
         //Task<bool> CheckUserNameExited(string username);
 
         Task<Account> FindByPhoneNumberAsync(string phoneNumber);
+        Task<Account> GetByGoogleEmailAsync(string googleEmail);
+        Task<Account> GetByFacebookEmailAsync(string facebookEmail);
+        Task<Account> FindByAnyCriteriaAsync(string email, string phoneNumber, string userName, string googleEmail, string facebookEmail);
     }
 }

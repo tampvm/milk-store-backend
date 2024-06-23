@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using MilkStore.API;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
 using MilkStore.Service.Common;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +35,23 @@ builder.Services.AddSingleton(configuration);
 //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
 //     };
 // });
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    var googleAuthSection = builder.Configuration.GetSection("Authentication:Google");
+    options.ClientId = googleAuthSection["ClientId"];
+    options.ClientSecret = googleAuthSection["ClientSecret"];
+    options.CallbackPath = "/api/auth/google-callback";
+    options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+    options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+    options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+    options.ClaimActions.MapJsonKey("image", "picture"); // Map image to 'picture' claim
+});
 
 var app = builder.Build();
 
