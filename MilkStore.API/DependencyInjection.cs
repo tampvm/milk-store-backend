@@ -103,6 +103,7 @@ namespace MilkStore.API
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IGoogleSerive, GoogleService>();
+            services.AddScoped<IFacebookService, FacebookService>();
 
             services.AddScoped<IAcccountRepository, AccountRepository>();
             services.AddScoped<IAuthService, AuthService>();
