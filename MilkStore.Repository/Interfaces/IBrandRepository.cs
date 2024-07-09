@@ -9,6 +9,6 @@ namespace MilkStore.Repository.Interfaces
 {
 	public interface IBrandRepository : IGenericRepository<Brand>
 	{
-
+		Task<Brand> FindByNameAsync(string name);
 	}
 }

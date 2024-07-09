@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using MilkStore.Domain.Entities;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
@@ -29,7 +30,6 @@ namespace MilkStore.Service.Services
 		public async Task<ResponseModel> GetBrandsAsync(int pageIndex, int pageSize)
 		{
 			var brands = await _unitOfWork.BrandRepository.GetAsync(
-				filter: r => !r.IsDeleted,
 				pageIndex: pageIndex,
 				pageSize: pageSize
 				);
@@ -41,6 +41,25 @@ namespace MilkStore.Service.Services
 				Success = true,
 				Message = "Brands retrieved successfully.",
 				Data = brandDtos
+			};
+		}
+
+		// Create a new brand
+		public async Task<ResponseModel> CreateBrandAsync(CreateBrandDTO model)
+		{
+			var existingBrand = await _unitOfWork.BrandRepository.FindByNameAsync(model.Name);
+
+			if (existingBrand == null)
+			{
+				var mapper = _mapper.Map<Brand>(model);
+				await _unitOfWork.BrandRepository.AddAsync(mapper);
+				await _unitOfWork.SaveChangeAsync();
+			}
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Brand create successfully."
 			};
 		}
 

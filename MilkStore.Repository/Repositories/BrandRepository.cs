@@ -13,9 +13,15 @@ namespace MilkStore.Repository.Repositories
 	{
 		private readonly AppDbContext _context;
 
-		public BrandRepository (AppDbContext context, ICurrentTime timeService, IClaimsService claimsService) : base(context, timeService, claimsService)
+		public BrandRepository(AppDbContext context, ICurrentTime timeService, IClaimsService claimsService) : base(context, timeService, claimsService)
 		{
 			_context = context;
+		}
+
+		public async Task<Brand> FindByNameAsync(string name)
+		{
+			var brand = _context.Brands.FirstOrDefault(b => b.Name == name);
+			return brand;
 		}
 	}
 }
