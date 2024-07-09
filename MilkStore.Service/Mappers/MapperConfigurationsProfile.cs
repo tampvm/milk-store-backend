@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Routing.Constraints;
 using MilkStore.Domain.Entities;
 using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using MilkStore.Service.Models.ViewModels.AuthViewModels;
+using MilkStore.Service.Models.ViewModels.BrandViewModels;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
 using System;
 using System.Collections.Generic;
@@ -72,6 +74,19 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoleName))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description)).ReverseMap();
-        }
+
+
+            CreateMap<Brand, ViewListBrandDTO>()
+                .ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Name))
+                .ForMember(dest => dest.BrandOrigin, otp => otp.MapFrom(src => src.BrandOrigin))
+                .ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
+				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active))
+				.ForMember(dest => dest.ImageId, otp => otp.MapFrom(src => src.ImageId))
+				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+				.ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+				.ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
+				.ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
+		}
     }
 }

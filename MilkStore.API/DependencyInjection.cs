@@ -114,6 +114,9 @@ namespace MilkStore.API
 
             services.AddScoped<IImageRepository, ImageRepository>();
 
+            services.AddScoped<IBrandRepository, BrandRepository>();
+            services.AddScoped<IBrandService, BrandService>();
+
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
             services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);

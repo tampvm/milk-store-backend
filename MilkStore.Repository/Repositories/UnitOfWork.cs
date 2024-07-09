@@ -14,18 +14,26 @@ namespace MilkStore.Repository.Repositories
         private readonly IAcccountRepository _accountRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IImageRepository _imageRepository;
+        private readonly IBrandRepository _brandRepository;
 
-        public UnitOfWork(AppDbContext dbContext, IAcccountRepository accountRepository, IRoleRepository roleRepository, IImageRepository imageRepository)
+        public UnitOfWork(AppDbContext dbContext, 
+            IAcccountRepository accountRepository, 
+            IRoleRepository roleRepository, 
+            IImageRepository imageRepository,
+            IBrandRepository brandRepository)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;
             _imageRepository = imageRepository;
+            _brandRepository = brandRepository;
         }
 
         public IAcccountRepository AcccountRepository => _accountRepository;
         public IRoleRepository RoleRepository => _roleRepository;
         public IImageRepository ImageRepository => _imageRepository;
+
+        public IBrandRepository BrandRepository => _brandRepository;
 
         public async Task<int> SaveChangeAsync()
         {
