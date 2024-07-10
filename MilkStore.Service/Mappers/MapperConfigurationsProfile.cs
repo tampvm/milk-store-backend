@@ -124,6 +124,19 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
 				.ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
 
+			CreateMap<CreateVoucherDTO, Voucher>()
+				.ForMember(dest => dest.Code, otp => otp.MapFrom(src => src.Code))
+				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
+				.ForMember(dest => dest.DiscountType, otp => otp.MapFrom(src => src.DiscountType))
+				.ForMember(dest => dest.DiscountValue, otp => otp.MapFrom(src => src.DiscountValue))
+				.ForMember(dest => dest.StartDate, otp => otp.MapFrom(src => src.StartDate))
+				.ForMember(dest => dest.EndDate, otp => otp.MapFrom(src => src.EndDate))
+				.ForMember(dest => dest.UsageLimit, otp => otp.MapFrom(src => src.UsageLimit))
+				.ForMember(dest => dest.MiniumOrderValue, otp => otp.MapFrom(src => src.MiniumOrderValue))
+				.ForMember(dest => dest.Status, otp => otp.MapFrom(src => src.Status)).ReverseMap();
+
+
+
 			#endregion
 		}
 	}

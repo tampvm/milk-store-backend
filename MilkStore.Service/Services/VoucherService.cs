@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MilkStore.Domain.Entities;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
@@ -39,6 +40,21 @@ namespace MilkStore.Service.Services
 				Success = true,
 				Message = "Vouchers retrieved successfully.",
 				Data = voucherDtos
+			};
+		}
+
+		// Create a new voucher
+		public async Task<ResponseModel> CreateVoucherAsync(CreateVoucherDTO model)
+		{
+			var voucher = _mapper.Map<Voucher>(model);
+
+			await _unitOfWork.VoucherRepository.AddAsync(voucher);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Voucher created successfully."
 			};
 		}
 

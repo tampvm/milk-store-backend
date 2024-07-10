@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
+using MilkStore.Service.Models.ViewModels.VoucherViewModels;
 
 namespace MilkStore.API.Controllers
 {
@@ -21,6 +22,29 @@ namespace MilkStore.API.Controllers
 			var vouchers = await _voucherService.GetVouchersAsync(pageIndex, pageSize);
 			return Ok(vouchers);
 		}
+
+		// Create a new voucher
+		[HttpPost]
+		public async Task<IActionResult> CreateVoucherAsync(CreateVoucherDTO model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var result = await _voucherService.CreateVoucherAsync(model);
+
+			if (result.Success)
+			{
+				return Ok(result);
+			}
+			else
+			{
+				return BadRequest(result);
+			}
+		}
+
+
 		#endregion
 	}
 }

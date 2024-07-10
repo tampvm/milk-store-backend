@@ -1,4 +1,5 @@
 ﻿using MilkStore.Service.Models.ResponseModels;
+using MilkStore.Service.Models.ViewModels.VoucherViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,5 +11,6 @@ namespace MilkStore.Service.Interfaces
 	public interface IVoucherService
 	{
 		Task<ResponseModel> GetVouchersAsync(int pageIndex, int pageSize);
+		Task<ResponseModel> CreateVoucherAsync(CreateVoucherDTO model);
 	}
 }
