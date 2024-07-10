@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MilkStore.Domain.Entities;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
@@ -47,7 +48,10 @@ namespace MilkStore.Service.Services
 		{
 			var followBrands = await _unitOfWork.FollowBrandRepository
 								.GetFollowBrandByAccountIdAsync(accountId, pageIndex, pageSize);
-			var followBrandResponse = _mapper.Map<IEnumerable<Pagination<ViewListFollowBrandDTO>>>(followBrands);
+
+			var total = followBrands.Count;
+
+			var followBrandDtos = _mapper.Map<List<Pagination<ViewListFollowBrandDTO>>>(followBrands);
 
 			return new SuccessResponseModel<object>
 			{
@@ -55,10 +59,37 @@ namespace MilkStore.Service.Services
 				Message = "Get all FollowBrand by AccountId successfully",
 				Data = new
 				{
-					FollowBrands = followBrandResponse,
-					Total = followBrands.Count()
+					FollowBrands = followBrandDtos,
+					Total = total
 				}
 			};
+		}
+
+		// User follows brand
+		public async Task<ResponseModel> UserFollowsBrand(UserFollowsBrandDTO model)
+		{
+			var existingFollowBrand = await _unitOfWork.FollowBrandRepository.CheckUserFollowsBrandAsync(model.AccountId, model.BrandId);
+
+			if (!existingFollowBrand)
+			{
+				var followBrand = _mapper.Map<FollowBrand>(model);
+				await _unitOfWork.FollowBrandRepository.AddAsync(followBrand);
+				await _unitOfWork.SaveChangeAsync();
+
+				return new SuccessResponseModel<object>
+				{
+					Success = true,
+					Message = "Follow a brand successfully."
+				};
+			}
+			else
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "You have already followed this brand."
+				};
+			}
 		}
 	}
 }

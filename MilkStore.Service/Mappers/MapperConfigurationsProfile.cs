@@ -116,6 +116,12 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
 				.ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId)).ReverseMap();
 
+			CreateMap<UserFollowsBrandDTO, FollowBrand>()
+				.ForMember(dest => dest.IsFollow, opt => opt.MapFrom(src => src.IsFollow))
+				.ForMember(dest => dest.FollowedAt, opt => opt.MapFrom(src => src.FollowedAt))
+				.ForMember(dest => dest.UnfollowedAt, opt => opt.MapFrom(src => src.UnfollowedAt))
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId)).ReverseMap();
 
 			#endregion
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
+using MilkStore.Service.Models.ViewModels.FollowBrandViewModels;
 
 namespace MilkStore.API.Controllers
 {
@@ -27,6 +28,27 @@ namespace MilkStore.API.Controllers
 		{
 			var response = await _followBrandService.GetFollowBrandByAccountIdAsync(accountId, pageIndex, pageSize);
 			return Ok(response);
+		}
+
+		// User follows brand
+		[HttpPost]
+		public async Task<IActionResult> UserFollowsBrand(UserFollowsBrandDTO model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var response = await _followBrandService.UserFollowsBrand(model);
+
+			if (response.Success)
+			{
+				return Ok(response);
+			}
+			else
+			{
+				return BadRequest(response);
+			}
 		}
 	}
 }

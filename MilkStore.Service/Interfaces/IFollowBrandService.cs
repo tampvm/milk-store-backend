@@ -1,4 +1,5 @@
 ﻿using MilkStore.Service.Models.ResponseModels;
+using MilkStore.Service.Models.ViewModels.FollowBrandViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace MilkStore.Service.Interfaces
 	{
 		Task<ResponseModel> GetFollowBrandByBrandIdAsync(int brandId, int pageIndex, int pageSize);
 		Task<ResponseModel> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize);
+		Task<ResponseModel> UserFollowsBrand(UserFollowsBrandDTO model);
 	}
 }

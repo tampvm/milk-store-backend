@@ -31,15 +31,20 @@ namespace MilkStore.Repository.Repositories
 		}
 
 		// Get all FollowBrand by AccountId
-		public async Task<IEnumerable<FollowBrand>> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize)
+		public async Task<List<FollowBrand>> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize)
 		{
-			var followBrands = await GetAsync(
-								filter: x => x.AccountId == accountId,
-								pageIndex: pageIndex,
-								pageSize: pageSize
+			var followBrands = _context.FollowBrands.Where(p => p.AccountId == accountId).Skip(pageIndex * pageSize).Take(pageSize).ToList();
+			return followBrands;
+		}
+
+		// Check if user follows brand
+		public async Task<bool> CheckUserFollowsBrandAsync(string accountId, int brandId)
+		{
+			var followBrand = await GetAsync(
+								filter: x => x.AccountId == accountId && x.BrandId == brandId
 								);
 
-			return followBrands.Items;
+			return followBrand.Items.Any();
 		}
 	}
 }
