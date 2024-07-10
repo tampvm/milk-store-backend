@@ -96,6 +96,30 @@ namespace MilkStore.Service.Services
 			};
 		}
 
+		// Delete a brand
+		public async Task<ResponseModel> DeleteBrandAsync(int id)
+		{
+			var brand = await _unitOfWork.BrandRepository.GetByIdAsync(id);
+
+			if (brand == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Brand not found."
+				};
+			}
+
+			brand.IsDeleted = true;
+			_unitOfWork.BrandRepository.Update(brand);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Brand deleted successfully."
+			};
+		}
 		#endregion
 	}
 }

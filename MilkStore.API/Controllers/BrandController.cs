@@ -16,6 +16,7 @@ namespace MilkStore.API.Controllers
 		}
 
 		#region Brand management
+		// Get all brands
 		[HttpGet]
 		public async Task<IActionResult> GetBrandsAsync(int pageIndex = 0, int pageSize = 10)
 		{
@@ -23,6 +24,7 @@ namespace MilkStore.API.Controllers
 			return Ok(brands);
 		}
 
+		// Create a new brand
 		[HttpPost]
 		public async Task<IActionResult> CreateBrandAsync(CreateBrandDTO model)
 		{
@@ -43,6 +45,7 @@ namespace MilkStore.API.Controllers
 			}
 		}
 
+		// Update a brand
 		[HttpPost]
 		public async Task<IActionResult> UpdateBrandAsync(UpdateBrandDTO model)
 		{
@@ -58,6 +61,21 @@ namespace MilkStore.API.Controllers
 			}
 		}
 
+		// Delete a brand
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteBrandAsync(int id)
+		{
+			var response = await _brandService.DeleteBrandAsync(id);
+
+			if (response.Success)
+			{
+				return Ok(response);
+			}
+			else
+			{
+				return BadRequest(response);
+			}
+		}
 		#endregion
 	}
 }
