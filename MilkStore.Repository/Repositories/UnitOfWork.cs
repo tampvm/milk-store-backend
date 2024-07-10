@@ -16,13 +16,15 @@ namespace MilkStore.Repository.Repositories
         private readonly IImageRepository _imageRepository;
         private readonly IBrandRepository _brandRepository;
         private readonly IVoucherRepository _voucherRepository;
+        private readonly IPointRepository _pointRepository;
 
 		public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
             IRoleRepository roleRepository, 
             IImageRepository imageRepository,
             IBrandRepository brandRepository,
-            IVoucherRepository voucherRepository)
+            IVoucherRepository voucherRepository,
+            IPointRepository pointRepository)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
@@ -30,6 +32,7 @@ namespace MilkStore.Repository.Repositories
             _imageRepository = imageRepository;
             _brandRepository = brandRepository;
 			_voucherRepository = voucherRepository;
+			_pointRepository = pointRepository;
 		}
 
         public IAcccountRepository AcccountRepository => _accountRepository;
@@ -38,6 +41,7 @@ namespace MilkStore.Repository.Repositories
 
         public IBrandRepository BrandRepository => _brandRepository;
         public IVoucherRepository VoucherRepository => _voucherRepository;
+		public IPointRepository PointRepository => _pointRepository;
 
 		public async Task<int> SaveChangeAsync()
         {

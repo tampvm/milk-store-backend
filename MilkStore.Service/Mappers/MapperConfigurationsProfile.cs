@@ -6,6 +6,7 @@ using MilkStore.Repository.Common;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using MilkStore.Service.Models.ViewModels.AuthViewModels;
 using MilkStore.Service.Models.ViewModels.BrandViewModels;
+using MilkStore.Service.Models.ViewModels.PointViewModels;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
 using MilkStore.Service.Models.ViewModels.VoucherViewModels;
 using System;
@@ -147,6 +148,16 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.UsedCount, otp => otp.MapFrom(src => src.UsedCount))
 				.ForMember(dest => dest.MiniumOrderValue, otp => otp.MapFrom(src => src.MiniumOrderValue))
 				.ForMember(dest => dest.Status, otp => otp.MapFrom(src => src.Status)).ReverseMap();
+
+			#endregion
+
+			#region Point
+			CreateMap<Point, ViewListPointDTO>()
+				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
+				.ForMember(dest => dest.Points, otp => otp.MapFrom(src => src.Points))
+				.ForMember(dest => dest.TransactionType, otp => otp.MapFrom(src => src.TransactionType))
+				.ForMember(dest => dest.AccountId, otp => otp.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.OrderId, otp => otp.MapFrom(src => src.OrderId)).ReverseMap();
 
 			#endregion
 		}
