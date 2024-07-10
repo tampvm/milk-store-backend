@@ -54,15 +54,47 @@ namespace MilkStore.Service.Services
 				var mapper = _mapper.Map<Brand>(model);
 				await _unitOfWork.BrandRepository.AddAsync(mapper);
 				await _unitOfWork.SaveChangeAsync();
+
+				return new SuccessResponseModel<object>
+				{
+					Success = true,
+					Message = "Brand create successfully."
+				};
 			}
+			else
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Brand already exists."
+				};
+			}
+		}
+
+		// Update a brand
+		public async Task<ResponseModel> UpdateBrandAsync(UpdateBrandDTO model)
+		{
+			var brand = await _unitOfWork.BrandRepository.GetByIdAsync(model.Id);
+
+			if (brand == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Brand not found."
+				};
+			}
+
+			_mapper.Map(model, brand);
+			_unitOfWork.BrandRepository.Update(brand);
+			await _unitOfWork.SaveChangeAsync();
 
 			return new SuccessResponseModel<object>
 			{
 				Success = true,
-				Message = "Brand create successfully."
+				Message = "Brand updated successfully."
 			};
 		}
-
 
 		#endregion
 	}

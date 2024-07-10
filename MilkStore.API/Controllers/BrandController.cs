@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
+using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.BrandViewModels;
 
 namespace MilkStore.API.Controllers
@@ -31,7 +32,7 @@ namespace MilkStore.API.Controllers
 			}
 
 			var response = await _brandService.CreateBrandAsync(model);
-			
+
 			if (response.Success)
 			{
 				return Ok(response);
@@ -42,6 +43,20 @@ namespace MilkStore.API.Controllers
 			}
 		}
 
+		[HttpPost]
+		public async Task<IActionResult> UpdateBrandAsync(UpdateBrandDTO model)
+		{
+			var response = await _brandService.UpdateBrandAsync(model);
+
+			if (response.Success)
+			{
+				return Ok(response);
+			}
+			else
+			{
+				return BadRequest(response);
+			}
+		}
 
 		#endregion
 	}
