@@ -15,7 +15,8 @@ namespace MilkStore.Repository.Repositories
         private readonly IRoleRepository _roleRepository;
         private readonly IImageRepository _imageRepository;
         private readonly IBrandRepository _brandRepository;
-        private readonly IVoucherRepository _voucherRepository;
+        private readonly IFollowBrandRepository _followBrandRepository;
+		private readonly IVoucherRepository _voucherRepository;
         private readonly IPointRepository _pointRepository;
 
 		public UnitOfWork(AppDbContext dbContext, 
@@ -23,7 +24,8 @@ namespace MilkStore.Repository.Repositories
             IRoleRepository roleRepository, 
             IImageRepository imageRepository,
             IBrandRepository brandRepository,
-            IVoucherRepository voucherRepository,
+			IFollowBrandRepository followBrandRepository,
+			IVoucherRepository voucherRepository,
             IPointRepository pointRepository)
         {
             _dbContext = dbContext;
@@ -31,6 +33,7 @@ namespace MilkStore.Repository.Repositories
             _roleRepository = roleRepository;
             _imageRepository = imageRepository;
             _brandRepository = brandRepository;
+			_followBrandRepository = followBrandRepository;
 			_voucherRepository = voucherRepository;
 			_pointRepository = pointRepository;
 		}
@@ -40,7 +43,8 @@ namespace MilkStore.Repository.Repositories
         public IImageRepository ImageRepository => _imageRepository;
 
         public IBrandRepository BrandRepository => _brandRepository;
-        public IVoucherRepository VoucherRepository => _voucherRepository;
+		public IFollowBrandRepository FollowBrandRepository => _followBrandRepository;
+		public IVoucherRepository VoucherRepository => _voucherRepository;
 		public IPointRepository PointRepository => _pointRepository;
 
 		public async Task<int> SaveChangeAsync()

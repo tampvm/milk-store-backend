@@ -6,6 +6,7 @@ using MilkStore.Repository.Common;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using MilkStore.Service.Models.ViewModels.AuthViewModels;
 using MilkStore.Service.Models.ViewModels.BrandViewModels;
+using MilkStore.Service.Models.ViewModels.FollowBrandViewModels;
 using MilkStore.Service.Models.ViewModels.PointViewModels;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
 using MilkStore.Service.Models.ViewModels.VoucherViewModels;
@@ -104,6 +105,18 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
 				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active))
 				.ForMember(dest => dest.ImageId, otp => otp.MapFrom(src => src.ImageId)).ReverseMap();
+			#endregion
+
+			#region FollowBrand
+			CreateMap<FollowBrand, ViewListFollowBrandDTO>()
+				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+				.ForMember(dest => dest.IsFollow, opt => opt.MapFrom(src => src.IsFollow))
+				.ForMember(dest => dest.FollowedAt, opt => opt.MapFrom(src => src.FollowedAt))
+				.ForMember(dest => dest.UnfollowedAt, opt => opt.MapFrom(src => src.UnfollowedAt))
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId)).ReverseMap();
+
+
 			#endregion
 
 			#region Voucher
