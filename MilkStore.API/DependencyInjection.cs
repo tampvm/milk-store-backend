@@ -122,6 +122,10 @@ namespace MilkStore.API
 			services.AddScoped<IVoucherRepository, VoucherRepository>();
 			services.AddScoped<IVoucherService, VoucherService>();
 
+			// Point
+			services.AddScoped<IPointRepository, PointRepository>();
+			services.AddScoped<IPointService, PointService>();
+
 			services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
 			services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
