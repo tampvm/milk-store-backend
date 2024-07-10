@@ -10,5 +10,6 @@ namespace MilkStore.Repository.Interfaces
 	public interface IFollowBrandRepository : IGenericRepository<FollowBrand>
 	{
 		Task<IEnumerable<FollowBrand>> GetFollowBrandByBrandIdAsync(int brandId, int pageIndex, int pageSize);
+		Task<IEnumerable<FollowBrand>> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize);
 	}
 }

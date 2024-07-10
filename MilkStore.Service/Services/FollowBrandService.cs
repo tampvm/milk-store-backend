@@ -41,5 +41,24 @@ namespace MilkStore.Service.Services
 				}
 			};
 		}
+
+		// Get all FollowBrand by AccountId
+		public async Task<ResponseModel> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize)
+		{
+			var followBrands = await _unitOfWork.FollowBrandRepository
+								.GetFollowBrandByAccountIdAsync(accountId, pageIndex, pageSize);
+			var followBrandResponse = _mapper.Map<IEnumerable<Pagination<ViewListFollowBrandDTO>>>(followBrands);
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Get all FollowBrand by AccountId successfully",
+				Data = new
+				{
+					FollowBrands = followBrandResponse,
+					Total = followBrands.Count()
+				}
+			};
+		}
 	}
 }

@@ -10,5 +10,6 @@ namespace MilkStore.Service.Interfaces
 	public interface IFollowBrandService
 	{
 		Task<ResponseModel> GetFollowBrandByBrandIdAsync(int brandId, int pageIndex, int pageSize);
+		Task<ResponseModel> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize);
 	}
 }

@@ -29,5 +29,17 @@ namespace MilkStore.Repository.Repositories
 
 			return followBrands.Items;
 		}
+
+		// Get all FollowBrand by AccountId
+		public async Task<IEnumerable<FollowBrand>> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize)
+		{
+			var followBrands = await GetAsync(
+								filter: x => x.AccountId == accountId,
+								pageIndex: pageIndex,
+								pageSize: pageSize
+								);
+
+			return followBrands.Items;
+		}
 	}
 }
