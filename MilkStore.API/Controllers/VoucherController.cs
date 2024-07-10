@@ -44,6 +44,26 @@ namespace MilkStore.API.Controllers
 			}
 		}
 
+		// Update a voucher
+		[HttpPut]
+		public async Task<IActionResult> UpdateVoucherAsync(UpdateVoucherDTO model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var result = await _voucherService.UpdateVoucherAsync(model);
+
+			if (result.Success)
+			{
+				return Ok(result);
+			}
+			else
+			{
+				return BadRequest(result);
+			}
+		}
 
 		#endregion
 	}
