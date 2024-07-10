@@ -12,6 +12,7 @@ namespace MilkStore.Repository.Interfaces
 		IRoleRepository RoleRepository { get; }
 		IImageRepository ImageRepository { get; }
 		IBrandRepository BrandRepository { get; }
+		IVoucherRepository VoucherRepository { get; }
 		Task<int> SaveChangeAsync();
 	}
 }

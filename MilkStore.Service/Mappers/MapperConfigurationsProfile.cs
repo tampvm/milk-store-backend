@@ -7,6 +7,7 @@ using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using MilkStore.Service.Models.ViewModels.AuthViewModels;
 using MilkStore.Service.Models.ViewModels.BrandViewModels;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
+using MilkStore.Service.Models.ViewModels.VoucherViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,6 +103,51 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
 				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active))
 				.ForMember(dest => dest.ImageId, otp => otp.MapFrom(src => src.ImageId)).ReverseMap();
+			#endregion
+
+			#region Voucher
+			CreateMap<Voucher, ViewListVoucherDTO>()
+				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
+				.ForMember(dest => dest.Code, otp => otp.MapFrom(src => src.Code))
+				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
+				.ForMember(dest => dest.DiscountType, otp => otp.MapFrom(src => src.DiscountType))
+				.ForMember(dest => dest.DiscountValue, otp => otp.MapFrom(src => src.DiscountValue))
+				.ForMember(dest => dest.StartDate, otp => otp.MapFrom(src => src.StartDate))
+				.ForMember(dest => dest.EndDate, otp => otp.MapFrom(src => src.EndDate))
+				.ForMember(dest => dest.UsageLimit, otp => otp.MapFrom(src => src.UsageLimit))
+				.ForMember(dest => dest.UsedCount, otp => otp.MapFrom(src => src.UsedCount))
+				.ForMember(dest => dest.MiniumOrderValue, otp => otp.MapFrom(src => src.MiniumOrderValue))
+				.ForMember(dest => dest.Status, otp => otp.MapFrom(src => src.Status))
+
+				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+				.ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+				.ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
+				.ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
+
+			CreateMap<CreateVoucherDTO, Voucher>()
+				.ForMember(dest => dest.Code, otp => otp.MapFrom(src => src.Code))
+				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
+				.ForMember(dest => dest.DiscountType, otp => otp.MapFrom(src => src.DiscountType))
+				.ForMember(dest => dest.DiscountValue, otp => otp.MapFrom(src => src.DiscountValue))
+				.ForMember(dest => dest.StartDate, otp => otp.MapFrom(src => src.StartDate))
+				.ForMember(dest => dest.EndDate, otp => otp.MapFrom(src => src.EndDate))
+				.ForMember(dest => dest.UsageLimit, otp => otp.MapFrom(src => src.UsageLimit))
+				.ForMember(dest => dest.MiniumOrderValue, otp => otp.MapFrom(src => src.MiniumOrderValue))
+				.ForMember(dest => dest.Status, otp => otp.MapFrom(src => src.Status)).ReverseMap();
+
+			CreateMap<UpdateVoucherDTO, Voucher>()
+				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
+				.ForMember(dest => dest.Code, otp => otp.MapFrom(src => src.Code))
+				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
+				.ForMember(dest => dest.DiscountType, otp => otp.MapFrom(src => src.DiscountType))
+				.ForMember(dest => dest.DiscountValue, otp => otp.MapFrom(src => src.DiscountValue))
+				.ForMember(dest => dest.StartDate, otp => otp.MapFrom(src => src.StartDate))
+				.ForMember(dest => dest.EndDate, otp => otp.MapFrom(src => src.EndDate))
+				.ForMember(dest => dest.UsageLimit, otp => otp.MapFrom(src => src.UsageLimit))
+				.ForMember(dest => dest.UsedCount, otp => otp.MapFrom(src => src.UsedCount))
+				.ForMember(dest => dest.MiniumOrderValue, otp => otp.MapFrom(src => src.MiniumOrderValue))
+				.ForMember(dest => dest.Status, otp => otp.MapFrom(src => src.Status)).ReverseMap();
+
 			#endregion
 		}
 	}
