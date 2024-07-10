@@ -65,6 +65,21 @@ namespace MilkStore.API.Controllers
 			}
 		}
 
+		// Delete a voucher
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteVoucherAsync(int id)
+		{
+			var result = await _voucherService.DeleteVoucherAsync(id);
+
+			if (result.Success)
+			{
+				return Ok(result);
+			}
+			else
+			{
+				return BadRequest(result);
+			}
+		}
 		#endregion
 	}
 }

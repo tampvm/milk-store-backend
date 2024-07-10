@@ -13,5 +13,6 @@ namespace MilkStore.Service.Interfaces
 		Task<ResponseModel> GetVouchersAsync(int pageIndex, int pageSize);
 		Task<ResponseModel> CreateVoucherAsync(CreateVoucherDTO model);
 		Task<ResponseModel> UpdateVoucherAsync(UpdateVoucherDTO model);
+		Task<ResponseModel> DeleteVoucherAsync(int id);
 	}
 }

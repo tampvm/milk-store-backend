@@ -84,6 +84,31 @@ namespace MilkStore.Service.Services
 			};
 		}
 
+		// Delete a voucher
+		public async Task<ResponseModel> DeleteVoucherAsync(int id)
+		{
+			var voucher = await _unitOfWork.VoucherRepository.GetByIdAsync(id);
+
+			if (voucher == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Voucher not found."
+				};
+			}
+
+			voucher.IsDeleted = true;
+			_unitOfWork.VoucherRepository.Update(voucher);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Voucher deleted successfully."
+			};
+		}
+
 		#endregion
 	}
 }
