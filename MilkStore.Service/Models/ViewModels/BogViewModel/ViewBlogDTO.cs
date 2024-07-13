@@ -17,7 +17,7 @@ namespace MilkStore.Service.Models.ViewModels.BogViewModel
         public string createBy { get; set; } 
         public DateTime updateAt { get; set; }
         public string updateBy { get; set; }
-        public string deleteAt { get; set; }
+        public DateTime deleteAt { get; set; }
         public string deleteBy { get; set; }
         public bool isDeleted { get; set; }
 
