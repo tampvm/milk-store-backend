@@ -160,37 +160,12 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.AccountId, otp => otp.MapFrom(src => src.AccountId))
 				.ForMember(dest => dest.OrderId, otp => otp.MapFrom(src => src.OrderId)).ReverseMap();
 
-			#endregion
-		}
-	}
-            CreateMap<UpdateRoleDTO, Role>()
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoleName))
-                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description)).ReverseMap();
-            CreateMap<Post, ViewBlogModel>()
-               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
-               .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-               .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
-               .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-               .ForMember(dest => dest.createAt, opt => opt.MapFrom(src => src.CreatedAt))
-               .ForMember(dest => dest.createBy, opt => opt.MapFrom(src => src.CreatedBy))
-               .ForMember(dest => dest.updateBy, opt => opt.MapFrom(src => src.UpdatedBy))
-               .ForMember(dest => dest.updateAt, opt => opt.MapFrom(src => src.UpdatedAt))
-               .ForMember(dest => dest.deleteAt, opt => opt.MapFrom(src => src.DeletedAt))
-               .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
-               .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
-            CreateMap<CreateBlogDTO, Post>()
-           .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
-           .ForMember(dest => dest.Status, opt => opt.MapFrom(src => true))
-           .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.createBy))
-           .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.updateBy))
-           .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.updateAt))
-           .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.deleteAt))
-           .ForMember(dest => dest.DeletedBy, opt => opt.MapFrom(src => src.deleteBy))
-           .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.isDeleted));
+            #endregion
 
-            CreateMap<Post, CreateBlogDTO>()
-                
+
+            // Mapping from Post to ViewBlogModel
+            CreateMap<Post, ViewBlogModel>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
@@ -202,18 +177,45 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
                 .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted))
                 .ReverseMap();
+
+            // Mapping from CreateBlogDTO to Post
+            CreateMap<CreateBlogDTO, Post>()
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => true))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.createBy))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.updateBy))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.updateAt))
+                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.deleteAt))
+                .ForMember(dest => dest.DeletedBy, opt => opt.MapFrom(src => src.deleteBy))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.isDeleted));
+
+            // Mapping from Post to CreateBlogDTO
+            CreateMap<Post, CreateBlogDTO>()
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.createAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.createBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.updateBy, opt => opt.MapFrom(src => src.UpdatedBy))
+                .ForMember(dest => dest.updateAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.deleteAt, opt => opt.MapFrom(src => src.DeletedAt))
+                .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
+                .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+                .ReverseMap();
+
+            // Mapping from UpdateBlogDTO to Post
             CreateMap<UpdateBlogDTO, Post>()
-           .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-           .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
-           .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-           .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdateAt))
-           .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdateBy))
-           .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // Assuming CreatedAt should not be updated
-           .ForMember(dest => dest.CreatedBy, opt => opt.Ignore()) // Assuming CreatedBy should not be updated
-           .ForMember(dest => dest.DeletedAt, opt => opt.Ignore()) // Assuming DeletedAt should not be updated
-           .ForMember(dest => dest.DeletedBy, opt => opt.Ignore()) // Assuming DeletedBy should not be updated
-           .ForMember(dest => dest.IsDeleted, opt => opt.Ignore()) // Assuming IsDeleted should not be updated
-           .ReverseMap();
+                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdateAt))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdateBy))
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // Assuming CreatedAt should not be updated
+                .ForMember(dest => dest.CreatedBy, opt => opt.Ignore()) // Assuming CreatedBy should not be updated
+                .ForMember(dest => dest.DeletedAt, opt => opt.Ignore()) // Assuming DeletedAt should not be updated
+                .ForMember(dest => dest.DeletedBy, opt => opt.Ignore()) // Assuming DeletedBy should not be updated
+                .ForMember(dest => dest.IsDeleted, opt => opt.Ignore()) // Assuming IsDeleted should not be updated
+                .ReverseMap();
         }
-    }
+	}
 }
