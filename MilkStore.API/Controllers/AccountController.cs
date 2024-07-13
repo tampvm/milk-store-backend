@@ -108,5 +108,16 @@ namespace MilkStore.API.Controllers
             }
         }
         #endregion
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserProfileAsync(string userId)
+        {
+            var response = await _accountService.GetUserProfileAsync(userId);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }

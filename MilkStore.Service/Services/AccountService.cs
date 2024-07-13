@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static MilkStore.Service.Models.ViewModels.AccountViewModels.UserRolesDTO;
+using static MilkStore.Service.Models.ViewModels.AccountViewModels.ViewUserRolesDTO;
 
 namespace MilkStore.Service.Services
 {
@@ -404,6 +404,34 @@ namespace MilkStore.Service.Services
                     Errors = new List<string> { ex.Message }
                 };
             }
+        }
+
+        public async Task<ResponseModel> GetUserProfileAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+            var background = await _unitOfWork.ImageRepository.GetByIdAsync(user.BackgroundId);
+            var address = await _unitOfWork.AddressRepository.GetDefaultAddressOrFirstAsync(userId);
+
+            var userProfileDTO = _mapper.Map<ViewUserProfileDTO>(user);
+            userProfileDTO.Roles = roles.ToList();
+            userProfileDTO.Avatar = avatar?.ImageUrl;
+            userProfileDTO.Background = background?.ImageUrl;
+            if (address != null) userProfileDTO.Address = address.AddressLine + ", " + address.Ward + ", " + address.District + ", " + address.City;
+
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User profile found.",
+                Data = userProfileDTO
+            };
         }
 
     }

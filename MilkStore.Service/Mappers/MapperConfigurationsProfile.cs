@@ -15,7 +15,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static MilkStore.Service.Models.ViewModels.AccountViewModels.UserRolesDTO;
 
 namespace MilkStore.Service.Mappers
 {
@@ -51,15 +50,41 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
 				.ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
 				.ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-				.ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+                .ForMember(dest => dest.GoogleEmail, opt => opt.MapFrom(src => src.GoogleEmail))
+                .ForMember(dest => dest.FacebookEmail, opt => opt.MapFrom(src => src.FacebookEmail))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
 				.ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
 				.ForMember(dest => dest.LastLogin, opt => opt.MapFrom(src => src.LastLogin))
 				.ForMember(dest => dest.TotalPoints, opt => opt.MapFrom(src => src.TotalPoints))
 				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
-				.ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
-				.ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt)).ReverseMap();
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy))
+                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
+                .ForMember(dest => dest.DeletedBy, opt => opt.MapFrom(src => src.DeletedBy)).ReverseMap();
 
-			CreateMap<Account, ViewUserRolesDTO>()
+			CreateMap<Account, ViewUserProfileDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+                .ForMember(dest => dest.GoogleEmail, opt => opt.MapFrom(src => src.GoogleEmail))
+                .ForMember(dest => dest.FacebookEmail, opt => opt.MapFrom(src => src.FacebookEmail))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+                .ForMember(dest => dest.LastLogin, opt => opt.MapFrom(src => src.LastLogin))
+				.ForMember(dest => dest.Point, opt => opt.MapFrom(src => src.TotalPoints))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy))
+                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
+                .ForMember(dest => dest.DeletedBy, opt => opt.MapFrom(src => src.DeletedBy)).ReverseMap();
+
+
+            CreateMap<Account, ViewUserRolesDTO>()
 				.ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id)).ReverseMap();
 			//.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).ToList()));
 
