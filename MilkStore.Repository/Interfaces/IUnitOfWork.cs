@@ -11,6 +11,7 @@ namespace MilkStore.Repository.Interfaces
         IAcccountRepository AcccountRepository { get; }
         IRoleRepository RoleRepository { get; }
         IImageRepository ImageRepository { get; }
+        IBlogRepostiory BlogRepostiory { get; }
         Task<int> SaveChangeAsync();
     }
 }

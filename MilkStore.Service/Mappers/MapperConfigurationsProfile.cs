@@ -4,6 +4,7 @@ using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using MilkStore.Service.Models.ViewModels.AuthViewModels;
+using MilkStore.Service.Models.ViewModels.BogViewModel;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
 using System;
 using System.Collections.Generic;
@@ -72,6 +73,18 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoleName))
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description)).ReverseMap();
+            CreateMap<Post, ViewBlogModel>()
+               .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+               .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+               .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+               .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+               .ForMember(dest => dest.createAt, opt => opt.MapFrom(src => src.CreatedAt))
+               .ForMember(dest => dest.createBy, opt => opt.MapFrom(src => src.CreatedBy))
+               .ForMember(dest => dest.updateBy, opt => opt.MapFrom(src => src.UpdatedBy))
+               .ForMember(dest => dest.updateAt, opt => opt.MapFrom(src => src.UpdatedAt))
+               .ForMember(dest => dest.deleteAt, opt => opt.MapFrom(src => src.DeletedAt))
+               .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
+               .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
         }
     }
 }
