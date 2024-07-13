@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Repository.Interfaces
 {
-    public interface IUnitOfWork : IDisposable
-    {
-        IAcccountRepository AcccountRepository { get; }
-        IRoleRepository RoleRepository { get; }
-        IImageRepository ImageRepository { get; }
-        IBlogRepostiory BlogRepostiory { get; }
-        Task<int> SaveChangeAsync();
-    }
+	public interface IUnitOfWork : IDisposable
+	{
+		IAcccountRepository AcccountRepository { get; }
+		IRoleRepository RoleRepository { get; }
+		IImageRepository ImageRepository { get; }
+		IBrandRepository BrandRepository { get; }
+		IVoucherRepository VoucherRepository { get; }
+		IPointRepository PointRepository { get; }
+		Task<int> SaveChangeAsync();
+	}
 }

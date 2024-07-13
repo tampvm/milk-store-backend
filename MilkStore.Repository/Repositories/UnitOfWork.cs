@@ -14,27 +14,37 @@ namespace MilkStore.Repository.Repositories
         private readonly IAcccountRepository _accountRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IImageRepository _imageRepository;
-        private readonly IBlogRepostiory _blogRepository;
+        private readonly IBrandRepository _brandRepository;
+        private readonly IVoucherRepository _voucherRepository;
+        private readonly IPointRepository _pointRepository;
 
-        public UnitOfWork(AppDbContext dbContext, 
+		public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
             IRoleRepository roleRepository, 
             IImageRepository imageRepository,
-            IBlogRepostiory blogRepository)
+            IBrandRepository brandRepository,
+            IVoucherRepository voucherRepository,
+            IPointRepository pointRepository)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;
             _imageRepository = imageRepository;
-            _blogRepository = blogRepository;
-        }
+            _brandRepository = brandRepository;
+			_voucherRepository = voucherRepository;
+			_pointRepository = pointRepository;
+		}
 
         public IAcccountRepository AcccountRepository => _accountRepository;
         public IRoleRepository RoleRepository => _roleRepository;
         public IImageRepository ImageRepository => _imageRepository;
         public IBlogRepostiory BlogRepostiory => _blogRepository;
 
-        public async Task<int> SaveChangeAsync()
+        public IBrandRepository BrandRepository => _brandRepository;
+        public IVoucherRepository VoucherRepository => _voucherRepository;
+		public IPointRepository PointRepository => _pointRepository;
+
+		public async Task<int> SaveChangeAsync()
         {
             return await _dbContext.SaveChangesAsync();
         }
