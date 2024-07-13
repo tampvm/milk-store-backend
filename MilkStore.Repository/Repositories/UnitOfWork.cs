@@ -17,6 +17,7 @@ namespace MilkStore.Repository.Repositories
         private readonly IBrandRepository _brandRepository;
         private readonly IVoucherRepository _voucherRepository;
         private readonly IPointRepository _pointRepository;
+        private readonly IBlogRepostiory _blogRepostiory;
 
 		public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -24,7 +25,8 @@ namespace MilkStore.Repository.Repositories
             IImageRepository imageRepository,
             IBrandRepository brandRepository,
             IVoucherRepository voucherRepository,
-            IPointRepository pointRepository)
+            IPointRepository pointRepository,
+            IBlogRepostiory blogRepostiory)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
@@ -33,11 +35,13 @@ namespace MilkStore.Repository.Repositories
             _brandRepository = brandRepository;
 			_voucherRepository = voucherRepository;
 			_pointRepository = pointRepository;
+            _blogRepostiory = blogRepostiory;
 		}
 
         public IAcccountRepository AcccountRepository => _accountRepository;
         public IRoleRepository RoleRepository => _roleRepository;
         public IImageRepository ImageRepository => _imageRepository;
+        public IBlogRepostiory BlogRepostiory => _blogRepostiory;
 
         public IBrandRepository BrandRepository => _brandRepository;
         public IVoucherRepository VoucherRepository => _voucherRepository;

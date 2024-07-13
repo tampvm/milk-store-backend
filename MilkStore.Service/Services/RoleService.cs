@@ -47,6 +47,9 @@ namespace MilkStore.Service.Services
             // Dùng AutoMapper để ánh xạ các thuộc tính của role sang DTO
             var roleDtos = _mapper.Map<Pagination<ViewListRoleDTO>>(roles);
 
+           
+
+
             // Ánh xạ các thuộc tính đặc biệt cần xử lý
             foreach (var roleDto in roleDtos.Items)
             {

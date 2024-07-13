@@ -113,6 +113,9 @@ namespace MilkStore.API
 			services.AddScoped<IRoleService, RoleService>();
 
 			services.AddScoped<IImageRepository, ImageRepository>();
+            services.AddScoped<IImageRepository, ImageRepository>();
+            services.AddScoped<IBlogRepostiory, BlogRepostiory>();
+            services.AddScoped<IBlogService, BlogService>();
 
 			// Brand
 			services.AddScoped<IBrandRepository, BrandRepository>();
