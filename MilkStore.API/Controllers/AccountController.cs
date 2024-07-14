@@ -15,8 +15,9 @@ namespace MilkStore.API.Controllers
             _accountService = accountService;
         }
 
-        #region Update User Phone Number
+        #region Update User Phone Number Or Link Phone Number
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> SendVerificationCode(NewPhoneNumberDTO model)
         {
             var response = await _accountService.SendVerificationCodeAsync(model);
@@ -28,6 +29,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> VerifyNewPhoneNumber(ChangePhoneNumberDTO model)
         {
             var response = await _accountService.VerifyNewPhoneNumberAsync(model);
@@ -111,7 +113,7 @@ namespace MilkStore.API.Controllers
 
         #region View User Profile
         [HttpGet]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> GetUserProfileAsync(string userId)
         {
             var response = await _accountService.GetUserProfileAsync(userId);
@@ -137,7 +139,9 @@ namespace MilkStore.API.Controllers
         }
         #endregion
 
+        #region Update User Email Or Link Email
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> SendVerificationCodeEmailAsync(NewEmailDTO model)
         {
             var response = await _accountService.SendVerificationCodeEmailAsync(model);
@@ -149,6 +153,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> VerifyNewEmailAsync(ChangeEmailDTO model)
         {
             var response = await _accountService.VerifyNewEmailAsync(model);
@@ -158,9 +163,11 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+        #endregion
 
+        #region Link Account With UserName
         [HttpPut]
-        //[Authorize]
+        [Authorize]
         public async Task<IActionResult> LinkAccountWithUserNameAsync(UpdateUserAccountDTO model)
         {
             var response = await _accountService.LinkAccountWithUserNameAsync(model);
@@ -170,5 +177,20 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+        #endregion
+
+        #region Change Password
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> ChangePasswordAsync(ChangePasswordDTO model)
+        {
+            var response = await _accountService.ChangePasswordAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        #endregion
     }
 }

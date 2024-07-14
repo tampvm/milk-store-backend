@@ -646,10 +646,11 @@ namespace MilkStore.Service.Services
                 var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
                 if (!result.Succeeded)
                 {
-                    return new ResponseModel
+                    return new ErrorResponseModel<string>
                     {
                         Success = false,
-                        Message = "Failed to reset password."
+                        Message = "Failed to reset password.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
                     };
                 }
             }
@@ -674,7 +675,43 @@ namespace MilkStore.Service.Services
                 Message = "User account updated successfully."
             };
         }
+        #endregion
 
+        #region Change Password
+        public async Task<ResponseModel> ChangePasswordAsync(ChangePasswordDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to change password.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+
+            user.UpdatedAt = _currentTime.GetCurrentTime();
+            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+            await _userManager.UpdateAsync(user);
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Password changed successfully."
+            };
+        }
         #endregion
     }
 }
