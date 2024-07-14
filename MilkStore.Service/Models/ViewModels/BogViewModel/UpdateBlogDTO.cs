@@ -9,12 +9,11 @@ namespace MilkStore.Service.Models.ViewModels.BogViewModel
 {
     public class UpdateBlogDTO
     {
-       
-    
         public string Title { get; set; }
         public string Content { get; set; }
         public bool Status { get; set; }
         public DateTime UpdateAt { get; set; }
         public string UpdateBy { get; set; }
+
     }
 }

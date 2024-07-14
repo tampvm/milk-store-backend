@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MilkStore.Service.Models.ViewModels.CategoryViewModel;
+using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -192,7 +194,7 @@ namespace MilkStore.Service.Mappers
 
             #endregion
 
-
+            #region Blog
             // Mapping from Post to ViewBlogModel
             CreateMap<Post, ViewBlogModel>()
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -238,14 +240,96 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdateAt))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdateBy))
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore()) // Assuming CreatedAt should not be updated
+                .ForMember(dest => dest.UpdatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore()) // Assuming CreatedAt should not be updated
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore()) // Assuming CreatedBy should not be updated
                 .ForMember(dest => dest.DeletedAt, opt => opt.Ignore()) // Assuming DeletedAt should not be updated
                 .ForMember(dest => dest.DeletedBy, opt => opt.Ignore()) // Assuming DeletedBy should not be updated
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore()) // Assuming IsDeleted should not be updated
                 .ReverseMap();
+            #endregion
+
+            #region Category
+			CreateMap<Category, ViewListCategoryDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+                .ForMember(dest => dest.CreateAt, opt => opt.MapFrom(src => src.CreatedAt))
+				.ForMember(dest => dest.CreateBy, opt => opt.MapFrom(src => src.CreatedBy))
+                .ForMember(dest => dest.UpdateAt, opt => opt.MapFrom(src => src.UpdatedAt))
+				.ForMember(dest => dest.UpdateBy, opt => opt.MapFrom(src => src.UpdatedBy))
+                .ForMember(dest => dest.DeleteAt, opt => opt.MapFrom(src => src.DeletedAt))
+				.ForMember(dest => dest.DeleteBy, opt => opt.MapFrom(src => src.DeletedBy))
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+                .ReverseMap();
+            CreateMap<ViewListCategoryDTO, Category>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreateAt))
+				.ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreateBy))
+				.ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdateAt))
+				.ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdateBy))
+				.ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeleteAt))
+				.ForMember(dest => dest.DeletedBy, opt => opt.MapFrom(src => src.DeleteBy))             
+                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+                .ReverseMap();
+			//Map for create category
+			CreateMap<CreateCategoryDTO, Category>()
+				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+				.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+				
+				.ReverseMap();
+			//Map for update category
+			CreateMap<UpdateCategoryDTO, Category>()	
+				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+				.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+				
+				
+				.ReverseMap();
+            CreateMap<Category, UpdateCategoryDTO>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+                .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+                
+            
+                .ReverseMap();
+            #endregion
+
+            #region BlogCategory
+			// Mapping from BlogCategory to ViewBlogCategoryModel
+			CreateMap<PostCategory, GetBlogCategoryDTO>()
+				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+				.ReverseMap();
+			// Mapping from CreateBlogCategoryDTO to BlogCategory
+			CreateMap<CreateBlogCategoryDTO, PostCategory>()
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+				.ReverseMap();
+			// Mapping from BlogCategory to CreateBlogCategoryDTO
+			CreateMap<PostCategory, CreateBlogCategoryDTO>()
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+				.ReverseMap();
+			// Mapping from UpdateBlogCategoryDTO to BlogCategory
+			CreateMap<UpdateBlogCategoryDTO, PostCategory>()
+			
+				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+				.ReverseMap();
+			// Mapping from BlogCategory to UpdateBlogCategoryDTO
+			CreateMap<PostCategory, UpdateBlogCategoryDTO>()
+				
+				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+				.ReverseMap();
+            #endregion
         }
-	}
+
+    }
 }
