@@ -406,6 +406,7 @@ namespace MilkStore.Service.Services
             }
         }
 
+        #region Get User Profile
         public async Task<ResponseModel> GetUserProfileAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -433,7 +434,9 @@ namespace MilkStore.Service.Services
                 Data = userProfileDTO
             };
         }
+        #endregion
 
+        #region Update User Profile
         public async Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model)
         {
             try
@@ -476,6 +479,119 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+        #endregion
+
+        // Generate verification code
+        private string GenerateVerificationCode()
+        {
+            return new Random().Next(100000, 999999).ToString();
+        }
+
+        // Send verification code to the new email when user wants to change email
+        public async Task<ResponseModel> SendVerificationCodeEmailAsync(NewEmailDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            // Check if the email is already in use
+            var existingUser = await _userManager.FindByEmailAsync(model.NewEmail);
+            if (existingUser != null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Email is already in use."
+                };
+            }
+
+            // Generate and send the verification code to the new email
+            var code = GenerateVerificationCode();
+            await _emailSender.SendEmailAsync(model.NewEmail, "Verification Code", $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
+
+            // Cache code with a timeout (optional)
+            _cache.Set(model.NewEmail, code, TimeSpan.FromMinutes(10)); // Save the code in the cache for 10 minutes
+            DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10); // Thời gian hết hạn 10 phút từ bây giờ
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Verification code sent to new email.",
+                Data = new
+                {
+                    CodeExpiryTime = expiryTime
+                }
+            };
+        }
+
+        // Verify the new email with the verification code
+        public async Task<ResponseModel> VerifyNewEmailAsync(ChangeEmailDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            // Retrieve the code from the cache
+            if (_cache.TryGetValue(model.NewEmail, out string? cachedCode) && cachedCode == model.Code)
+            {
+                // Verify the verification code
+                if (cachedCode != model.Code)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid verification code."
+                    };
+                }
+
+                // Update the email
+                user.Email = model.NewEmail;
+                user.EmailConfirmed = true;
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update email.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+
+                // Optionally, remove the code from the cache after successful verification
+                _cache.Remove(model.NewEmail);
+
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Email updated successfully.",
+                    Data = new
+                    {
+                        UserId = user.Id,
+                        NewEmail = user.Email
+                    }
+                };
+            }
+
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "Invalid verification code."
+            };
+        }
+
 
     }
 }

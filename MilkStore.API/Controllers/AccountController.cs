@@ -136,5 +136,27 @@ namespace MilkStore.API.Controllers
             return BadRequest(response);
         }
         #endregion
+
+        [HttpPost]
+        public async Task<IActionResult> SendVerificationCodeEmail(NewEmailDTO model)
+        {
+            var response = await _accountService.SendVerificationCodeEmailAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyNewEmail(ChangeEmailDTO model)
+        {
+            var response = await _accountService.VerifyNewEmailAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
