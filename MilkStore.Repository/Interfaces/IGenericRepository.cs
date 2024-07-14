@@ -30,7 +30,10 @@ namespace MilkStore.Repository.Interfaces
         void SoftRemoveRange(List<TEntity> entities);
         void Delete(object id);
         void Delete(TEntity entity);
+
         Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null);
+        //findAsync
+        Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter = null);
 
     }
 }

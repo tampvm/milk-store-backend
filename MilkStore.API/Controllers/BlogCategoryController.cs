@@ -1,31 +1,23 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
-using MilkStore.Service.Models.ViewModels.BogViewModel;
-using MilkStore.Service.Services;
+using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
 
 namespace MilkStore.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class BlogController : ControllerBase
+    public class BlogCategoryController : ControllerBase
     {
-        private readonly IBlogService _blogService;
+        private readonly IBlogCategoryService _blogCategoryService;
 
-        public BlogController(IBlogService blogService)
+        public BlogCategoryController(IBlogCategoryService blogService)
         {
-            _blogService = blogService;
+            _blogCategoryService = blogService;
         }
+        [HttpPost("create", Name = "CreateBlogCategory")]
 
-        [HttpGet]
-
-        public async Task<IActionResult> GetAllBlogs(int pageIndex = 0, int pageSize = 10)
-        {
-            var blogs = await _blogService.GetAllBlog(pageIndex, pageSize);
-            return Ok(blogs);
-        }
-        [HttpPost("create", Name = "CreateBlog")]
-        public async Task<IActionResult> CreateBlog([FromBody] CreateBlogDTO model)
+        public async Task<IActionResult> CreateBlogCategory([FromBody] CreateBlogCategoryDTO model)
         {
             // Check if the model state is valid
             if (!ModelState.IsValid)
@@ -33,7 +25,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _blogService.CreateBlog(model);
+            var response = await _blogCategoryService.CreateBlogCategory(model);
 
             if (response.Success)
             {
@@ -44,8 +36,8 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateBlog(int id, [FromBody] UpdateBlogDTO model)
+        [HttpPut("update", Name = "UpdateBlogCategory")]
+        public async Task<IActionResult> UpdateBlogCategory(int id, [FromBody] UpdateBlogCategoryDTO model)
         {
             if (model == null)
             {
@@ -58,7 +50,7 @@ namespace MilkStore.API.Controllers
             }
 
             // Call the service to update the blog
-            var response = await _blogService.UpdateBlog(model, id);
+            var response = await _blogCategoryService.UpdateBlogCategory(model, id);
 
             if (response.Success)
             {
@@ -69,10 +61,10 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPut("delete/{id}")]
-        public async Task<IActionResult> DeleteBlog(int id, string deleteBy)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBlogCategory(int id)
         {
-            var response = await _blogService.DeleteBlog(id, deleteBy);
+            var response = await _blogCategoryService.DeleteBlogCategory(id);
 
             if (response.Success)
             {
@@ -82,9 +74,6 @@ namespace MilkStore.API.Controllers
             {
                 return BadRequest(response);
             }
-            
         }
-
-
     }
 }
