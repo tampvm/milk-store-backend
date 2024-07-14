@@ -41,17 +41,28 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
-        #region Update User Phone Number
+        #region Update User Phone Number Or Link Phone Number
         // Send verification code to the new phone number when user wants to change phone number
         public async Task<ResponseModel> SendVerificationCodeAsync(NewPhoneNumberDTO model)
         {
-            var user = await _userManager.FindByNameAsync(model.Username);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 return new ResponseModel
                 {
                     Success = false,
                     Message = "User not found."
+                };
+            }
+
+            // Check if the new phone number is already in use
+            var existingUser = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.NewPhoneNumber);
+            if (existingUser != null && existingUser.Id != user.Id)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Phone number is already in use."
                 };
             }
 
@@ -77,7 +88,7 @@ namespace MilkStore.Service.Services
         // Verify the new phone number with the verification code
         public async Task<ResponseModel> VerifyNewPhoneNumberAsync(ChangePhoneNumberDTO model)
         {
-            var user = await _userManager.FindByNameAsync(model.Username);
+            var user = await _userManager.FindByIdAsync(model.UserId);
             if (user == null)
             {
                 return new ResponseModel
@@ -88,10 +99,10 @@ namespace MilkStore.Service.Services
             }
 
             // Retrieve the code from the cache
-            if (_cache.TryGetValue(model.PhoneNumber, out string? cachedCode) && cachedCode == model.Code)
+            if (_cache.TryGetValue(model.NewPhoneNumber, out string? cachedCode) && cachedCode == model.Code)
             {
                 // Verify the verification code
-                var isTokenValid = await _userManager.VerifyChangePhoneNumberTokenAsync(user, model.Code, model.PhoneNumber);
+                var isTokenValid = await _userManager.VerifyChangePhoneNumberTokenAsync(user, model.Code, model.NewPhoneNumber);
                 if (!isTokenValid)
                 {
                     return new ResponseModel
@@ -102,7 +113,7 @@ namespace MilkStore.Service.Services
                 }
 
                 // Update the phone number
-                var result = await _userManager.ChangePhoneNumberAsync(user, model.PhoneNumber, model.Code);
+                var result = await _userManager.ChangePhoneNumberAsync(user, model.NewPhoneNumber, model.Code);
                 if (!result.Succeeded)
                 {
                     return new ErrorResponseModel<string>
@@ -112,6 +123,11 @@ namespace MilkStore.Service.Services
                         Errors = result.Errors.Select(e => e.Description).ToList()
                     };
                 }
+
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                await _userManager.UpdateAsync(user);
 
                 return new SuccessResponseModel<object>
                 {
@@ -487,6 +503,7 @@ namespace MilkStore.Service.Services
             return new Random().Next(100000, 999999).ToString();
         }
 
+        #region Update User Email Or Link Email
         // Send verification code to the new email when user wants to change email
         public async Task<ResponseModel> SendVerificationCodeEmailAsync(NewEmailDTO model)
         {
@@ -559,6 +576,8 @@ namespace MilkStore.Service.Services
                 // Update the email
                 user.Email = model.NewEmail;
                 user.EmailConfirmed = true;
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
                 var result = await _userManager.UpdateAsync(user);
                 if (!result.Succeeded)
                 {
@@ -591,7 +610,71 @@ namespace MilkStore.Service.Services
                 Message = "Invalid verification code."
             };
         }
+        #endregion
 
+        #region Link Account With Username
+        public async Task<ResponseModel> LinkAccountWithUserNameAsync(UpdateUserAccountDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
 
+            // Check if the username is provided and update if necessary
+            if (!string.IsNullOrEmpty(model.UserName))
+            {
+                var existingUser = await _userManager.FindByNameAsync(model.UserName);
+                if (existingUser != null && existingUser.Id != model.UserId)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Username is already taken."
+                    };
+                }
+                user.UserName = model.UserName;
+            }
+
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+                if (!result.Succeeded)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Failed to reset password."
+                    };
+                }
+            }
+
+            user.UpdatedAt = _currentTime.GetCurrentTime();
+            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Failed to update user account."
+                };
+            }
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User account updated successfully."
+            };
+        }
+
+        #endregion
     }
 }

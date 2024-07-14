@@ -22,5 +22,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model);
         Task<ResponseModel> SendVerificationCodeEmailAsync(NewEmailDTO model);
         Task<ResponseModel> VerifyNewEmailAsync(ChangeEmailDTO model);
+        Task<ResponseModel> LinkAccountWithUserNameAsync(UpdateUserAccountDTO model);
     }
 }
