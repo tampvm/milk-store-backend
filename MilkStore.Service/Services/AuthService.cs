@@ -710,6 +710,7 @@ namespace MilkStore.Service.Services
                         user.FacebookEmail = dto.Email;
                     }
 
+                    user.Email = null;
                     user.CreatedAt = _currentTime.GetCurrentTime();
                     user.CreatedBy = user.Id;
                     user.LastLogin = _currentTime.GetCurrentTime();
