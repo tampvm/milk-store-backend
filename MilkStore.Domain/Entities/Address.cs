@@ -24,6 +24,8 @@ namespace MilkStore.Domain.Entities
 
         public string Ward { get; set; }
 
+        public bool IsDefault { get; set; }
+
         //public string PhoneNumber { get; set; }
 
         // Foreign Key

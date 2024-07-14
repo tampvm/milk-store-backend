@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static MilkStore.Service.Models.ViewModels.AccountViewModels.UserRolesDTO;
+using static MilkStore.Service.Models.ViewModels.AccountViewModels.ViewUserRolesDTO;
 
 namespace MilkStore.Service.Services
 {
@@ -401,6 +401,77 @@ namespace MilkStore.Service.Services
                 {
                     Success = false,
                     Message = "An error occurred while updating avatar.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        public async Task<ResponseModel> GetUserProfileAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+            var background = await _unitOfWork.ImageRepository.GetByIdAsync(user.BackgroundId);
+            var address = await _unitOfWork.AddressRepository.GetDefaultAddressOrFirstAsync(userId);
+
+            var userProfileDTO = _mapper.Map<ViewUserProfileDTO>(user);
+            userProfileDTO.Roles = roles.ToList();
+            userProfileDTO.Avatar = avatar?.ImageUrl;
+            userProfileDTO.Background = background?.ImageUrl;
+            if (address != null) userProfileDTO.Address = address.AddressLine + ", " + address.Ward + ", " + address.District + ", " + address.City;
+
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User profile found.",
+                Data = userProfileDTO
+            };
+        }
+
+        public async Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(model.UserId);
+                if (user == null)
+                {
+                    return new ResponseModel { Success = false, Message = "User not found." };
+                }
+
+                // Sử dụng mapper để cập nhật thuộc tính của đối tượng user từ model
+                _mapper.Map(model, user);
+
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return new ResponseModel { Success = true, Message = "User profile updated successfully." };
+                }
+                else
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update user profile.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating user profile.",
                     Errors = new List<string> { ex.Message }
                 };
             }
