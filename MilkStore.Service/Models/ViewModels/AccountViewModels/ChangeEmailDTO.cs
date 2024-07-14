@@ -6,17 +6,16 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Service.Models.ViewModels.AccountViewModels
 {
-    public class ChangePhoneNumberDTO
+    public class ChangeEmailDTO
     {
         public string UserId { get; set; }
-        public string NewPhoneNumber { get; set; }
+        public string NewEmail { get; set; }
         public string Code { get; set; }
     }
 
-    public class NewPhoneNumberDTO
+    public class NewEmailDTO
     {
         public string UserId { get; set; }
-
-        public string NewPhoneNumber { get; set; }
+        public string NewEmail { get; set; }
     }
 }
