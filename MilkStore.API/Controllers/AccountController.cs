@@ -66,7 +66,7 @@ namespace MilkStore.API.Controllers
             return BadRequest(response);
         }
 
-        [HttpPost]
+        [HttpDelete]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveRoleToUserAsync(UpdateUserRolesDTO model)
         {
@@ -109,7 +109,9 @@ namespace MilkStore.API.Controllers
         }
         #endregion
 
+        #region View User Profile
         [HttpGet]
+        //[Authorize]
         public async Task<IActionResult> GetUserProfileAsync(string userId)
         {
             var response = await _accountService.GetUserProfileAsync(userId);
@@ -119,5 +121,20 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+        #endregion
+
+        #region Update User Profile
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserProfileAsync(UpdateUserProfileDTO model)
+        {
+            var response = await _accountService.UpdateUserProfileAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        #endregion
     }
 }
