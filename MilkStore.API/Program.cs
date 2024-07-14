@@ -11,6 +11,15 @@ builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
 builder.Services.AddWebAPIService(configuration.JWT);
 builder.Services.AddSingleton(configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 // Conection string for database
 //builder.Services.AddDbContext<AppDbContext>(options =>
 //	options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
@@ -34,6 +43,7 @@ builder.Services.AddSingleton(configuration);
 
 var app = builder.Build();
 
+
 // Call this method to seed data
 using (var scope = app.Services.CreateScope())
 {
@@ -51,6 +61,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();
