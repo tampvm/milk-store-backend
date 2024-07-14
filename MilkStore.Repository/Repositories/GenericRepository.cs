@@ -197,5 +197,10 @@ namespace MilkStore.Repository.Repositories
 
             return await query.CountAsync();
         }
+        public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return await _dbSet.FirstOrDefaultAsync(predicate);
+        }
+
     }
 }

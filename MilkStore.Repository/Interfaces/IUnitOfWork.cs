@@ -16,6 +16,8 @@ namespace MilkStore.Repository.Interfaces
 		IPointRepository PointRepository { get; }
 		IBlogRepostiory BlogRepostiory { get; }
         IAddressRepository AddressRepository { get; }
+		IBlogCategoryRepository BlogCategoryRepository { get; }
+		ICategoryRepository CategoryRepository { get; }
         Task<int> SaveChangeAsync();
 	}
 }

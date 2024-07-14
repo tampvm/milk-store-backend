@@ -31,19 +31,13 @@ namespace MilkStore.Service.Services
 
         public async Task<ResponseModel> CreateBlog(CreateBlogDTO model)
         {
-            // Create blog
-            // Create blog
+            // Create blog   
             var blog = _mapper.Map<Post>(model);
             blog.Title = model.Title;
             blog.Content = model.Content;
             blog.IsDeleted = false;
-            blog.CreatedAt = DateTime.Now;
             blog.Status = true;
-            blog.CreatedBy = model.createBy;
-            blog.UpdatedAt = DateTime.Now;
-            blog.UpdatedBy = model.updateBy;
-            blog.DeletedAt = DateTime.Now;
-            blog.DeletedBy = model.deleteBy;
+            
 
             try
             {
@@ -67,11 +61,11 @@ namespace MilkStore.Service.Services
                 Console.WriteLine(ex.Message);
 
                 // Return a failure response
-                return new SuccessResponseModel<object>
+                return new ErrorResponseModel<object>
                 {
                     Success = false,
                     Message = "An error occurred while creating the blog.",
-                    Data = null
+                    
                 };
             }
         }
@@ -146,8 +140,7 @@ namespace MilkStore.Service.Services
                 blog.Title = model.Title;
                 blog.Content = model.Content;
                 blog.Status = model.Status;
-                blog.UpdatedAt = DateTime.Now; // This is redundant if Update sets it
-                blog.UpdatedBy = model.UpdateBy; // This is redundant if Update sets it
+               
 
                 // Use the Update method
                 _unitOfWork.BlogRepostiory.Update(blog);
@@ -201,9 +194,8 @@ namespace MilkStore.Service.Services
                 }
 
                 // Map the properties
-                blog.IsDeleted = true;
-                blog.DeletedAt = DateTime.Now;
-                blog.DeletedBy = deleteBy;
+               
+               
 
                 // Use the Update method
                 _unitOfWork.BlogRepostiory.SoftRemove(blog);
