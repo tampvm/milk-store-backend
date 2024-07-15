@@ -28,7 +28,6 @@ namespace MilkStore.Service.Mappers
 			CreateMap<RegisterDTO, Account>()
 				.ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
 				.ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
-				.ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
 				.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
 				.ForMember(dest => dest.PhoneNumberConfirmed, opt => opt.MapFrom(src => true))
 				.ForMember(dest => dest.Gender, opt => opt.MapFrom(src => GenderEnums.Unknown.ToString()))

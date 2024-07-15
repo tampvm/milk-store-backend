@@ -41,6 +41,81 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
+        #region Get User Profile
+        public async Task<ResponseModel> GetUserProfileAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+            var background = await _unitOfWork.ImageRepository.GetByIdAsync(user.BackgroundId);
+            var address = await _unitOfWork.AddressRepository.GetDefaultAddressOrFirstAsync(userId);
+
+            var userProfileDTO = _mapper.Map<ViewUserProfileDTO>(user);
+            userProfileDTO.Roles = roles.ToList();
+            userProfileDTO.Avatar = avatar?.ImageUrl;
+            userProfileDTO.Background = background?.ImageUrl;
+            if (address != null) userProfileDTO.Address = address.AddressLine + ", " + address.Ward + ", " + address.District + ", " + address.City;
+
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User profile found.",
+                Data = userProfileDTO
+            };
+        }
+        #endregion
+
+        #region Update User Profile
+        public async Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(model.UserId);
+                if (user == null)
+                {
+                    return new ResponseModel { Success = false, Message = "User not found." };
+                }
+
+                // Sử dụng mapper để cập nhật thuộc tính của đối tượng user từ model
+                _mapper.Map(model, user);
+
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return new ResponseModel { Success = true, Message = "User profile updated successfully." };
+                }
+                else
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update user profile.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating user profile.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+        #endregion
+
         #region Update User Phone Number Or Link Phone Number
         // Send verification code to the new phone number when user wants to change phone number
         public async Task<ResponseModel> SendVerificationCodeAsync(NewPhoneNumberDTO model)
@@ -145,6 +220,223 @@ namespace MilkStore.Service.Services
             {
                 Success = false,
                 Message = "Invalid verification code."
+            };
+        }
+        #endregion
+
+        #region Update User Email Or Link Email
+        // Generate verification code
+        private string GenerateVerificationCode()
+        {
+            return new Random().Next(100000, 999999).ToString();
+        }
+
+        // Send verification code to the new email when user wants to change email
+        public async Task<ResponseModel> SendVerificationCodeEmailAsync(NewEmailDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            // Check if the email is already in use
+            var existingUser = await _userManager.FindByEmailAsync(model.NewEmail);
+            if (existingUser != null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Email is already in use."
+                };
+            }
+
+            // Generate and send the verification code to the new email
+            var code = GenerateVerificationCode();
+            await _emailSender.SendEmailAsync(model.NewEmail, "Verification Code", $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
+
+            // Cache code with a timeout (optional)
+            _cache.Set(model.NewEmail, code, TimeSpan.FromMinutes(10)); // Save the code in the cache for 10 minutes
+            DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10); // Thời gian hết hạn 10 phút từ bây giờ
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Verification code sent to new email.",
+                Data = new
+                {
+                    CodeExpiryTime = expiryTime
+                }
+            };
+        }
+
+        // Verify the new email with the verification code
+        public async Task<ResponseModel> VerifyNewEmailAsync(ChangeEmailDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            // Retrieve the code from the cache
+            if (_cache.TryGetValue(model.NewEmail, out string? cachedCode) && cachedCode == model.Code)
+            {
+                // Verify the verification code
+                if (cachedCode != model.Code)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid verification code."
+                    };
+                }
+
+                // Update the email
+                user.Email = model.NewEmail;
+                user.EmailConfirmed = true;
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update email.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+
+                // Optionally, remove the code from the cache after successful verification
+                _cache.Remove(model.NewEmail);
+
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Email updated successfully.",
+                    Data = new
+                    {
+                        UserId = user.Id,
+                        NewEmail = user.Email
+                    }
+                };
+            }
+
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "Invalid verification code."
+            };
+        }
+        #endregion
+
+        #region Link Account With Username
+        public async Task<ResponseModel> LinkAccountWithUserNameAsync(UpdateUserAccountDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            // Check if the username is provided and update if necessary
+            if (!string.IsNullOrEmpty(model.UserName))
+            {
+                var existingUser = await _userManager.FindByNameAsync(model.UserName);
+                if (existingUser != null && existingUser.Id != model.UserId)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Username is already taken."
+                    };
+                }
+                user.UserName = model.UserName;
+            }
+
+            if (!string.IsNullOrEmpty(model.Password))
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+                if (!result.Succeeded)
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to reset password.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+            }
+
+            user.UpdatedAt = _currentTime.GetCurrentTime();
+            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+            var updateResult = await _userManager.UpdateAsync(user);
+
+            if (!updateResult.Succeeded)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Failed to update user account."
+                };
+            }
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User account updated successfully."
+            };
+        }
+        #endregion
+
+        #region Change Password
+        public async Task<ResponseModel> ChangePasswordAsync(ChangePasswordDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found."
+                };
+            }
+
+            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to change password.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+
+            user.UpdatedAt = _currentTime.GetCurrentTime();
+            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+            await _userManager.UpdateAsync(user);
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Password changed successfully."
             };
         }
         #endregion
@@ -421,297 +713,5 @@ namespace MilkStore.Service.Services
                 };
             }
         }
-
-        #region Get User Profile
-        public async Task<ResponseModel> GetUserProfileAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return new ResponseModel { Success = false, Message = "User not found." };
-            }
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
-            var background = await _unitOfWork.ImageRepository.GetByIdAsync(user.BackgroundId);
-            var address = await _unitOfWork.AddressRepository.GetDefaultAddressOrFirstAsync(userId);
-
-            var userProfileDTO = _mapper.Map<ViewUserProfileDTO>(user);
-            userProfileDTO.Roles = roles.ToList();
-            userProfileDTO.Avatar = avatar?.ImageUrl;
-            userProfileDTO.Background = background?.ImageUrl;
-            if (address != null) userProfileDTO.Address = address.AddressLine + ", " + address.Ward + ", " + address.District + ", " + address.City;
-
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "User profile found.",
-                Data = userProfileDTO
-            };
-        }
-        #endregion
-
-        #region Update User Profile
-        public async Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model)
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(model.UserId);
-                if (user == null)
-                {
-                    return new ResponseModel { Success = false, Message = "User not found." };
-                }
-
-                // Sử dụng mapper để cập nhật thuộc tính của đối tượng user từ model
-                _mapper.Map(model, user);
-
-                user.UpdatedAt = _currentTime.GetCurrentTime();
-                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-
-                var result = await _userManager.UpdateAsync(user);
-
-                if (result.Succeeded)
-                {
-                    return new ResponseModel { Success = true, Message = "User profile updated successfully." };
-                }
-                else
-                {
-                    return new ErrorResponseModel<string>
-                    {
-                        Success = false,
-                        Message = "Failed to update user profile.",
-                        Errors = result.Errors.Select(e => e.Description).ToList()
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                return new ErrorResponseModel<string>
-                {
-                    Success = false,
-                    Message = "An error occurred while updating user profile.",
-                    Errors = new List<string> { ex.Message }
-                };
-            }
-        }
-        #endregion
-
-        // Generate verification code
-        private string GenerateVerificationCode()
-        {
-            return new Random().Next(100000, 999999).ToString();
-        }
-
-        #region Update User Email Or Link Email
-        // Send verification code to the new email when user wants to change email
-        public async Task<ResponseModel> SendVerificationCodeEmailAsync(NewEmailDTO model)
-        {
-            var user = await _userManager.FindByIdAsync(model.UserId);
-            if (user == null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User not found."
-                };
-            }
-
-            // Check if the email is already in use
-            var existingUser = await _userManager.FindByEmailAsync(model.NewEmail);
-            if (existingUser != null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "Email is already in use."
-                };
-            }
-
-            // Generate and send the verification code to the new email
-            var code = GenerateVerificationCode();
-            await _emailSender.SendEmailAsync(model.NewEmail, "Verification Code", $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
-
-            // Cache code with a timeout (optional)
-            _cache.Set(model.NewEmail, code, TimeSpan.FromMinutes(10)); // Save the code in the cache for 10 minutes
-            DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10); // Thời gian hết hạn 10 phút từ bây giờ
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "Verification code sent to new email.",
-                Data = new
-                {
-                    CodeExpiryTime = expiryTime
-                }
-            };
-        }
-
-        // Verify the new email with the verification code
-        public async Task<ResponseModel> VerifyNewEmailAsync(ChangeEmailDTO model)
-        {
-            var user = await _userManager.FindByIdAsync(model.UserId);
-            if (user == null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User not found."
-                };
-            }
-
-            // Retrieve the code from the cache
-            if (_cache.TryGetValue(model.NewEmail, out string? cachedCode) && cachedCode == model.Code)
-            {
-                // Verify the verification code
-                if (cachedCode != model.Code)
-                {
-                    return new ResponseModel
-                    {
-                        Success = false,
-                        Message = "Invalid verification code."
-                    };
-                }
-
-                // Update the email
-                user.Email = model.NewEmail;
-                user.EmailConfirmed = true;
-                user.UpdatedAt = _currentTime.GetCurrentTime();
-                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-                var result = await _userManager.UpdateAsync(user);
-                if (!result.Succeeded)
-                {
-                    return new ErrorResponseModel<string>
-                    {
-                        Success = false,
-                        Message = "Failed to update email.",
-                        Errors = result.Errors.Select(e => e.Description).ToList()
-                    };
-                }
-
-                // Optionally, remove the code from the cache after successful verification
-                _cache.Remove(model.NewEmail);
-
-                return new SuccessResponseModel<object>
-                {
-                    Success = true,
-                    Message = "Email updated successfully.",
-                    Data = new
-                    {
-                        UserId = user.Id,
-                        NewEmail = user.Email
-                    }
-                };
-            }
-
-            return new ResponseModel
-            {
-                Success = false,
-                Message = "Invalid verification code."
-            };
-        }
-        #endregion
-
-        #region Link Account With Username
-        public async Task<ResponseModel> LinkAccountWithUserNameAsync(UpdateUserAccountDTO model)
-        {
-            var user = await _userManager.FindByIdAsync(model.UserId);
-            if (user == null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User not found."
-                };
-            }
-
-            // Check if the username is provided and update if necessary
-            if (!string.IsNullOrEmpty(model.UserName))
-            {
-                var existingUser = await _userManager.FindByNameAsync(model.UserName);
-                if (existingUser != null && existingUser.Id != model.UserId)
-                {
-                    return new ResponseModel
-                    {
-                        Success = false,
-                        Message = "Username is already taken."
-                    };
-                }
-                user.UserName = model.UserName;
-            }
-
-            if (!string.IsNullOrEmpty(model.Password))
-            {
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
-                if (!result.Succeeded)
-                {
-                    return new ErrorResponseModel<string>
-                    {
-                        Success = false,
-                        Message = "Failed to reset password.",
-                        Errors = result.Errors.Select(e => e.Description).ToList()
-                    };
-                }
-            }
-
-            user.UpdatedAt = _currentTime.GetCurrentTime();
-            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-
-            var updateResult = await _userManager.UpdateAsync(user);
-
-            if (!updateResult.Succeeded)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "Failed to update user account."
-                };
-            }
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "User account updated successfully."
-            };
-        }
-        #endregion
-
-        #region Change Password
-        public async Task<ResponseModel> ChangePasswordAsync(ChangePasswordDTO model)
-        {
-            var user = await _userManager.FindByIdAsync(model.UserId);
-            if (user == null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User not found."
-                };
-            }
-
-            var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
-            if (!result.Succeeded)
-            {
-                return new ErrorResponseModel<string>
-                {
-                    Success = false,
-                    Message = "Failed to change password.",
-                    Errors = result.Errors.Select(e => e.Description).ToList()
-                };
-            }
-
-            user.UpdatedAt = _currentTime.GetCurrentTime();
-            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-
-            await _userManager.UpdateAsync(user);
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "Password changed successfully."
-            };
-        }
-        #endregion
     }
 }
