@@ -127,16 +127,14 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Name))
 				.ForMember(dest => dest.BrandOrigin, otp => otp.MapFrom(src => src.BrandOrigin))
 				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
-				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => true))
-				.ForMember(dest => dest.ImageId, otp => otp.MapFrom(src => src.ImageId)).ReverseMap();
+				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => true)).ReverseMap();
 
 			CreateMap<UpdateBrandDTO, Brand>()
 				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
 				.ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Name))
 				.ForMember(dest => dest.BrandOrigin, otp => otp.MapFrom(src => src.BrandOrigin))
 				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
-				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active))
-				.ForMember(dest => dest.ImageId, otp => otp.MapFrom(src => src.ImageId)).ReverseMap();
+				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active)).ReverseMap();
 			#endregion
 
 			#region Voucher

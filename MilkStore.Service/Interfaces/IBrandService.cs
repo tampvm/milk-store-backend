@@ -11,6 +11,7 @@ namespace MilkStore.Service.Interfaces
 	public interface IBrandService
 	{
 		Task<ResponseModel> GetBrandsAsync(int pageIndex, int pageSize);
+		Task<ResponseModel> GetBrandByIdAsync(int id);
 		Task<ResponseModel> CreateBrandAsync(CreateBrandDTO model);
 		Task<ResponseModel> UpdateBrandAsync(UpdateBrandDTO model);
 		Task<ResponseModel> DeleteBrandAsync(int id);

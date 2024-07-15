@@ -15,6 +15,8 @@ namespace MilkStore.Service.Models.ViewModels.BrandViewModels
 		public bool Active { get; set; }
 		public int? ImageId { get; set; }
 
+		public string? ImageUrl { get; set; }
+
 		public DateTime CreatedAt { get; set; }
 		public string? CreatedBy { get; set; }
 		public DateTime? UpdatedAt { get; set; }
