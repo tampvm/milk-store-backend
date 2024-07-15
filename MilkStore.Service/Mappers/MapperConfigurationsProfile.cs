@@ -209,6 +209,20 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
                 .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted))
                 .ReverseMap();
+            CreateMap<Post, ViewBlogModel>()
+             .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+             .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+             .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+             .ForMember(dest => dest.createAt, opt => opt.MapFrom(src => src.CreatedAt))
+             .ForMember(dest => dest.createBy, opt => opt.MapFrom(src => src.CreatedBy))
+             .ForMember(dest => dest.updateBy, opt => opt.MapFrom(src => src.UpdatedBy))
+             .ForMember(dest => dest.updateAt, opt => opt.MapFrom(src => src.UpdatedAt))
+             .ForMember(dest => dest.deleteAt, opt => opt.MapFrom(src => src.DeletedAt))
+             .ForMember(dest => dest.BlogImg, opt => opt.Ignore())
+             .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
+             .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+             .ReverseMap();
 
             // Mapping from CreateBlogDTO to Post
             CreateMap<CreateBlogDTO, Post>()
@@ -248,6 +262,14 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.DeletedBy, opt => opt.Ignore()) // Assuming DeletedBy should not be updated
                 .ForMember(dest => dest.IsDeleted, opt => opt.Ignore()) // Assuming IsDeleted should not be updated
                 .ReverseMap();
+			CreateMap<CreateBlogImgDTO, PostImage>()
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.ImageId, opt => opt.MapFrom(src => src.ImageId))
+				.ReverseMap();
+			CreateMap<PostImage, CreateBlogImgDTO>()
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.ImageId, opt => opt.MapFrom(src => src.ImageId))
+				.ReverseMap();
             #endregion
 
             #region Category

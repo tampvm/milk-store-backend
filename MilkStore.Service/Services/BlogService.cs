@@ -20,24 +20,28 @@ namespace MilkStore.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly UserManager<Account> _userManager;
 
         string currentDate = DateTime.Now.ToString("yyyy/MM/dd");
-        public BlogService(IUnitOfWork unitOfWork, IMapper mapper)
+        public BlogService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<Account> userManager)
         {
+            _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
 
         }
 
-        public async Task<ResponseModel> CreateBlog(CreateBlogDTO model)
+        public async Task<ResponseModel> CreateBlog(CreateBlogDTO model, int imgId)
         {
             // Create blog   
+
             var blog = _mapper.Map<Post>(model);
+
             blog.Title = model.Title;
             blog.Content = model.Content;
             blog.IsDeleted = false;
             blog.Status = true;
-            
+
 
             try
             {
@@ -65,7 +69,7 @@ namespace MilkStore.Service.Services
                 {
                     Success = false,
                     Message = "An error occurred while creating the blog.",
-                    
+
                 };
             }
         }
@@ -77,6 +81,7 @@ namespace MilkStore.Service.Services
               pageIndex: pageIndex,
               pageSize: pageSize
               );
+
             var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blogs);
             return new SuccessResponseModel<object>
             {
@@ -86,19 +91,34 @@ namespace MilkStore.Service.Services
             };
 
         }
-        public async Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, int id)
+        public async Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, string id, int postId)
         {
-            var blogs = await _unitOfWork.BlogRepostiory.GetByIdAsync(id);
+            // Fetch the blog by the postId
+            var createrBlog = await _unitOfWork.BlogRepostiory.FindAsync(r => r.Id == postId && r.CreatedBy == id);
+            var createrBlogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == postId);
+            if (createrBlog == null)
+            {
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "Blog not found or you do not have permission to view it."
+                };
+            }
 
+            // Fetch the image related to the postId
+            var blogImg = await _unitOfWork.ImageRepository.FindAsync(img => img.Id == createrBlogImg.ImageId);
 
-            var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blogs);
+            var blogDTO = _mapper.Map<ViewBlogModel>(createrBlog);
+
+            // Ensure blogImg is not null before accessing ImageUrl
+            blogDTO.BlogImg = blogImg?.ImageUrl;
+
             return new SuccessResponseModel<object>
             {
                 Success = true,
                 Message = "Blog retrieved successfully.",
                 Data = blogDTO
             };
-
         }
 
         public async Task<ResponseModel> UpdateBlog(UpdateBlogDTO model, int id)
@@ -140,7 +160,7 @@ namespace MilkStore.Service.Services
                 blog.Title = model.Title;
                 blog.Content = model.Content;
                 blog.Status = model.Status;
-               
+
 
                 // Use the Update method
                 _unitOfWork.BlogRepostiory.Update(blog);
@@ -194,8 +214,8 @@ namespace MilkStore.Service.Services
                 }
 
                 // Map the properties
-               
-               
+
+
 
                 // Use the Update method
                 _unitOfWork.BlogRepostiory.SoftRemove(blog);
@@ -218,6 +238,59 @@ namespace MilkStore.Service.Services
                 {
                     Success = false,
                     Message = "An error occurred while deleting the blog."
+                };
+            }
+        }
+
+        public async Task<ResponseModel> GetBlogByUserIdWithouImg(int id)
+        {
+            // Fetch the blog by the postId
+            var blog = await _unitOfWork.BlogRepostiory.GetByIdAsync(id);
+            var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blog);
+            //Ensure blogImg is not null before accessing ImageUrl
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog retrieved successfully.",
+                Data = blogDTO
+            };
+
+        }
+
+        public async Task<ResponseModel> CreateBlogImg(CreateBlogImgDTO model)
+        {
+            var blogImg =  _mapper.Map<PostImage>(model);
+            blogImg.ImageId = model.ImageId;
+            blogImg.IsDeleted = false;
+            blogImg.PostId = model.PostId;
+            try
+            {
+                // Add blog to the repository
+                await _unitOfWork.BlogImageRepository.AddAsync(blogImg);
+
+                // Commit the changes to the database
+                await _unitOfWork.SaveChangeAsync();
+
+                // Return the appropriate response
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Blog created successfully.",
+                    Data = blogImg
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex.Message);
+
+                // Return a failure response
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "An error occurred while creating the blog.",
+
                 };
             }
         }

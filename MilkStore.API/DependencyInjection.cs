@@ -138,6 +138,10 @@ namespace MilkStore.API
 			//BlogCategory
 			services.AddScoped<IBlogCategoryRepository, BlogCategoryRepository>();
 			services.AddScoped<IBlogCategoryService, BlogCategoryService>();
+
+			//BlogImage
+			services.AddScoped<IBlogImageRepository, BlogImageRepository>();
+
 			
 
 

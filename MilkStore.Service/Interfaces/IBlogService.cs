@@ -11,9 +11,11 @@ namespace MilkStore.Service.Interfaces
     public interface IBlogService
     {
         Task<ResponseModel> GetAllBlog(int pageIndex, int pageSize);
-        Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, int id);
-        Task<ResponseModel> CreateBlog(CreateBlogDTO model);
+        Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, string id, int postId);
+        Task<ResponseModel> CreateBlog(CreateBlogDTO model, int imgId);
         Task<ResponseModel> UpdateBlog(UpdateBlogDTO model, int id);
         Task<ResponseModel> DeleteBlog(int id, string deleteBy);
+        Task<ResponseModel> GetBlogByUserIdWithouImg(int id);
+        Task<ResponseModel> CreateBlogImg(CreateBlogImgDTO model);
     }
 }

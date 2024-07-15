@@ -25,7 +25,7 @@ namespace MilkStore.API.Controllers
             return Ok(blogs);
         }
         [HttpPost("create", Name = "CreateBlog")]
-        public async Task<IActionResult> CreateBlog([FromBody] CreateBlogDTO model)
+        public async Task<IActionResult> CreateBlog([FromBody] CreateBlogDTO model, int imgId)
         {
             // Check if the model state is valid
             if (!ModelState.IsValid)
@@ -33,7 +33,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _blogService.CreateBlog(model);
+            var response = await _blogService.CreateBlog(model, imgId);
 
             if (response.Success)
             {
@@ -83,6 +83,38 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
             
+        }
+        [HttpGet("getByUserId/{id}")]
+        public async Task<IActionResult> GetBlogByUserId(string id,int postId, int pageIndex = 0, int pageSize = 10)
+        {
+            var blogs = await _blogService.GetBlogByUserId(pageIndex, pageSize, id, postId);
+            return Ok(blogs);
+        }
+        //[HttpGet("getByUserIdWithoutImg/{id}")]
+        //public async Task<IActionResult> GetBlogByUserIdWithoutImg(int id)
+        //{
+        //    var blogs = await _blogService.GetBlogByUserIdWithouImg(id);
+        //    return Ok(blogs);
+        //}
+        [HttpPost("createImg", Name = "CreateBlogImg")]
+        public async Task<IActionResult> CreateBlogImg([FromBody] CreateBlogImgDTO model)
+        {
+            // Check if the model state is valid
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var response = await _blogService.CreateBlogImg(model);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
         }
 
 
