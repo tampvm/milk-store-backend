@@ -8,7 +8,7 @@ namespace MilkStore.Service.Models.ViewModels.AccountViewModels
 {
     public class ResetPasswordDTO : SendForgotPasswordCodeDTO
     {
-        public string ResetToken { get; set; }
+        public string ResetPasswordToken { get; set; }
         public string NewPassword { get; set; }
     }
 
@@ -19,6 +19,6 @@ namespace MilkStore.Service.Models.ViewModels.AccountViewModels
 
     public class VerifyForgotPasswordCodeDTO : SendForgotPasswordCodeDTO
     {
-        public string Code { get; set; }
+        public string VerificationCode { get; set; }
     }
 }
