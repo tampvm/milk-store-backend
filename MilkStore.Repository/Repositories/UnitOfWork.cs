@@ -28,15 +28,13 @@ namespace MilkStore.Repository.Repositories
             IRoleRepository roleRepository, 
             IImageRepository imageRepository,
             IBrandRepository brandRepository,
-            IVoucherRepository voucherRepository,
+			IFollowBrandRepository followBrandRepository,
+			IVoucherRepository voucherRepository,
             IPointRepository pointRepository,
             IBlogRepostiory blogRepostiory,
             IAddressRepository addressRepository,
             IBlogCategoryRepository blogCategoryRepository, 
             ICategoryRepository categoryRepository)
-			IFollowBrandRepository followBrandRepository,
-			IVoucherRepository voucherRepository,
-            IPointRepository pointRepository)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
