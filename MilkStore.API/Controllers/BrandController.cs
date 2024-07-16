@@ -24,6 +24,14 @@ namespace MilkStore.API.Controllers
 			return Ok(brands);
 		}
 
+		// Get a detail brand 
+		[HttpGet("{id}")]
+		public async Task<IActionResult> ViewBrandDetailAsync(int id)
+		{
+			var brand = await _brandService.ViewBrandDetailModelAsync(id);
+			return Ok(brand);
+		}
+
 		// Create a new brand
 		[HttpPost]
 		public async Task<IActionResult> CreateBrandAsync(CreateBrandDTO model)

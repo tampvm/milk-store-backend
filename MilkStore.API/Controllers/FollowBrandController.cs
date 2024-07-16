@@ -16,7 +16,7 @@ namespace MilkStore.API.Controllers
 
 		// Get all FollowBrand by BrandId
 		[HttpGet]
-		public async Task<IActionResult> GetFollowBrandByBrandIdAsync(int brandId, int pageIndex, int pageSize)
+		public async Task<IActionResult> GetFollowBrandByBrandIdAsync(int brandId, int pageIndex = 0, int pageSize = 10)
 		{
 			var response = await _followBrandService.GetFollowBrandByBrandIdAsync(brandId, pageIndex, pageSize);
 			return Ok(response);
@@ -24,7 +24,7 @@ namespace MilkStore.API.Controllers
 
 		// Get all FollowBrand by AccountId
 		[HttpGet]
-		public async Task<IActionResult> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize)
+		public async Task<IActionResult> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex = 0, int pageSize = 10)
 		{
 			var response = await _followBrandService.GetFollowBrandByAccountIdAsync(accountId, pageIndex, pageSize);
 			return Ok(response);
