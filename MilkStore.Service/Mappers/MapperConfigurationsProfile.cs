@@ -228,25 +228,14 @@ namespace MilkStore.Service.Mappers
             CreateMap<CreateBlogDTO, Post>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => true))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.createBy))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.updateBy))
-                .ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.updateAt))
-                .ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.deleteAt))
-                .ForMember(dest => dest.DeletedBy, opt => opt.MapFrom(src => src.deleteBy))
-                .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.isDeleted));
+             
+				
+				;
 
             // Mapping from Post to CreateBlogDTO
             CreateMap<Post, CreateBlogDTO>()
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
-                .ForMember(dest => dest.createAt, opt => opt.MapFrom(src => src.CreatedAt))
-                .ForMember(dest => dest.createBy, opt => opt.MapFrom(src => src.CreatedBy))
-                .ForMember(dest => dest.updateBy, opt => opt.MapFrom(src => src.UpdatedBy))
-                .ForMember(dest => dest.updateAt, opt => opt.MapFrom(src => src.UpdatedAt))
-                .ForMember(dest => dest.deleteAt, opt => opt.MapFrom(src => src.DeletedAt))
-                .ForMember(dest => dest.deleteBy, opt => opt.MapFrom(src => src.DeletedBy))
-                .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted))
+                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))          
                 .ReverseMap();
 
             // Mapping from UpdateBlogDTO to Post

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Repository.Repositories;
@@ -41,13 +42,27 @@ namespace MilkStore.Service.Services
             blog.Content = model.Content;
             blog.IsDeleted = false;
             blog.Status = true;
-
+            var newAvatar = new Image
+            {
+                ImageUrl = model.Img,
+                ThumbnailUrl = model.Img,
+                Type = ImageTypeEnums.Avatar.ToString(),
+                CreatedBy = blog.CreatedBy,
+            };
 
             try
             {
+                await _unitOfWork.ImageRepository.AddAsync(newAvatar);
                 // Add blog to the repository
                 await _unitOfWork.BlogRepostiory.AddAsync(blog);
 
+
+                await _unitOfWork.BlogImageRepository.AddAsync(new PostImage
+                {
+                    ImageId = newAvatar.Id,
+                    PostId = blog.Id,
+                    IsDeleted = false
+                });
                 // Commit the changes to the database
                 await _unitOfWork.SaveChangeAsync();
 
