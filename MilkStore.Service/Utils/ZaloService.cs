@@ -119,7 +119,7 @@ namespace MilkStore.Service.Utils
         //    var expirationTime = DateTime.UtcNow.AddMinutes(10);
         //    var phoneVerification = new PhoneVerification
         //    {
-        //        PhoneNumber = phoneNumber,
+        //        PhoneNumberOrEmail = phoneNumber,
         //        VerificationCode = verificationCode,
         //        ExpirationTime = expirationTime
         //    };
