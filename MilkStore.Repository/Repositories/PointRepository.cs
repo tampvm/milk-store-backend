@@ -40,10 +40,10 @@ namespace MilkStore.Repository.Repositories
 		}
 
 		// Get all points by order id
-		public async Task<List<Point>> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
-		{
-			var points = _context.Points.Where(p => p.OrderId == orderId).Skip(pageIndex * pageSize).Take(pageSize).ToList();
-			return points;
-		}
+		//public async Task<List<Point>> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
+		//{
+		//	var points = _context.Points.Where(p => p.OrderId == orderId).Skip(pageIndex * pageSize).Take(pageSize).ToList();
+		//	return points;
+		//}
 	}
 }

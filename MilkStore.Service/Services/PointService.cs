@@ -46,19 +46,19 @@ namespace MilkStore.Service.Services
 		}
 
 		// Get all points by order id
-		public async Task<ResponseModel> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
-		{
-			var points = await _unitOfWork.PointRepository.GetPointsByOrderIdAsync(orderId, pageIndex, pageSize);
+		//public async Task<ResponseModel> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
+		//{
+		//	var points = await _unitOfWork.PointRepository.GetPointsByOrderIdAsync(orderId, pageIndex, pageSize);
 
-			var pointDtos = _mapper.Map<List<Pagination<ViewListPointDTO>>>(points);
+		//	var pointDtos = _mapper.Map<List<Pagination<ViewListPointDTO>>>(points);
 
-			return new SuccessResponseModel<object>
-			{
-				Success = true,
-				Message = "Points retrieved successfully.",
-				Data = pointDtos
-			};
-		}
+		//	return new SuccessResponseModel<object>
+		//	{
+		//		Success = true,
+		//		Message = "Points retrieved successfully.",
+		//		Data = pointDtos
+		//	};
+		//}
 
 		// Get total points by account id
 		public async Task<ResponseModel> GetTotalPointsByAccountIdAsync(string accountId)
