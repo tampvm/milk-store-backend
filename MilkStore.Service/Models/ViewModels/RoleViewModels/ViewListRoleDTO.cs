@@ -13,11 +13,11 @@ namespace MilkStore.Service.Models.ViewModels.RoleViewModels
         public string Description { get; set; }
         public bool IsDefault { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string CreatedBy { get; set; }  // Username
+        public string CreatedBy { get; set; }  // UserId
         public DateTime? UpdatedAt { get; set; }
-        public string UpdatedBy { get; set; }  // Username
+        public string UpdatedBy { get; set; }  // UserId
         public DateTime? DeletedAt { get; set; }
-        public string? DeletedBy { get; set; } // Username
+        public string? DeletedBy { get; set; } // UserId
         public bool IsDeleted { get; set; }
     }
 }

@@ -18,12 +18,22 @@ namespace MilkStore.Repository.Repositories
         private readonly IFollowBrandRepository _followBrandRepository;
 		private readonly IVoucherRepository _voucherRepository;
         private readonly IPointRepository _pointRepository;
+        private readonly IBlogRepostiory _blogRepostiory;
+        private readonly IAddressRepository _addressRepository;
+        private readonly IBlogCategoryRepository _blogCategoryRepository;
+        private readonly ICategoryRepository _categoryRepository;
 
-		public UnitOfWork(AppDbContext dbContext, 
+        public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
             IRoleRepository roleRepository, 
             IImageRepository imageRepository,
             IBrandRepository brandRepository,
+            IVoucherRepository voucherRepository,
+            IPointRepository pointRepository,
+            IBlogRepostiory blogRepostiory,
+            IAddressRepository addressRepository,
+            IBlogCategoryRepository blogCategoryRepository, 
+            ICategoryRepository categoryRepository)
 			IFollowBrandRepository followBrandRepository,
 			IVoucherRepository voucherRepository,
             IPointRepository pointRepository)
@@ -36,18 +46,25 @@ namespace MilkStore.Repository.Repositories
 			_followBrandRepository = followBrandRepository;
 			_voucherRepository = voucherRepository;
 			_pointRepository = pointRepository;
-		}
+            _blogRepostiory = blogRepostiory;
+            _addressRepository = addressRepository;
+            _blogCategoryRepository = blogCategoryRepository;
+            _categoryRepository = categoryRepository;
+        }
 
         public IAcccountRepository AcccountRepository => _accountRepository;
         public IRoleRepository RoleRepository => _roleRepository;
         public IImageRepository ImageRepository => _imageRepository;
-
+        public IBlogRepostiory BlogRepostiory => _blogRepostiory;
         public IBrandRepository BrandRepository => _brandRepository;
 		public IFollowBrandRepository FollowBrandRepository => _followBrandRepository;
 		public IVoucherRepository VoucherRepository => _voucherRepository;
 		public IPointRepository PointRepository => _pointRepository;
+        public IAddressRepository AddressRepository => _addressRepository;
+        public IBlogCategoryRepository BlogCategoryRepository => _blogCategoryRepository;
+        public ICategoryRepository CategoryRepository => _categoryRepository;
 
-		public async Task<int> SaveChangeAsync()
+        public async Task<int> SaveChangeAsync()
         {
             return await _dbContext.SaveChangesAsync();
         }

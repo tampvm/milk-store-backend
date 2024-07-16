@@ -39,7 +39,7 @@ namespace MilkStore.Service.Services
                 // Đánh dấu token là đã sử dụng
                 //_cache.Set($"{identifier}_{method}_{type}_used", true, TimeSpan.FromMinutes(10));
                 // Xóa token khỏi cache ngay sau khi xác thực thành công
-                _cache.Remove($"{identifier}_{method}_{type}_token");
+                //_cache.Remove($"{identifier}_{method}_{type}_token");
                 return true;
             }
             return false;

@@ -15,6 +15,10 @@ namespace MilkStore.Repository.Interfaces
 		IFollowBrandRepository FollowBrandRepository { get; }
 		IVoucherRepository VoucherRepository { get; }
 		IPointRepository PointRepository { get; }
-		Task<int> SaveChangeAsync();
+		IBlogRepostiory BlogRepostiory { get; }
+        IAddressRepository AddressRepository { get; }
+		IBlogCategoryRepository BlogCategoryRepository { get; }
+		ICategoryRepository CategoryRepository { get; }
+        Task<int> SaveChangeAsync();
 	}
 }

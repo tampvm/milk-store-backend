@@ -19,7 +19,9 @@ using System.Net;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace MilkStore.Service.Services
 {
@@ -64,27 +66,52 @@ namespace MilkStore.Service.Services
             return new Random().Next(100000, 999999).ToString();
         }
 
-        // Send verification code to user's phone number when user register
-        public async Task<ResponseModel> SendRegisterVerificationCodeAsync(PhoneNumberDTO model)
+        // Send verification code to usern's phone number when usern register
+        public async Task<ResponseModel> SendRegisterVerificationCodeAsync(PhoneNumberOrEmailDTO model)
         {
-            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+            if (IsEmail(model.PhoneNumberOrEmail))
+            {
+                var user = await _userManager.FindByEmailAsync(model.PhoneNumberOrEmail);
+                if (user != null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Email already in use."
+                    };
+                }
 
-            if (user is not null)
+                var emailCode = GenerateVerificationCode();
+                await _emailSender.SendEmailAsync(model.PhoneNumberOrEmail, "Verification Code", $"Mã xác thực của bạn là: {emailCode}, mã sẽ hết hiệu lực sau 10 phút.");
+                _cache.Set(model.PhoneNumberOrEmail, emailCode, TimeSpan.FromMinutes(10));
+            }
+            else if (IsPhoneNumber(model.PhoneNumberOrEmail))
+            {
+                //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumberOrEmail == model.PhoneNumberOrEmail);
+                var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
+                if (user != null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Phone number already in use."
+                    };
+                }
+
+                var phoneCode = GenerateVerificationCode();
+                await _smsSender.SendSmsAsync(model.PhoneNumberOrEmail, $"Your verification code is: {phoneCode}. The code will expire in 10 minutes.");
+                _cache.Set(model.PhoneNumberOrEmail, phoneCode, TimeSpan.FromMinutes(10));
+            }
+            else
             {
                 return new ResponseModel
                 {
                     Success = false,
-                    Message = "Phone number already in use."
+                    Message = "Invalid phone number or email format."
                 };
             }
 
-            var code = GenerateVerificationCode();
             DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10); // Thời gian hết hạn 10 phút từ bây giờ
-
-            await _smsSender.SendSmsAsync(model.PhoneNumber, $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
-
-            _cache.Set(model.PhoneNumber, code, TimeSpan.FromMinutes(10));
 
             return new SuccessResponseModel<object>
             {
@@ -97,40 +124,77 @@ namespace MilkStore.Service.Services
             };
         }
 
-        // Verify phone number by verification code when user register
-        public async Task<ResponseModel> VerifyRegisterCodeAsync(VerifyPhoneNumberDTO model)
+        // Verify phone number by verification code when usern register
+        public async Task<ResponseModel> VerifyRegisterCodeAsync(VerifyRegisterCodeDTO model)
         {
-            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
-
-            if (user is not null)
+            if (string.IsNullOrEmpty(model.PhoneNumberOrEmail) || string.IsNullOrEmpty(model.VerificationCode))
             {
                 return new ResponseModel
                 {
                     Success = false,
-                    Message = "Phone number already in use."
+                    Message = "Phone number or email and verification code are required."
                 };
             }
 
-            // Validate verification code
-            if (_cache.TryGetValue(model.PhoneNumber, out string savedCode) && savedCode == model.Code)
+            if (IsEmail(model.PhoneNumberOrEmail))
             {
-                // Remove the verification code from cache to prevent reuse
-                _cache.Remove(model.PhoneNumber);
-
-                // Generate register token
-                var registerToken = _tokenService.GenerateToken(model.PhoneNumber, "phone", "register", out DateTime expiryTime); // Generate token by custom logic
-
-                return new SuccessResponseModel<object>
+                // Kiểm tra email tồn tại
+                var user = await _userManager.FindByEmailAsync(model.PhoneNumberOrEmail);
+                if (user != null)
                 {
-                    Success = true,
-                    Message = "Phone number verified.",
-                    Data = new
+                    return new ResponseModel
                     {
-                        Token = registerToken,
-                        TokenExpiryTime = expiryTime
-                    }
-                };
+                        Success = false,
+                        Message = "Email already in use."
+                    };
+                }
+
+                // Xác thực mã
+                if (_cache.TryGetValue(model.PhoneNumberOrEmail, out string savedEmailCode) && savedEmailCode == model.VerificationCode)
+                {
+                    _cache.Remove(model.PhoneNumberOrEmail);
+                    var emailToken = _tokenService.GenerateToken(model.PhoneNumberOrEmail, "email", "register", out DateTime expiryTime);
+                    return new SuccessResponseModel<object>
+                    {
+                        Success = true,
+                        Message = "Email verified.",
+                        Data = new
+                        {
+                            Token = emailToken,
+                            TokenExpiryTime = expiryTime
+                        }
+                    };
+                }
+            }
+            else if (IsPhoneNumber(model.PhoneNumberOrEmail))
+            {
+                // Kiểm tra số điện thoại tồn tại
+                var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
+                if (user != null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Phone number already in use."
+                    };
+                }
+
+                // Xác thực mã
+                if (_cache.TryGetValue(model.PhoneNumberOrEmail, out string savedPhoneCode) && savedPhoneCode == model.VerificationCode)
+                {
+                    _cache.Remove(model.PhoneNumberOrEmail);
+                    var phoneToken = _tokenService.GenerateToken(model.PhoneNumberOrEmail, "phone", "register", out DateTime expiryTime);
+                    return new SuccessResponseModel<object>
+                    {
+                        Success = true,
+                        Message = "Phone number verified.",
+                        Data = new
+                        {
+                            Token = phoneToken,
+                            TokenExpiryTime = expiryTime
+                        }
+                    };
+                }
             }
 
             return new ResponseModel
@@ -143,22 +207,64 @@ namespace MilkStore.Service.Services
         // Register
         public async Task<ResponseModel> RegisterAsync(RegisterDTO model)
         {
-            if (!_tokenService.ValidateToken(model.PhoneNumber, "phone", "register", model.RegisterToken))
+            if (IsEmail(model.PhoneNumberOrEmail))
+            {
+                if (!_tokenService.ValidateToken(model.PhoneNumberOrEmail, "email", "register", model.RegisterToken))
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid or expired email registration token."
+                    };
+                }
+
+                var emailExists = await _userManager.FindByEmailAsync(model.PhoneNumberOrEmail);
+                if (emailExists != null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = $"{model.PhoneNumberOrEmail} already exists"
+                    };
+                }
+            }
+            else if (IsPhoneNumber(model.PhoneNumberOrEmail))
+            {
+                if (!_tokenService.ValidateToken(model.PhoneNumberOrEmail, "phone", "register", model.RegisterToken))
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = "Invalid or expired phone registration token."
+                    };
+                }
+
+                var phoneExists = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
+                if (phoneExists != null)
+                {
+                    return new ResponseModel
+                    {
+                        Success = false,
+                        Message = $"{model.PhoneNumberOrEmail} already exists"
+                    };
+                }
+            }
+            else
             {
                 return new ResponseModel
                 {
                     Success = false,
-                    Message = "Invalid or expired registration token."
+                    Message = "Invalid phone number or email format."
                 };
             }
 
-            var phoneExists = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
-            if (phoneExists != null)
+            // Kiểm tra xem username có đủ độ dài yêu cầu không (tối thiểu 6 ký tự)
+            if (model.Username.Length < 6)
             {
                 return new ResponseModel
                 {
                     Success = false,
-                    Message = $"{model.PhoneNumber} already exists"
+                    Message = "Username must be at least 6 characters long."
                 };
             }
 
@@ -185,6 +291,16 @@ namespace MilkStore.Service.Services
 
             var user = _mapper.Map<Account>(model);
 
+            // Assign phone number or email based on input type
+            if (IsEmail(model.PhoneNumberOrEmail))
+            {
+                user.Email = model.PhoneNumberOrEmail;
+            }
+            else if (IsPhoneNumber(model.PhoneNumberOrEmail))
+            {
+                user.PhoneNumber = model.PhoneNumberOrEmail;
+            }
+
             user.CreatedAt = _currentTime.GetCurrentTime();
             user.CreatedBy = user.Id;
 
@@ -195,10 +311,13 @@ namespace MilkStore.Service.Services
                 var role = RoleEnums.Customer.ToString(); // Ví dụ, mặc định đăng ký là Customer
                 await _userManager.AddToRoleAsync(user, role);
 
-                //var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                //var confirmationLink = $"{_configuration["AppSettings:AppUrl"]}/api/account/confirmemail?userId={user.Id}&token={WebUtility.UrlEncode(token)}";
+                //var token = await _userManager.GenerateEmailConfirmationTokenAsync(usern);
+                //var confirmationLink = $"{_configuration["AppSettings:AppUrl"]}/api/account/confirmemail?userId={usern.Id}&token={WebUtility.UrlEncode(token)}";
 
-                //await _emailSender.SendEmailAsync(user.Email, "Confirm your email", $"Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>");
+                //await _emailSender.SendEmailAsync(usern.Email, "Confirm your email", $"Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>");
+
+                _cache.Remove($"{model.PhoneNumberOrEmail}_phonge_register_token");
+                _cache.Remove($"{model.PhoneNumberOrEmail}_email_register_token");
 
                 return new SuccessResponseModel<object>
                 {
@@ -215,11 +334,34 @@ namespace MilkStore.Service.Services
                 };
             }
 
-            return new ResponseModel
+            return new ErrorResponseModel<string>
             {
                 Success = false,
-                Message = string.Join("; ", result.Errors.Select(e => e.Description))
+                Message = "Password is not in correct format.",
+                Errors = result.Errors.Select(e => e.Description).ToList()
             };
+        }
+
+        public bool IsEmail(string input)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(input);
+                return addr.Address == input;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public bool IsPhoneNumber(string input)
+        {
+            // Adjust this regex pattern according to your phone number format requirements
+            //var phoneNumberPattern = @"^\+?[1-9]\d{1,14}$";
+            var phoneNumberPattern = @"^(\+84\s?\d{9,10}|0\d{9})$";
+
+            return Regex.IsMatch(input, phoneNumberPattern);
         }
         #endregion
 
@@ -272,10 +414,10 @@ namespace MilkStore.Service.Services
             }
         }
 
-        // Find user by username, email, or phone number
+        // Find usern by username, email, or phone number
         private async Task<Account> FindByUsernameOrEmailOrPhoneNumberAsync(string identifier, bool includeUsername = true)
         {
-            // Try to find the user by phone number first
+            // Try to find the usern by phone number first
             var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(identifier);
 
             // If not found by phone number, try to find by email
@@ -305,10 +447,10 @@ namespace MilkStore.Service.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                //new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                //new Claim(JwtRegisteredClaimNames.Email, usern.Email),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                 new Claim(ClaimTypes.Name, user.UserName),
-                //new Claim(ClaimTypes.Sid, user.Id.ToString()),
+                //new Claim(ClaimTypes.Sid, usern.Id.ToString()),
                 new Claim ("userId", user.Id.ToString())
             };
 
@@ -429,11 +571,11 @@ namespace MilkStore.Service.Services
         #endregion
 
         #region Forgot Password
-        // Send verification code to user's phone number or email when user forgot password
+        // Send verification code to usern's phone number or email when usern forgot password
         public async Task<ResponseModel> SendForgotPasswordVerificationCodeByPhoneNumberOrEmailAsync(SendForgotPasswordCodeDTO model)
         {
-            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            //var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+            //var usern = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumberOrEmail == model.PhoneNumberOrEmail);
+            //var usern = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
             var user = await FindByUsernameOrEmailOrPhoneNumberAsync(model.PhoneNumberOrEmail, includeUsername: false);
 
             if (user is null)
@@ -445,7 +587,7 @@ namespace MilkStore.Service.Services
                 };
             }
 
-            //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(user, model.PhoneNumber);
+            //var code = await _userManager.GenerateChangePhoneNumberTokenAsync(usern, model.PhoneNumberOrEmail);
             string code;
             DateTime expiryTime = DateTime.UtcNow.ToLocalTime().AddMinutes(10);
 
@@ -477,8 +619,8 @@ namespace MilkStore.Service.Services
         // Verify forgot password code by phone number or email
         public async Task<ResponseModel> VerifyForgotPasswordCodeByPhoneNumberOrEmailAsync(VerifyForgotPasswordCodeDTO model)
         {
-            //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-            //var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
+            //var usern = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumberOrEmail == model.PhoneNumberOrEmail);
+            //var usern = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
             var user = await FindByUsernameOrEmailOrPhoneNumberAsync(model.PhoneNumberOrEmail, includeUsername: false);
 
             if (user is null)
@@ -506,9 +648,9 @@ namespace MilkStore.Service.Services
                     };
                 }
 
-                // Code is verified, you can now redirect the user to the password reset page
+                // VerificationCode is verified, you can now redirect the usern to the password reset page
                 // Here, you might generate a token and send it to the client to allow password reset
-                //var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user); // Generate token by ASP.NET Core Identity
+                //var resetToken = await _userManager.GeneratePasswordResetTokenAsync(usern); // Generate token by ASP.NET Core Identity
                 var resetToken = _tokenService.GenerateToken(model.PhoneNumberOrEmail, model.PhoneNumberOrEmail.Contains("@") ? "email" : "phone", "reset", out DateTime expiryTime); // Generate token by custom logic
 
                 return new SuccessResponseModel<object>
@@ -580,11 +722,11 @@ namespace MilkStore.Service.Services
         // Reset password by ASP.NET Core Identity
         //public async Task<ResponseModel> ForgotPasswordAsync(ResetPasswordDTO model)
         //{
-        //    //var user = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
-        //    //var user = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
-        //    var user = await FindByUsernameOrEmailOrPhoneNumberAsync(model.PhoneNumberOrEmail, includeUsername: false);
+        //    //var usern = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumberOrEmail == model.PhoneNumberOrEmail);
+        //    //var usern = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumberOrEmail);
+        //    var usern = await FindByUsernameOrEmailOrPhoneNumberAsync(model.PhoneNumberOrEmail, includeUsername: false);
 
-        //    if (user is null)
+        //    if (usern is null)
         //    {
         //        return new ResponseModel
         //        {
@@ -593,7 +735,7 @@ namespace MilkStore.Service.Services
         //        };
         //    }
 
-        //    var result = await _userManager.ResetPasswordAsync(user, model.ResetToken, model.NewPassword);
+        //    var result = await _userManager.ResetPasswordAsync(usern, model.ResetToken, model.NewPassword);
         //    if (result.Succeeded)
         //    {
         //        return new ResponseModel
@@ -710,6 +852,7 @@ namespace MilkStore.Service.Services
                         user.FacebookEmail = dto.Email;
                     }
 
+                    user.Email = null;
                     user.CreatedAt = _currentTime.GetCurrentTime();
                     user.CreatedBy = user.Id;
                     user.LastLogin = _currentTime.GetCurrentTime();
@@ -757,7 +900,7 @@ namespace MilkStore.Service.Services
                 var accessToken = GenerateJsonWebToken(user, out DateTime tokenExpiryTime);
                 var refreshToken = GenerateRefreshToken();
 
-                //user.CreatedBy = user.Id;
+                //usern.CreatedBy = usern.Id;
                 user.RefreshToken = refreshToken;
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_appConfiguration.JWT.RefreshTokenDurationInDays);
 

@@ -114,6 +114,12 @@ namespace MilkStore.API
 
 			services.AddScoped<IImageRepository, ImageRepository>();
 
+			services.AddScoped<IAddressRepository, AddressRepository>();
+            services.AddScoped<IAddressService, AddressService>();
+
+            services.AddScoped<IBlogRepostiory, BlogRepository>();
+            services.AddScoped<IBlogService, BlogService>();
+
 			// Brand
 			services.AddScoped<IBrandRepository, BrandRepository>();
 			services.AddScoped<IBrandService, BrandService>();
@@ -129,6 +135,15 @@ namespace MilkStore.API
 			// Point
 			services.AddScoped<IPointRepository, PointRepository>();
 			services.AddScoped<IPointService, PointService>();
+
+			//Category
+			services.AddScoped<ICategoryRepository, CategoryRepository>();
+			services.AddScoped<ICategoryService, CategoryService>();
+			//BlogCategory
+			services.AddScoped<IBlogCategoryRepository, BlogCategoryRepository>();
+			services.AddScoped<IBlogCategoryService, BlogCategoryService>();
+			
+
 
 			services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
