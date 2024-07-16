@@ -31,5 +31,19 @@ namespace MilkStore.Repository.Repositories
 			var totalPoints = _context.Points.Where(p => p.AccountId == accountId).Sum(p => p.Points);
 			return totalPoints;
 		}
+
+		// Get all points by order id
+		public async Task<List<Point>> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
+		{
+			var points = _context.Points.Where(p => p.OrderId == orderId).Skip(pageIndex * pageSize).Take(pageSize).ToList();
+			return points;
+		}
+
+		// Get total points by order id
+		public async Task<int> GetTotalPointsByOrderIdAsync(string orderId)
+		{
+			var totalPoints = _context.Points.Where(p => p.OrderId == orderId).Sum(p => p.Points);
+			return totalPoints;
+		}
 	}
 }
