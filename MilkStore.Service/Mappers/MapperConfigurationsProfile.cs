@@ -6,6 +6,7 @@ using MilkStore.Repository.Common;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using MilkStore.Service.Models.ViewModels.AuthViewModels;
 using MilkStore.Service.Models.ViewModels.BrandViewModels;
+using MilkStore.Service.Models.ViewModels.FollowBrandViewModels;
 using MilkStore.Service.Models.ViewModels.PointViewModels;
 using MilkStore.Service.Models.ViewModels.BogViewModel;
 using MilkStore.Service.Models.ViewModels.RoleViewModels;
@@ -136,6 +137,39 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
 				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active))
 				.ForMember(dest => dest.ImageId, otp => otp.MapFrom(src => src.ImageId)).ReverseMap();
+
+			CreateMap<Brand, ViewBrandDetailDTO>()
+				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
+				.ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Name))
+				.ForMember(dest => dest.BrandOrigin, otp => otp.MapFrom(src => src.BrandOrigin))
+				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
+				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active))
+				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => src.CreatedAt))
+				.ForMember(dest => dest.UpdatedAt, opt => opt.MapFrom(src => src.UpdatedAt))
+				.ForMember(dest => dest.DeletedAt, opt => opt.MapFrom(src => src.DeletedAt))
+				.ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => src.IsDeleted)).ReverseMap();
+			#endregion
+
+			#region FollowBrand
+			CreateMap<FollowBrand, ViewListFollowBrandDTO>()
+				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+				.ForMember(dest => dest.IsFollow, opt => opt.MapFrom(src => src.IsFollow))
+				.ForMember(dest => dest.FollowedAt, opt => opt.MapFrom(src => src.FollowedAt))
+				.ForMember(dest => dest.UnfollowedAt, opt => opt.MapFrom(src => src.UnfollowedAt))
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId)).ReverseMap();
+
+			CreateMap<Pagination<FollowBrand>, Pagination<ViewFollowBrandByUserDTO>>()
+				.ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items));
+
+			CreateMap<FollowBrand, ViewFollowBrandByUserDTO>();
+
+			CreateMap<UserFollowsBrandDTO, FollowBrand>()
+				.ForMember(dest => dest.IsFollow, opt => opt.MapFrom(src => true))
+				.ForMember(dest => dest.FollowedAt, opt => opt.MapFrom(src => src.FollowedAt))
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId)).ReverseMap();
+
 			#endregion
 
 			#region Voucher
