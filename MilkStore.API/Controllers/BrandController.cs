@@ -24,11 +24,11 @@ namespace MilkStore.API.Controllers
 			return Ok(brands);
 		}
 
-		// Get a brand by id
+		// Get a detail brand 
 		[HttpGet("{id}")]
-		public async Task<IActionResult> GetBrandByIdAsync(int id)
+		public async Task<IActionResult> ViewBrandDetailAsync(int id)
 		{
-			var brand = await _brandService.GetBrandByIdAsync(id);
+			var brand = await _brandService.ViewBrandDetailModelAsync(id);
 			return Ok(brand);
 		}
 
@@ -54,7 +54,7 @@ namespace MilkStore.API.Controllers
 		}
 
 		// Update a brand
-		[HttpPost]
+		[HttpPut]
 		public async Task<IActionResult> UpdateBrandAsync(UpdateBrandDTO model)
 		{
 			var response = await _brandService.UpdateBrandAsync(model);
@@ -70,7 +70,7 @@ namespace MilkStore.API.Controllers
 		}
 
 		// Delete a brand
-		[HttpDelete("{id}")]
+		[HttpDelete]
 		public async Task<IActionResult> DeleteBrandAsync(int id)
 		{
 			var response = await _brandService.DeleteBrandAsync(id);

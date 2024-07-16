@@ -76,6 +76,53 @@ namespace MilkStore.Service.Services
 			};
 		}
 
+		// View a brand detail
+		public async Task<ViewBrandDetailDTO> ViewBrandDetailAsync(int id)
+		{
+			var brand = await _unitOfWork.BrandRepository.GetByIdAsync(id);
+
+			if (brand == null)
+			{
+				return null;
+			}
+
+			var brandDto = _mapper.Map<ViewBrandDetailDTO>(brand);
+
+			var Img = await _unitOfWork.ImageRepository.GetByIdAsync(brand.ImageId);
+			if (Img != null)
+			{
+				brandDto.ImageUrl = Img.ImageUrl;
+			}
+
+			var total = await _unitOfWork.FollowBrandRepository.CountAsync(x => x.BrandId == brand.Id);
+			brandDto.TotalFollow = total;
+
+			return brandDto;
+		}
+
+		public async Task<ResponseModel> ViewBrandDetailModelAsync(int id)
+		{
+			var brand = await ViewBrandDetailAsync(id);
+			if (brand == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Brand is not found."
+				};
+				
+			}
+			else
+			{
+				return new SuccessResponseModel<object>
+				{
+					Success = true,
+					Message = "Brand retrieved successfully.",
+					Data = brand
+				};
+			}
+		}
+
 		// Create a new brand
 		public async Task<ResponseModel> CreateBrandAsync(CreateBrandDTO model)
 		{

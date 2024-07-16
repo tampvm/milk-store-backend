@@ -124,6 +124,10 @@ namespace MilkStore.API
 			services.AddScoped<IBrandRepository, BrandRepository>();
 			services.AddScoped<IBrandService, BrandService>();
 
+			// FollowBrand
+			services.AddScoped<IFollowBrandRepository, FollowBrandRepository>();
+			services.AddScoped<IFollowBrandService, FollowBrandService>();
+
 			// Voucher
 			services.AddScoped<IVoucherRepository, VoucherRepository>();
 			services.AddScoped<IVoucherService, VoucherService>();
