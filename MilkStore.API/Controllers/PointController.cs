@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
+using MilkStore.Service.Models.ViewModels.PointViewModels;
 
 namespace MilkStore.API.Controllers
 {
@@ -35,6 +36,22 @@ namespace MilkStore.API.Controllers
 		{
 			var totalPoints = await _pointService.GetTotalPointsByAccountIdAsync(accountId);
 			return Ok(totalPoints);
+		}
+
+		// Spending points
+		[HttpPost]
+		public async Task<IActionResult> SpendingPointsAsync(PointsTradingDTO model)
+		{
+			var result = await _pointService.SpendingPointsAsync(model);
+			return Ok(result);
+		}
+
+		// Earning points
+		[HttpPost]
+		public async Task<IActionResult> EarningPointsAsync(PointsTradingDTO model)
+		{
+			var result = await _pointService.EarningPointsAsync(model);
+			return Ok(result);
 		}
 	}
 }

@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
@@ -71,6 +73,51 @@ namespace MilkStore.Service.Services
 				{
 					TotalPoints = totalPoints
 				}
+			};
+		}
+
+		// Spend points
+		public async Task<ResponseModel> SpendingPointsAsync(PointsTradingDTO model)
+		{
+			var totalPoints = await _unitOfWork.PointRepository.GetTotalPointsByAccountIdAsync(model.AccountId);
+
+			if (totalPoints < model.Points)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Not enough points to spend."
+				};
+			}
+
+			var point = _mapper.Map<Point>(model);
+			point.TransactionType = PointTransactionTypeEnums.Spending.ToString(); 
+			point.Points = -model.Points; // Subtract points
+
+			await _unitOfWork.PointRepository.AddAsync(point);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Points spent successfully."
+			};
+		}
+
+
+		// Earn points
+		public async Task<ResponseModel> EarningPointsAsync(PointsTradingDTO model)
+		{
+			var point = _mapper.Map<Point>(model);
+			point.TransactionType = PointTransactionTypeEnums.Earning.ToString(); 
+
+			await _unitOfWork.PointRepository.AddAsync(point);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Points earned successfully."
 			};
 		}
 	}
