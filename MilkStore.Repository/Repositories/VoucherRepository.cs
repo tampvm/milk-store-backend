@@ -1,4 +1,5 @@
-﻿using MilkStore.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
 using MilkStore.Repository.Interfaces;
 using System;
@@ -16,6 +17,11 @@ namespace MilkStore.Repository.Repositories
 		public VoucherRepository(AppDbContext context, ICurrentTime timeService, IClaimsService claimsService) : base(context, timeService, claimsService)
 		{
 			_context = context;
+		}
+
+		public async Task<Voucher?> GetVoucherByCodeAsync(string code)
+		{
+			return await _context.Vouchers.FirstOrDefaultAsync(x => x.Code.Equals(code));
 		}
 	}
 }
