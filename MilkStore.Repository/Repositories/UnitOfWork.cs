@@ -22,6 +22,7 @@ namespace MilkStore.Repository.Repositories
         private readonly IAddressRepository _addressRepository;
         private readonly IBlogCategoryRepository _blogCategoryRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
 
         public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -34,7 +35,8 @@ namespace MilkStore.Repository.Repositories
             IBlogRepostiory blogRepostiory,
             IAddressRepository addressRepository,
             IBlogCategoryRepository blogCategoryRepository, 
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            IProductRepository productRepository)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
@@ -48,6 +50,7 @@ namespace MilkStore.Repository.Repositories
             _addressRepository = addressRepository;
             _blogCategoryRepository = blogCategoryRepository;
             _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
         }
 
         public IAcccountRepository AcccountRepository => _accountRepository;
@@ -61,6 +64,7 @@ namespace MilkStore.Repository.Repositories
         public IAddressRepository AddressRepository => _addressRepository;
         public IBlogCategoryRepository BlogCategoryRepository => _blogCategoryRepository;
         public ICategoryRepository CategoryRepository => _categoryRepository;
+        public IProductRepository ProductRepository => _productRepository;
 
         public async Task<int> SaveChangeAsync()
         {
