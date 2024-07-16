@@ -25,7 +25,7 @@ namespace MilkStore.API.Controllers
             return Ok(blogs);
         }
         [HttpPost("create", Name = "CreateBlog")]
-        public async Task<IActionResult> CreateBlog([FromBody] CreateBlogDTO model, int imgId)
+        public async Task<IActionResult> CreateBlog([FromBody] CreateBlogDTO model)
         {
             // Check if the model state is valid
             if (!ModelState.IsValid)
@@ -33,7 +33,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var response = await _blogService.CreateBlog(model, imgId);
+            var response = await _blogService.CreateBlog(model);
 
             if (response.Success)
             {

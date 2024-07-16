@@ -12,7 +12,7 @@ namespace MilkStore.Service.Interfaces
     {
         Task<ResponseModel> GetAllBlog(int pageIndex, int pageSize);
         Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, string id, int postId);
-        Task<ResponseModel> CreateBlog(CreateBlogDTO model, int imgId);
+        Task<ResponseModel> CreateBlog(CreateBlogDTO model);
         Task<ResponseModel> UpdateBlog(UpdateBlogDTO model, int id);
         Task<ResponseModel> DeleteBlog(int id, string deleteBy);
         Task<ResponseModel> GetBlogByUserIdWithouImg(int id);

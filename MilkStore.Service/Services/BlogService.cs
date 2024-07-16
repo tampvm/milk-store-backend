@@ -32,7 +32,7 @@ namespace MilkStore.Service.Services
 
         }
 
-        public async Task<ResponseModel> CreateBlog(CreateBlogDTO model, int imgId)
+        public async Task<ResponseModel> CreateBlog(CreateBlogDTO model)
         {
             // Create blog   
 
