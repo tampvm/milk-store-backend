@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
@@ -44,17 +46,78 @@ namespace MilkStore.Service.Services
 		}
 
 		// Get all points by order id
-		public async Task<ResponseModel> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
+		//public async Task<ResponseModel> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
+		//{
+		//	var points = await _unitOfWork.PointRepository.GetPointsByOrderIdAsync(orderId, pageIndex, pageSize);
+
+		//	var pointDtos = _mapper.Map<List<Pagination<ViewListPointDTO>>>(points);
+
+		//	return new SuccessResponseModel<object>
+		//	{
+		//		Success = true,
+		//		Message = "Points retrieved successfully.",
+		//		Data = pointDtos
+		//	};
+		//}
+
+		// Get total points by account id
+		public async Task<ResponseModel> GetTotalPointsByAccountIdAsync(string accountId)
 		{
-			var points = await _unitOfWork.PointRepository.GetPointsByOrderIdAsync(orderId, pageIndex, pageSize);
-			
-			var pointDtos = _mapper.Map<List<Pagination<ViewListPointDTO>>>(points);
+			var totalPoints = await _unitOfWork.PointRepository.GetTotalPointsByAccountIdAsync(accountId);
 
 			return new SuccessResponseModel<object>
 			{
 				Success = true,
-				Message = "Points retrieved successfully.",
-				Data = pointDtos
+				Message = "Total points retrieved successfully.",
+				Data = new
+				{
+					TotalPoints = totalPoints
+				}
+			};
+		}
+
+		// Spend points
+		public async Task<ResponseModel> SpendingPointsAsync(PointsTradingDTO model)
+		{
+			var totalPoints = await _unitOfWork.PointRepository.GetTotalPointsByAccountIdAsync(model.AccountId);
+
+			if (totalPoints < model.Points)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Not enough points to spend."
+				};
+			}
+
+			var point = _mapper.Map<Point>(model);
+			point.TransactionType = PointTransactionTypeEnums.Spending.ToString(); 
+			point.Points = -model.Points; // Subtract points
+
+			await _unitOfWork.PointRepository.AddAsync(point);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Points spent successfully."
+			};
+		}
+
+
+		// Earn points
+		public async Task<ResponseModel> EarningPointsAsync(PointsTradingDTO model)
+		{
+			var point = _mapper.Map<Point>(model);
+			point.TransactionType = PointTransactionTypeEnums.Earning.ToString(); 
+
+			await _unitOfWork.PointRepository.AddAsync(point);
+			await _unitOfWork.SaveChangeAsync();
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Points earned successfully."
 			};
 		}
 	}

@@ -13,7 +13,6 @@ namespace MilkStore.Repository.Interfaces
 	{
 		Task<List<Point>> GetPointsByAccountIdAsync(string accountId, int pageIndex, int pageSize);
 		Task<int> GetTotalPointsByAccountIdAsync(string accountId);
-		Task<List<Point>> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize);
-		Task<int> GetTotalPointsByOrderIdAsync(string orderId);
+		//Task<List<Point>> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize);
 	}
 }

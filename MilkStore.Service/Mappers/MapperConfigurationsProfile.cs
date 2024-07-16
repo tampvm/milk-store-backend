@@ -236,6 +236,12 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.AccountId, otp => otp.MapFrom(src => src.AccountId))
 				.ForMember(dest => dest.OrderId, otp => otp.MapFrom(src => src.OrderId)).ReverseMap();
 
+			CreateMap<PointsTradingDTO, Point>()
+				.ForMember(dest => dest.Points, opt => opt.MapFrom(src => src.Points))
+				.ForMember(dest => dest.TransactionType, opt => opt.MapFrom(src => src.TransactionType))
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.OrderId)).ReverseMap();
+
 			#endregion
 
 			#region Blog
