@@ -47,7 +47,7 @@ namespace MilkStore.Service.Services
 		public async Task<ResponseModel> GetPointsByOrderIdAsync(string orderId, int pageIndex, int pageSize)
 		{
 			var points = await _unitOfWork.PointRepository.GetPointsByOrderIdAsync(orderId, pageIndex, pageSize);
-			
+
 			var pointDtos = _mapper.Map<List<Pagination<ViewListPointDTO>>>(points);
 
 			return new SuccessResponseModel<object>
@@ -55,6 +55,22 @@ namespace MilkStore.Service.Services
 				Success = true,
 				Message = "Points retrieved successfully.",
 				Data = pointDtos
+			};
+		}
+
+		// Get total points by account id
+		public async Task<ResponseModel> GetTotalPointsByAccountIdAsync(string accountId)
+		{
+			var totalPoints = await _unitOfWork.PointRepository.GetTotalPointsByAccountIdAsync(accountId);
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Total points retrieved successfully.",
+				Data = new
+				{
+					TotalPoints = totalPoints
+				}
 			};
 		}
 	}

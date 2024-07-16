@@ -1,4 +1,6 @@
-﻿using MilkStore.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Data;
 using MilkStore.Repository.Interfaces;
 using System;
@@ -28,7 +30,12 @@ namespace MilkStore.Repository.Repositories
 		// Get total points by account id
 		public async Task<int> GetTotalPointsByAccountIdAsync(string accountId)
 		{
-			var totalPoints = _context.Points.Where(p => p.AccountId == accountId).Sum(p => p.Points);
+			var points = await _context.Points
+							   .Where(p => p.AccountId == accountId)
+							   .ToListAsync();
+
+			int totalPoints = points.Sum(p => p.TransactionType == PointTransactionTypeEnums.Spending.ToString() ? -p.Points : p.Points);
+
 			return totalPoints;
 		}
 
@@ -37,13 +44,6 @@ namespace MilkStore.Repository.Repositories
 		{
 			var points = _context.Points.Where(p => p.OrderId == orderId).Skip(pageIndex * pageSize).Take(pageSize).ToList();
 			return points;
-		}
-
-		// Get total points by order id
-		public async Task<int> GetTotalPointsByOrderIdAsync(string orderId)
-		{
-			var totalPoints = _context.Points.Where(p => p.OrderId == orderId).Sum(p => p.Points);
-			return totalPoints;
 		}
 	}
 }

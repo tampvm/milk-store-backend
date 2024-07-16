@@ -20,5 +20,21 @@ namespace MilkStore.API.Controllers
 			var points = await _pointService.GetPointsByAccountIdAsync(accountId, pageIndex, pageSize);
 			return Ok(points);
 		}
+
+		// Get all points by order id
+		[HttpGet]
+		public async Task<IActionResult> GetPointsByOrderIdAsync(string orderId, int pageIndex = 0, int pageSize = 10)
+		{
+			var points = await _pointService.GetPointsByOrderIdAsync(orderId, pageIndex, pageSize);
+			return Ok(points);
+		}
+
+		// Get total points by account id
+		[HttpGet]
+		public async Task<IActionResult> GetTotalPointsByAccountIdAsync(string accountId)
+		{
+			var totalPoints = await _pointService.GetTotalPointsByAccountIdAsync(accountId);
+			return Ok(totalPoints);
+		}
 	}
 }
