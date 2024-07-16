@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
+using MilkStore.Service.Models.ViewModels.OrderViewDTO;
 
 namespace MilkStore.Service.Mappers
 {
@@ -329,7 +330,16 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
 				.ReverseMap();
             #endregion
-        }
+
+            #region Order
+
+            CreateMap<CreateOrderDTO, Order>()
+	            
+	            .ReverseMap();
+            CreateMap<AddOrderDetailDTO, OrderDetail>().ReverseMap();
+
+            #endregion
+		}
 
     }
 }

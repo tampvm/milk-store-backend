@@ -18,6 +18,7 @@ namespace MilkStore.Repository.Interfaces
         IAddressRepository AddressRepository { get; }
 		IBlogCategoryRepository BlogCategoryRepository { get; }
 		ICategoryRepository CategoryRepository { get; }
+		IOrderRepository OrderRepository { get; }
         Task<int> SaveChangeAsync();
 	}
 }
