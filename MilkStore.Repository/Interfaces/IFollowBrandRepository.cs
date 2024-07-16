@@ -11,5 +11,6 @@ namespace MilkStore.Repository.Interfaces
 	public interface IFollowBrandRepository : IGenericRepository<FollowBrand>
 	{
 		Task<bool> CheckUserFollowsBrandAsync(string accountId, int brandId);
+		Task<FollowBrand> GetFollowBrandByUserAsync(string accountId, int brandId);
 	}
 }

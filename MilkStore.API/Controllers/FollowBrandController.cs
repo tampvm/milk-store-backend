@@ -50,5 +50,26 @@ namespace MilkStore.API.Controllers
 				return BadRequest(response);
 			}
 		}
+
+		// User unfollows brand
+		[HttpDelete]
+		public async Task<IActionResult> UserUnfollowsBrand(string accountId, int brandId)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var response = await _followBrandService.UserUnfollowsBrandAsync(accountId, brandId);
+
+			if (response.Success)
+			{
+				return Ok(response);
+			}
+			else
+			{
+				return BadRequest(response);
+			}
+		}
 	}
 }

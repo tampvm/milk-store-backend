@@ -73,7 +73,7 @@ namespace MilkStore.Service.Services
 			{
 				Success = true,
 				Message = "Get all FollowBrand by AccountId successfully",
-				Data =  followBrandDtos
+				Data = followBrandDtos
 			};
 		}
 
@@ -105,8 +105,16 @@ namespace MilkStore.Service.Services
 		}
 
 		// User unfollows brand
-		public async Task<ResponseModel> UserUnfollowsBrandAsync(UserFollowsBrandDTO model)
+		public async Task<ResponseModel> UserUnfollowsBrandAsync(string AccountId, int BrandId)
 		{
+			var model = await _unitOfWork.FollowBrandRepository.GetFollowBrandByUserAsync(AccountId, BrandId);
+
+			if (model != null)
+			{
+				_unitOfWork.FollowBrandRepository.Delete(model.Id);
+			}
+
+			await _unitOfWork.SaveChangeAsync();
 
 			return new SuccessResponseModel<object>
 			{

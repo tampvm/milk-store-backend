@@ -54,7 +54,7 @@ namespace MilkStore.API.Controllers
 		}
 
 		// Update a brand
-		[HttpPost]
+		[HttpPut]
 		public async Task<IActionResult> UpdateBrandAsync(UpdateBrandDTO model)
 		{
 			var response = await _brandService.UpdateBrandAsync(model);
@@ -70,7 +70,7 @@ namespace MilkStore.API.Controllers
 		}
 
 		// Delete a brand
-		[HttpDelete("{id}")]
+		[HttpDelete]
 		public async Task<IActionResult> DeleteBrandAsync(int id)
 		{
 			var response = await _brandService.DeleteBrandAsync(id);

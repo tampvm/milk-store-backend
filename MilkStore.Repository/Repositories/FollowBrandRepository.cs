@@ -21,11 +21,22 @@ namespace MilkStore.Repository.Repositories
 		// Check if user follows brand
 		public async Task<bool> CheckUserFollowsBrandAsync(string accountId, int brandId)
 		{
-			var followBrand = await GetAsync(
-								filter: x => x.AccountId == accountId && x.BrandId == brandId
-								);
+			var followBrand = _context.FollowBrands.Where(x => x.AccountId == accountId && x.BrandId == brandId).ToList();
 
-			return followBrand.Items.Any();
+			return followBrand.Any();
+		}
+
+		// Get UserFollowsBrandDTO by AccountId and BrandId
+		public async Task<FollowBrand> GetFollowBrandByUserAsync(string accountId, int brandId)
+		{
+			var followBrand = _context.FollowBrands.Where(x => x.AccountId == accountId && x.BrandId == brandId).FirstOrDefault();
+
+			if (followBrand == null)
+			{
+				return null;
+			}
+
+			return followBrand;
 		}
 	}
 }
