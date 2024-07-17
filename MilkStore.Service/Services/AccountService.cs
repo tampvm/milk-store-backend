@@ -664,7 +664,49 @@ namespace MilkStore.Service.Services
         }
         #endregion
 
+
+        #region Update User Avatar And Background
         public async Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            if (user.AvatarId != null)
+            {
+                var oldAvatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+                if (oldAvatar != null)
+                {
+                    oldAvatar.ImageUrl = model.AvatarUrl;
+
+                    _unitOfWork.ImageRepository.Update(oldAvatar);
+                    await _unitOfWork.SaveChangeAsync();
+
+                    return new ResponseModel { Success = true, Message = "User avatar updated successfully." };
+                }
+            }
+
+            var newAvatar = new Image
+            {
+                ImageUrl = model.AvatarUrl,
+                ThumbnailUrl = model.AvatarUrl,
+                Type = ImageTypeEnums.Avatar.ToString()
+            };
+
+            await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+
+            user.AvatarId = newAvatar.Id;
+            _unitOfWork.AcccountRepository.Update(user);
+
+            await _unitOfWork.SaveChangeAsync();
+
+            return new ResponseModel { Success = true, Message = "User avatar updated successfully." };
+        }
+
+        public async Task<ResponseModel> UpdateAvatarAsync(UpdateAvatarDTO model)
         {
             try
             {
@@ -713,5 +755,6 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+        #endregion
     }
 }

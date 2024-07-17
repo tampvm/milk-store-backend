@@ -8,6 +8,12 @@ namespace MilkStore.Service.Models.ViewModels.AccountViewModels
 {
     public class UpdateUserAvatarDTO
     {
+        public string UserId { get; set; }
+        public string AvatarUrl { get; set; }
+    }
+
+    public class UpdateAvatarDTO
+    {
         public string Email { get; set; }
         public string PhoneNumber { get; set; }
         public string UserName { get; set; }
