@@ -16,8 +16,9 @@ namespace MilkStore.API.Controllers
             _authService = authService;
         }
 
+        #region Register
         [HttpPost]
-        public async Task<IActionResult> SendRegisterVerificationCodeAsync(PhoneNumberDTO model)
+        public async Task<IActionResult> SendRegisterVerificationCodeAsync(PhoneNumberOrEmailDTO model)
         {
             var response = await _authService.SendRegisterVerificationCodeAsync(model);
             if (response.Success)
@@ -28,13 +29,28 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> VerifyRegisterCodeAsync(VerifyPhoneNumberDTO model)
+        public async Task<IActionResult> VerifyRegisterCodeAsync(VerifyRegisterCodeDTO model)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.ToDictionary(
+                    key => key.Key,
+                    value => string.Join("; ", value.Value.Errors.Select(e => e.ErrorMessage)));
+
+                return BadRequest(new ErrorResponseModel<Dictionary<string, string>>
+                {
+                    Success = false,
+                    Message = "Invalid request",
+                    Errors = errors.Values.ToList()
+                });
+            }
+
             var response = await _authService.VerifyRegisterCodeAsync(model);
             if (response.Success)
             {
                 return Ok(response);
             }
+
             return BadRequest(response);
         }
 
@@ -64,7 +80,9 @@ namespace MilkStore.API.Controllers
                 Errors = errors.Values.ToList()
             });
         }
+        #endregion
 
+        #region Login
         [HttpPost]
         public async Task<IActionResult> LoginAsync(LoginDTO model)
         {
@@ -91,7 +109,9 @@ namespace MilkStore.API.Controllers
                 Errors = errors.Values.ToList()
             });
         }
+        #endregion
 
+        #region Refresh Token
         [HttpPost]
         public async Task<IActionResult> RefreshTokenAsync(RefreshTokenDTO model)
         {
@@ -104,9 +124,11 @@ namespace MilkStore.API.Controllers
 
             return BadRequest(response);
         }
+        #endregion
 
+        #region Forgot Password
         [HttpPost]
-        public async Task<IActionResult> SendForgotPasswordVerificationCodeByPhoneNumberAsync(SendForgotPasswordCodeDTO model)
+        public async Task<IActionResult> SendForgotPasswordVerificationCodeAsync(SendForgotPasswordCodeDTO model)
         {
             var response = await _authService.SendForgotPasswordVerificationCodeByPhoneNumberOrEmailAsync(model);
             if (response.Success)
@@ -117,7 +139,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyForgotPasswordCodeDTO model)
+        public async Task<IActionResult> VerifyForgotPasswordCodeAsync(VerifyForgotPasswordCodeDTO model)
         {
             var response = await _authService.VerifyForgotPasswordCodeByPhoneNumberOrEmailAsync(model);
             if (response.Success)
@@ -128,7 +150,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPasswordByPhoneNumberAsync(ResetPasswordDTO model)
+        public async Task<IActionResult> ResetPasswordAsync(ResetPasswordDTO model)
         {
             var response = await _authService.ResetPasswordAsync(model);
             if (response.Success)
@@ -137,7 +159,9 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+        #endregion
 
+        #region Scocial Login
         [HttpPost]
         public async Task<IActionResult> GoogleLoginAsync(GoogleLoginDTO model)
         {
@@ -159,5 +183,6 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+        #endregion
     }
 }

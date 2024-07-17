@@ -36,12 +36,91 @@ namespace MilkStore.Service.Services
 
 			var brandDtos = _mapper.Map<Pagination<ViewListBrandDTO>>(brands);
 
+			foreach (var item in brandDtos.Items)
+			{
+				Image? image = await _unitOfWork.ImageRepository.GetByIdAsync(item.ImageId);
+				if (image != null)
+					item.ImageUrl = image.ImageUrl;
+			}
+
 			return new SuccessResponseModel<object>
 			{
 				Success = true,
 				Message = "Brands retrieved successfully.",
 				Data = brandDtos
 			};
+		}
+
+		// Get a brand by id
+		public async Task<ResponseModel> GetBrandByIdAsync(int id)
+		{
+			var brand = await _unitOfWork.BrandRepository.GetByIdAsync(id);
+			if (brand != null)
+			{
+				var mapper = _mapper.Map<ViewListBrandDTO>(brand);
+				Image? image = await _unitOfWork.ImageRepository.GetByIdAsync(mapper.ImageId);
+				if (image != null)
+					mapper.ImageUrl = image.ImageUrl;
+
+				return new SuccessResponseModel<object>
+				{
+					Success = true,
+					Message = "Brand retrieved successfully.",
+					Data = mapper
+				};
+			}
+			return new ErrorResponseModel<object>
+			{
+				Success = false,
+				Message = "Brand not found."
+			};
+		}
+
+		// View a brand detail
+		public async Task<ViewBrandDetailDTO> ViewBrandDetailAsync(int id)
+		{
+			var brand = await _unitOfWork.BrandRepository.GetByIdAsync(id);
+
+			if (brand == null)
+			{
+				return null;
+			}
+
+			var brandDto = _mapper.Map<ViewBrandDetailDTO>(brand);
+
+			var Img = await _unitOfWork.ImageRepository.GetByIdAsync(brand.ImageId);
+			if (Img != null)
+			{
+				brandDto.ImageUrl = Img.ImageUrl;
+			}
+
+			var total = await _unitOfWork.FollowBrandRepository.CountAsync(x => x.BrandId == brand.Id);
+			brandDto.TotalFollow = total;
+
+			return brandDto;
+		}
+
+		public async Task<ResponseModel> ViewBrandDetailModelAsync(int id)
+		{
+			var brand = await ViewBrandDetailAsync(id);
+			if (brand == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Brand is not found."
+				};
+				
+			}
+			else
+			{
+				return new SuccessResponseModel<object>
+				{
+					Success = true,
+					Message = "Brand retrieved successfully.",
+					Data = brand
+				};
+			}
 		}
 
 		// Create a new brand
@@ -51,7 +130,12 @@ namespace MilkStore.Service.Services
 
 			if (existingBrand == null)
 			{
+				await _unitOfWork.ImageRepository.AddAsync(new Image { ImageUrl = model.ImageUrl, ThumbnailUrl = model.ImageUrl, Type = "brand" });
+				await _unitOfWork.SaveChangeAsync();
+				var imgId = _unitOfWork.ImageRepository.FindByImageUrlAsync(model.ImageUrl).Result.Id;
+
 				var mapper = _mapper.Map<Brand>(model);
+				mapper.ImageId = imgId;
 				await _unitOfWork.BrandRepository.AddAsync(mapper);
 				await _unitOfWork.SaveChangeAsync();
 

@@ -12,12 +12,17 @@ namespace MilkStore.Repository.Interfaces
 		IRoleRepository RoleRepository { get; }
 		IImageRepository ImageRepository { get; }
 		IBrandRepository BrandRepository { get; }
+		IFollowBrandRepository FollowBrandRepository { get; }
 		IVoucherRepository VoucherRepository { get; }
 		IPointRepository PointRepository { get; }
 		IBlogRepostiory BlogRepostiory { get; }
         IAddressRepository AddressRepository { get; }
 		IBlogCategoryRepository BlogCategoryRepository { get; }
 		ICategoryRepository CategoryRepository { get; }
+		IProductRepository ProductRepository { get; }
+		IAgeRangeRepository AgeRangeRepository { get; }
+		IProductTypeRepository ProductTypeRepository { get; }
+		IProductImageRepository ProductImageRepository { get; }
 		IOrderRepository OrderRepository { get; }
         Task<int> SaveChangeAsync();
 	}
