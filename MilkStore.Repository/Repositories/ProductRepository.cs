@@ -56,18 +56,17 @@ namespace MilkStore.Repository.Repositories
             }
         }
 
-        //public async Task<Pagination<Product>> GetProductsPaginationAsync(int pageIndex, int pageSize)
-        //{
-        //    try
-        //    {
-        //        var products = await _context.Products.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
-        //        var totalItemsCount = await _context.Products.CountAsync();
-        //        return new Pagination<Product>(products, totalItemsCount, pageIndex, pageSize);
-        //    }
-        //    catch
-        //    {
-        //        throw new Exception("Get products pagination failed");
-        //    }
-        //}
+        public Task UpdateProductAsync(Product product)
+        {
+            try
+            {
+                _context.Entry(product).State = EntityState.Modified;
+                return _context.SaveChangesAsync();
+            }
+            catch
+            {
+                throw new Exception("Update product failed");
+            }
+        }
     }
 }

@@ -52,9 +52,57 @@ namespace MilkStore.API.Controllers
 
         [HttpPost]
         [Route("CreateProduct")]
-        public async Task<IActionResult> CreateProductAsync([FromForm]CreateProductDTO model, IFormFile image, IFormFile thumbnail)
+        public async Task<IActionResult> CreateProductAsync([FromForm]CreateProductDTO model)
         {
-            var response = await _productService.CreateProductAsync(model, image, thumbnail);
+            var response = await _productService.CreateProductAsync(model);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        [Route("UpdateProduct")]
+        public async Task<IActionResult> UpdateProductAsync([FromForm]UpdateProductDTO model)
+        {
+            var response = await _productService.UpdateProductAsync(model);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        [Route("DeleteProduct")]
+        public async Task<IActionResult> DeleteProductAsync([FromForm]DeleteProductDTO model)
+        {
+            var response = await _productService.DeleteProductAsync(model);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        [Route("RestoreProduct")]
+        public async Task<IActionResult> RestoreProductAsync([FromForm]RestoreProductDTO model)
+        {
+            var response = await _productService.RestoreProductAsync(model);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost]
+        [Route("UpdateStatusProduct")]
+        public async Task<IActionResult> UpdateStatusProductAsync(string productId)
+        {
+            var response = await _productService.UpdateProductStatusAsync(productId);
             if (response != null)
             {
                 return Ok(response);

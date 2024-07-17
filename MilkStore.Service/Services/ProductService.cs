@@ -8,11 +8,6 @@ using MilkStore.Service.Common;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.ProductViewModels;
-using MilkStore.Service.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MilkStore.Service.Services
 {
@@ -20,14 +15,12 @@ namespace MilkStore.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IFirebaseService _firebaseService;
 
-        public ProductService(IUnitOfWork unitOfWork, IMapper mapper, ICurrentTime currentTime, IClaimsService claimsService, AppConfiguration appConfiguration, ISmsSender smsSender, IEmailSender emailSender, IMemoryCache cache, IFirebaseService firebaseService)
+        public ProductService(IUnitOfWork unitOfWork, IMapper mapper, ICurrentTime currentTime, IClaimsService claimsService, AppConfiguration appConfiguration, ISmsSender smsSender, IEmailSender emailSender, IMemoryCache cache)
             : base(unitOfWork, mapper, currentTime, claimsService, appConfiguration, smsSender, emailSender, cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _firebaseService = firebaseService;
         }
         #region CreateProduct
         //Random product id
@@ -39,7 +32,7 @@ namespace MilkStore.Service.Services
         }
         
         //Create product
-        public async Task<ResponseModel> CreateProductAsync(CreateProductDTO productCreateDTO, IFormFile imageFile, IFormFile thumbnailFile)
+        public async Task<ResponseModel> CreateProductAsync(CreateProductDTO productCreateDTO)
         {
             //Check empty
             if (productCreateDTO == null)
@@ -50,65 +43,22 @@ namespace MilkStore.Service.Services
             if (validationMessage != "Success")
                 return new ErrorResponseModel<object> { Success = false, Message = validationMessage };
 
-            //Upload image
-            string imageUrl = await UploadProductImageAsync(imageFile);
-            string thumbnailUrl = await UploadProductImageAsync(thumbnailFile);
-            if (string.IsNullOrEmpty(imageUrl) || string.IsNullOrEmpty(thumbnailUrl))
-                return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
-
-            //Product
-            var product = _mapper.Map<Product>(productCreateDTO);
-            product.Id = GenerateRandomString(12);
-            product.Active = true;
-            product.IsDeleted = false;
-            product.CreatedAt = DateTime.UtcNow;
-
-            //Image
-            var image = new Image
-            {
-                ImageUrl = imageUrl,
-                ThumbnailUrl = thumbnailUrl,
-                Type = "Product",
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = productCreateDTO.CreatedBy,
-                IsDeleted = false
-            };
-
             try
             {
-                await _unitOfWork.ProductRepository.AddAsync(product); //Add product
-                await _unitOfWork.ImageRepository.AddAsync(image); //Add image
-                await _unitOfWork.SaveChangeAsync(); //Save
-
-                //Product image
-                var productImage = new ProductImage
-                {
-                    ProductId = product.Id,
-                    ImageId = image.Id,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = productCreateDTO.CreatedBy,
-                    IsDeleted = false
-                };
-
-                await _unitOfWork.ProductImageRepository.AddAsync(productImage); //Add product image
-                await _unitOfWork.SaveChangeAsync(); //Save
+                //Product
+                var product = _mapper.Map<Product>(productCreateDTO);
+                product.Id = GenerateRandomString(12);
+                product.Active = true;
+                product.IsDeleted = false;
+                product.CreatedAt = DateTime.UtcNow;
+                await _unitOfWork.ProductRepository.AddAsync(product);
+                await _unitOfWork.SaveChangeAsync();
 
                 return new SuccessResponseModel<object> { Success = true, Message = "Product created successfully." };
             }
             catch (Exception ex)
             {
                 return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
-            }
-        }
-
-        private async Task<string> UploadProductImageAsync(IFormFile imageFile)
-        {
-            if (imageFile == null) return null;
-
-            using (var stream = imageFile.OpenReadStream())
-            {
-                var fileName = $"{Guid.NewGuid()}_{imageFile.FileName}";
-                return await _firebaseService.UploadProductImageAsync(stream, fileName);
             }
         }
 
@@ -126,6 +76,132 @@ namespace MilkStore.Service.Services
             if (productCreateDTO.AgeId < 0) return "AgeIdInvalid";
 
             return "Success";
+        }
+        #endregion
+
+        #region UpdateProduct
+        //Update product
+        public async Task<ResponseModel> UpdateProductAsync(UpdateProductDTO productUpdateDTO)
+        {
+            //Check empty
+            if (productUpdateDTO == null)
+                return new ErrorResponseModel<object> { Success = false, Message = "Empty product data." };
+
+            //Check validate
+            string validationMessage = await CheckUpdateValidate(productUpdateDTO);
+            if (validationMessage != "Success")
+                return new ErrorResponseModel<object> { Success = false, Message = validationMessage };
+
+            //Get product
+            var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(productUpdateDTO.Id);
+            if (product == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product." };
+
+            //Product
+            product.Name = productUpdateDTO.Name;
+            product.Sku = productUpdateDTO.Sku;
+            product.Description = productUpdateDTO.Description;
+            product.Price = productUpdateDTO.Price;
+            product.Discount = productUpdateDTO.Discount;
+            product.Quantity = productUpdateDTO.Quantity;
+            product.Weight = productUpdateDTO.Weight;
+            product.TypeId = productUpdateDTO.TypeId;
+            product.BrandId = productUpdateDTO.BrandId;
+            product.AgeId = productUpdateDTO.AgeId;
+            product.UpdatedBy = productUpdateDTO.UpdatedBy;
+            product.UpdatedAt = DateTime.UtcNow;
+            
+            try
+            {
+                await _unitOfWork.ProductRepository.UpdateProductAsync(product);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object> { Success = true, Message = "Product updated successfully." };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+
+        //Check update validate
+        private async Task<string> CheckUpdateValidate(UpdateProductDTO productUpdateDTO)
+        {
+            try
+            {
+                var products = await _unitOfWork.ProductRepository.GetAllProductsAsync();
+
+                if (products.Any(x => x.Name == productUpdateDTO.Name && x.Id != productUpdateDTO.Id)) return "NameExists";
+                if (products.Any(x => x.Sku == productUpdateDTO.Sku && x.Id != productUpdateDTO.Id)) return "SkuExists";
+                if (productUpdateDTO.Price < 0) return "PriceInvalid";
+                if (productUpdateDTO.Quantity < 0) return "QuantityInvalid";
+                if (productUpdateDTO.Weight < 0) return "WeightInvalid";
+                if (productUpdateDTO.TypeId < 0) return "TypeIdInvalid";
+                if (productUpdateDTO.BrandId < 0) return "BrandIdInvalid";
+                if (productUpdateDTO.AgeId < 0) return "AgeIdInvalid";
+                return "Success";
+            }
+            catch (Exception ex) {
+                return ex.Message;
+            }
+
+        }
+        #endregion
+
+        #region DeleteProduct
+        public async Task<ResponseModel> DeleteProductAsync(DeleteProductDTO deleteProductDTO)
+        {
+            try {
+                var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(deleteProductDTO.Id);
+                if (product == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product." };
+                product.IsDeleted = true;
+                product.DeletedAt = DateTime.UtcNow;
+                product.DeletedBy = deleteProductDTO.DeletedBy;
+                _unitOfWork.ProductRepository.Update(product);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object> { Success = true, Message = "Product deleted successfully." };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+        #endregion
+
+        #region RestoreProduct
+        public async Task<ResponseModel> RestoreProductAsync(RestoreProductDTO restoreProductDTO)
+        {
+            try
+            {
+                var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(restoreProductDTO.Id);
+                if (product == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product." };
+                product.IsDeleted = false;
+                product.UpdatedAt = DateTime.UtcNow;
+                product.UpdatedBy = restoreProductDTO.UpdatedBy;
+                await _unitOfWork.ProductRepository.UpdateProductAsync(product);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object> { Success = true, Message = "Product restored successfully." };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+        #endregion
+
+        #region UpdateProductStatus
+        public async Task<ResponseModel> UpdateProductStatusAsync(string productId)
+        {
+            try
+            {
+                var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(productId);
+                if (product == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product." };
+                product.Active = !product.Active;
+                _unitOfWork.ProductRepository.Update(product);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object> { Success = true, Message = "Product status updated successfully." };
+            }
+            catch (Exception ex) {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
         }
         #endregion
 

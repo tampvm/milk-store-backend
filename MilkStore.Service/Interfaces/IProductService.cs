@@ -15,6 +15,10 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> GetAllProductsAsync();
         Task<ResponseModel> GetProductsPaginationAsync (int pageIndex, int pageSize);
         Task<ResponseModel> GetProductByIdAsync(String productId);
-        Task<ResponseModel> CreateProductAsync(CreateProductDTO productCreateDTO, IFormFile image, IFormFile thumbnail);
+        Task<ResponseModel> CreateProductAsync(CreateProductDTO productCreateDTO);
+        Task<ResponseModel> UpdateProductAsync(UpdateProductDTO productUpdateDTO);
+        Task<ResponseModel> DeleteProductAsync(DeleteProductDTO productDeleteDTO);
+        Task<ResponseModel> RestoreProductAsync(RestoreProductDTO productRestoreDTO);
+        Task<ResponseModel> UpdateProductStatusAsync(string productId);
     }
 }

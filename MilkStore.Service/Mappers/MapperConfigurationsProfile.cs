@@ -21,6 +21,7 @@ using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
 using MilkStore.Service.Models.ViewModels.ProductViewModels;
 using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
 using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
+using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -382,6 +383,15 @@ namespace MilkStore.Service.Mappers
 			CreateMap<Product, CreateProductDTO>();
 			CreateMap<CreateProductDTO, Product>();
 
+			CreateMap<UpdateProductDTO, Product>();
+			CreateMap<Product, UpdateProductDTO>();
+
+			CreateMap<Product, DeleteProductDTO>();
+            CreateMap<DeleteProductDTO, Product>();
+
+            CreateMap<Product, RestoreProductDTO>();
+            CreateMap<RestoreProductDTO, Product>();
+
             CreateMap<Product, ViewProductDTO>()
            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
            .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku))
@@ -410,10 +420,21 @@ namespace MilkStore.Service.Mappers
            .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
            .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
 
-			#endregion
+            #endregion
 
-			#region AgeRange
-			CreateMap<AgeRange, ViewListAgeRangeDTO>();
+            #region ProductImage
+            CreateMap<ProductImage, ViewListProductImageDTO>();
+			CreateMap<Image, ImageDTO>();
+			CreateMap<ImageDTO, Image>();
+			CreateMap<UpdateProductImageDTO, ProductImage>()
+				.ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+                .ForMember(dest => dest.ImageId, opt => opt.MapFrom(src => src.ImageId))
+                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy))
+                .ReverseMap();
+            #endregion
+
+            #region AgeRange
+            CreateMap<AgeRange, ViewListAgeRangeDTO>();
             #endregion
 
             #region ProductType

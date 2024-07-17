@@ -157,6 +157,7 @@ namespace MilkStore.API
 
             //ProductImage
             services.AddScoped<IProductImageRepository, ProductImageRepository>();
+            services.AddScoped<IProductImageService, ProductImageService>();
 
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 

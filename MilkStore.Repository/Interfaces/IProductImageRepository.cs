@@ -9,5 +9,7 @@ namespace MilkStore.Repository.Interfaces
 {
     public interface IProductImageRepository : IGenericRepository<ProductImage>
     {
+        Task<List<ProductImage>> GetProductImageByProductIdAsync(string productId);
+        Task UpdateProductImageAsync(ProductImage productImage);
     }
 }
