@@ -1,9 +1,6 @@
 ﻿using MilkStore.Repository.Data;
 using MilkStore.Repository.Interfaces;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MilkStore.Repository.Repositories
@@ -16,7 +13,7 @@ namespace MilkStore.Repository.Repositories
         private readonly IImageRepository _imageRepository;
         private readonly IBrandRepository _brandRepository;
         private readonly IFollowBrandRepository _followBrandRepository;
-		private readonly IVoucherRepository _voucherRepository;
+        private readonly IVoucherRepository _voucherRepository;
         private readonly IPointRepository _pointRepository;
         private readonly IBlogRepostiory _blogRepostiory;
         private readonly IAddressRepository _addressRepository;
@@ -33,16 +30,14 @@ namespace MilkStore.Repository.Repositories
             IRoleRepository roleRepository, 
             IImageRepository imageRepository,
             IBrandRepository brandRepository,
-			IFollowBrandRepository followBrandRepository,
-			IVoucherRepository voucherRepository,
+            IFollowBrandRepository followBrandRepository,
+            IVoucherRepository voucherRepository,
             IPointRepository pointRepository,
             IBlogRepostiory blogRepostiory,
             IAddressRepository addressRepository,
             IBlogCategoryRepository blogCategoryRepository, 
             ICategoryRepository categoryRepository,
-            IOrderRepository orderRepository
-            )
-            ICategoryRepository categoryRepository,
+            IOrderRepository orderRepository,
             IProductRepository productRepository,
             IAgeRangeRepository ageRangeRepository,
             IProductTypeRepository productTypeRepository,
@@ -53,9 +48,9 @@ namespace MilkStore.Repository.Repositories
             _roleRepository = roleRepository;
             _imageRepository = imageRepository;
             _brandRepository = brandRepository;
-			_followBrandRepository = followBrandRepository;
-			_voucherRepository = voucherRepository;
-			_pointRepository = pointRepository;
+            _followBrandRepository = followBrandRepository;
+            _voucherRepository = voucherRepository;
+            _pointRepository = pointRepository;
             _blogRepostiory = blogRepostiory;
             _addressRepository = addressRepository;
             _blogCategoryRepository = blogCategoryRepository;
@@ -72,9 +67,9 @@ namespace MilkStore.Repository.Repositories
         public IImageRepository ImageRepository => _imageRepository;
         public IBlogRepostiory BlogRepostiory => _blogRepostiory;
         public IBrandRepository BrandRepository => _brandRepository;
-		public IFollowBrandRepository FollowBrandRepository => _followBrandRepository;
-		public IVoucherRepository VoucherRepository => _voucherRepository;
-		public IPointRepository PointRepository => _pointRepository;
+        public IFollowBrandRepository FollowBrandRepository => _followBrandRepository;
+        public IVoucherRepository VoucherRepository => _voucherRepository;
+        public IPointRepository PointRepository => _pointRepository;
         public IAddressRepository AddressRepository => _addressRepository;
         public IBlogCategoryRepository BlogCategoryRepository => _blogCategoryRepository;
         public ICategoryRepository CategoryRepository => _categoryRepository;

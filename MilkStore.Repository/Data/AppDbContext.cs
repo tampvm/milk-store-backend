@@ -18,6 +18,8 @@ namespace MilkStore.Repository.Data
 		{
 		}
 
+		
+
 		public DbSet<Account> Accounts { get; set; }
 		public DbSet<Role> Roles { get; set; }
 		public DbSet<AccountVoucher> AccountVouchers { get; set; }
@@ -41,6 +43,7 @@ namespace MilkStore.Repository.Data
 		public DbSet<ProductImage> ProductImages { get; set; }
 		public DbSet<ProductType> Types { get; set; }
 		public DbSet<Voucher> Vouchers { get; set; }
+		public DbSet<Cart> Carts { get; set; }
 
 		protected override void OnModelCreating(ModelBuilder builder)
 		{

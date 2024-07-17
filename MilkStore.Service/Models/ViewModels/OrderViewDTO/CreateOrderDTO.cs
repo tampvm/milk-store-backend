@@ -11,8 +11,9 @@ public class CreateOrderDTO
     public string PaymentStatus { get; set; }
     public int? PointUsed { get; set; } 
     public int PointSaved { get; set; } 
+    public DateTime CreatedAt { get; set; }
     public string AccountId { get; set; }
     
     public int? AccountVoucherId { get; set; }
-    public string ProductId { get; set; }
+    
 }
