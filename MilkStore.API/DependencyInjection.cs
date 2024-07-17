@@ -147,6 +147,17 @@ namespace MilkStore.API
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductService, ProductService>();
 
+            //AgeRange
+            services.AddScoped<IAgeRangeRepository, AgeRangeRepository>();
+            services.AddScoped<IAgeRangeService, AgeRangeService>();
+
+            //ProductType
+            services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
+            services.AddScoped<IProductTypeService, ProductTypeService>();
+
+            //ProductImage
+            services.AddScoped<IProductImageRepository, ProductImageRepository>();
+
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
             services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);

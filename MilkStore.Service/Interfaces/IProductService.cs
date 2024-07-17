@@ -1,5 +1,7 @@
-﻿using MilkStore.Domain.Entities;
+﻿using Microsoft.AspNetCore.Http;
+using MilkStore.Domain.Entities;
 using MilkStore.Service.Models.ResponseModels;
+using MilkStore.Service.Models.ViewModels.ProductViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +13,8 @@ namespace MilkStore.Service.Interfaces
     public interface IProductService
     {
         Task<ResponseModel> GetAllProductsAsync();
-        //Task<ResponseModel> GetProductsPaginationAsync (int pageIndex, int pageSize);
+        Task<ResponseModel> GetProductsPaginationAsync (int pageIndex, int pageSize);
         Task<ResponseModel> GetProductByIdAsync(String productId);
+        Task<ResponseModel> CreateProductAsync(CreateProductDTO productCreateDTO, IFormFile image, IFormFile thumbnail);
     }
 }

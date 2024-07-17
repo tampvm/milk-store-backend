@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
 using MilkStore.Service.Models.ViewModels.ProductViewModels;
+using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
+using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -373,12 +375,12 @@ namespace MilkStore.Service.Mappers
 
 				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
 				.ReverseMap();
-            #endregion
+			#endregion
 
-            #region Product
-            //CreateMap(typeof(Pagination<>), typeof(Pagination<>)).ReverseMap();
-            //CreateMap<Product, ViewListProductsDTO>().ReverseMap();
-            //CreateMap<List<Product>, List<ViewListProductsDTO>>().ReverseMap();
+			#region Product
+
+			CreateMap<Product, CreateProductDTO>();
+			CreateMap<CreateProductDTO, Product>();
 
             CreateMap<Product, ViewProductDTO>()
            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
@@ -408,6 +410,14 @@ namespace MilkStore.Service.Mappers
            .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
            .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
 
+			#endregion
+
+			#region AgeRange
+			CreateMap<AgeRange, ViewListAgeRangeDTO>();
+            #endregion
+
+            #region ProductType
+            CreateMap<ProductType, ViewListProductTypeDTO>();
             #endregion
         }
 

@@ -23,6 +23,9 @@ namespace MilkStore.Repository.Repositories
         private readonly IBlogCategoryRepository _blogCategoryRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IProductRepository _productRepository;
+        private readonly IAgeRangeRepository _ageRangeRepository;
+        private readonly IProductTypeRepository _productTypeRepository;
+        private readonly IProductImageRepository _productImageRepository;
 
         public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -36,7 +39,10 @@ namespace MilkStore.Repository.Repositories
             IAddressRepository addressRepository,
             IBlogCategoryRepository blogCategoryRepository, 
             ICategoryRepository categoryRepository,
-            IProductRepository productRepository)
+            IProductRepository productRepository,
+            IAgeRangeRepository ageRangeRepository,
+            IProductTypeRepository productTypeRepository,
+            IProductImageRepository productImageRepository)
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
@@ -51,6 +57,9 @@ namespace MilkStore.Repository.Repositories
             _blogCategoryRepository = blogCategoryRepository;
             _categoryRepository = categoryRepository;
             _productRepository = productRepository;
+            _ageRangeRepository = ageRangeRepository;
+            _productTypeRepository = productTypeRepository;
+            _productImageRepository = productImageRepository;
         }
 
         public IAcccountRepository AcccountRepository => _accountRepository;
@@ -65,6 +74,9 @@ namespace MilkStore.Repository.Repositories
         public IBlogCategoryRepository BlogCategoryRepository => _blogCategoryRepository;
         public ICategoryRepository CategoryRepository => _categoryRepository;
         public IProductRepository ProductRepository => _productRepository;
+        public IAgeRangeRepository AgeRangeRepository => _ageRangeRepository;
+        public IProductTypeRepository ProductTypeRepository => _productTypeRepository;
+        public IProductImageRepository ProductImageRepository => _productImageRepository;
 
         public async Task<int> SaveChangeAsync()
         {
