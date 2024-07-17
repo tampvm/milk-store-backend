@@ -19,6 +19,9 @@ namespace MilkStore.Repository.Interfaces
         IAddressRepository AddressRepository { get; }
 		IBlogCategoryRepository BlogCategoryRepository { get; }
 		ICategoryRepository CategoryRepository { get; }
+		IBlogImageRepository BlogImageRepository { get; }
+		ILikeRepository LikeRepository { get; }
+		ICommentBlogRepository CommentBlogRepository { get; }
         Task<int> SaveChangeAsync();
 	}
 }

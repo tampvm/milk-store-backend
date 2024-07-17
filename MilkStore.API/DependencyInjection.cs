@@ -97,6 +97,7 @@ namespace MilkStore.API
 			services.AddScoped<IUnitOfWork, UnitOfWork>();
 			services.AddScoped<ICurrentTime, CurrentTime>();
 			services.AddScoped<IClaimsService, ClaimsService>();
+
 			services.AddScoped<ISmsSender, TwilioSmsSender>();
 			services.AddScoped<IZaloService, ZaloService>();
 			services.AddScoped<IEmailSender, EmailSender>();
@@ -139,15 +140,31 @@ namespace MilkStore.API
 			//Category
 			services.AddScoped<ICategoryRepository, CategoryRepository>();
 			services.AddScoped<ICategoryService, CategoryService>();
+
 			//BlogCategory
 			services.AddScoped<IBlogCategoryRepository, BlogCategoryRepository>();
 			services.AddScoped<IBlogCategoryService, BlogCategoryService>();
+
+			//BlogImage
+			services.AddScoped<IBlogImageRepository, BlogImageRepository>();
+
+			//Like
+			services.AddScoped<ILikeRepository, LikeRepository>();
+			services.AddScoped<ILikeBlogService, LikeBlogService>();
+			
+			//CommentBlog
+			services.AddScoped<ICommentBlogRepository, CommentBlogRepository>();
+			services.AddScoped<ICommentBlogService, CommentBlogService>();
+
+
 			
 
 
-			services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
+            // Add DbContext
+            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
-			services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
+            // Add AutoMapper
+            services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
 
 			return services;
 		}

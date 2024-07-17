@@ -5,9 +5,9 @@ using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 
 namespace MilkStore.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CategoryController : ControllerBase
+ 
+  
+    public class CategoryController : BaseController
     {
         private readonly ICategoryService _categoryService;
         public CategoryController(ICategoryService categoryService)
@@ -16,7 +16,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        [Route("create")]
+        
         public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryDTO model)
         {
             var response = await _categoryService.CreateCategory(model);
@@ -31,7 +31,6 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpGet]
-        [Route("getall")]
         public async Task<IActionResult> GetAllCategory(int pageIndex = 0, int pageSize = 10)
         {
             var response = await _categoryService.GetAllCategory(pageIndex, pageSize);
@@ -40,7 +39,6 @@ namespace MilkStore.API.Controllers
           
         }
         [HttpGet]
-        [Route("getbyid")]
         public async Task<IActionResult> GetCategoryById(int id)
         {
             var response = await _categoryService.GetCategoryById(id);
@@ -54,7 +52,6 @@ namespace MilkStore.API.Controllers
             }
         }
         [HttpPut]
-        [Route("update")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] UpdateCategoryDTO model)
         {
             var response = await _categoryService.UpdateCategory(model, id);
@@ -68,7 +65,6 @@ namespace MilkStore.API.Controllers
             }
         }
         [HttpDelete]
-        [Route("delete")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var response = await _categoryService.DeleteCategory(id);

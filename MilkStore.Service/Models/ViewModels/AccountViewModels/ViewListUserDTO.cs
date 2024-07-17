@@ -20,6 +20,7 @@ namespace MilkStore.Service.Models.ViewModels.AccountViewModels
         public string Status { get; set; }
         public DateTime? LastLogin { get; set; }
         public int TotalPoints { get; set; }
+        public string? Avatar { get; set; }
         // chưa hiện địa chỉ
         public IList<string> Roles { get; set; }
         public DateTime CreatedAt { get; set; }

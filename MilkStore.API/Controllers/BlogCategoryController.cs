@@ -5,9 +5,8 @@ using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
 
 namespace MilkStore.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class BlogCategoryController : ControllerBase
+  
+    public class BlogCategoryController : BaseController
     {
         private readonly IBlogCategoryService _blogCategoryService;
 
@@ -15,7 +14,7 @@ namespace MilkStore.API.Controllers
         {
             _blogCategoryService = blogService;
         }
-        [HttpPost("create", Name = "CreateBlogCategory")]
+        [HttpPost]
 
         public async Task<IActionResult> CreateBlogCategory([FromBody] CreateBlogCategoryDTO model)
         {
@@ -36,7 +35,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPut("update", Name = "UpdateBlogCategory")]
+        [HttpPut]
         public async Task<IActionResult> UpdateBlogCategory(int id, [FromBody] UpdateBlogCategoryDTO model)
         {
             if (model == null)
@@ -61,7 +60,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteBlogCategory(int id)
         {
             var response = await _blogCategoryService.DeleteBlogCategory(id);
