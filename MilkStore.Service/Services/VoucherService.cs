@@ -68,6 +68,30 @@ namespace MilkStore.Service.Services
 			};
 		}
 
+		// Get a voucher by id
+		public async Task<ResponseModel> GetVoucherByIdAsync(int id)
+		{
+			var voucher = await _unitOfWork.VoucherRepository.GetByIdAsync(id);
+
+			if (voucher == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Voucher not found."
+				};
+			}
+
+			var voucherDto = _mapper.Map<ViewDetailVoucherDTO>(voucher);
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Voucher retrieved successfully.",
+				Data = voucherDto
+			};
+		}
+
 		// Create a new voucher
 		public async Task<ResponseModel> CreateVoucherAsync(CreateVoucherDTO model)
 		{

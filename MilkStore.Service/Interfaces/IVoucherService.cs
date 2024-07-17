@@ -12,6 +12,7 @@ namespace MilkStore.Service.Interfaces
 	{
 		Task<ResponseModel> GetVouchersAsync(int pageIndex, int pageSize);
 		Task<ResponseModel> GetVoucherByCodeAsync(string code);
+		Task<ResponseModel> GetVoucherByIdAsync(int id);
 		Task<ResponseModel> CreateVoucherAsync(CreateVoucherDTO model);
 		Task<ResponseModel> UpdateVoucherAsync(UpdateVoucherDTO model);
 		Task<ResponseModel> DeleteVoucherAsync(int id);

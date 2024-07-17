@@ -37,6 +37,20 @@ namespace MilkStore.API.Controllers
 			return BadRequest(voucher);
 		}
 
+		// Get a voucher by id
+		[HttpGet]
+		public async Task<IActionResult> GetVoucherByIdAsync(int id)
+		{
+			var voucher = await _voucherService.GetVoucherByIdAsync(id);
+
+			if (voucher.Success)
+			{
+				return Ok(voucher);
+			}
+
+			return BadRequest(voucher);
+		}
+
 		// Create a new voucher
 		[HttpPost]
 		public async Task<IActionResult> CreateVoucherAsync(CreateVoucherDTO model)
