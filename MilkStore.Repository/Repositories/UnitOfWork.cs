@@ -22,6 +22,9 @@ namespace MilkStore.Repository.Repositories
         private readonly IAddressRepository _addressRepository;
         private readonly IBlogCategoryRepository _blogCategoryRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IBlogImageRepository _blogImageRepository;
+        private readonly ILikeRepository _likeRepository;
+        private readonly ICommentBlogRepository _commentBlogRepository;
 
         public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -34,7 +37,11 @@ namespace MilkStore.Repository.Repositories
             IBlogRepostiory blogRepostiory,
             IAddressRepository addressRepository,
             IBlogCategoryRepository blogCategoryRepository, 
-            ICategoryRepository categoryRepository)
+            ICategoryRepository categoryRepository,
+            IBlogImageRepository blogImageRepository,
+            ILikeRepository likeRepository,
+            ICommentBlogRepository commentBlogRepository
+            )
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
@@ -48,6 +55,9 @@ namespace MilkStore.Repository.Repositories
             _addressRepository = addressRepository;
             _blogCategoryRepository = blogCategoryRepository;
             _categoryRepository = categoryRepository;
+            _blogImageRepository = blogImageRepository;
+            _likeRepository = likeRepository;
+            _commentBlogRepository = commentBlogRepository;
         }
 
         public IAcccountRepository AcccountRepository => _accountRepository;
@@ -61,6 +71,9 @@ namespace MilkStore.Repository.Repositories
         public IAddressRepository AddressRepository => _addressRepository;
         public IBlogCategoryRepository BlogCategoryRepository => _blogCategoryRepository;
         public ICategoryRepository CategoryRepository => _categoryRepository;
+        public IBlogImageRepository BlogImageRepository => _blogImageRepository;
+        public ILikeRepository LikeRepository => _likeRepository;
+        public ICommentBlogRepository CommentBlogRepository => _commentBlogRepository;
 
         public async Task<int> SaveChangeAsync()
         {

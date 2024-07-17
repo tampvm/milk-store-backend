@@ -145,6 +145,20 @@ namespace MilkStore.API
 			services.AddScoped<IBlogCategoryRepository, BlogCategoryRepository>();
 			services.AddScoped<IBlogCategoryService, BlogCategoryService>();
 
+			//BlogImage
+			services.AddScoped<IBlogImageRepository, BlogImageRepository>();
+
+			//Like
+			services.AddScoped<ILikeRepository, LikeRepository>();
+			services.AddScoped<ILikeBlogService, LikeBlogService>();
+			
+			//CommentBlog
+			services.AddScoped<ICommentBlogRepository, CommentBlogRepository>();
+			services.AddScoped<ICommentBlogService, CommentBlogService>();
+
+
+			
+
 
             // Add DbContext
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));

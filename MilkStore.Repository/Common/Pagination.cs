@@ -8,6 +8,7 @@ namespace MilkStore.Repository.Common
 {
     public class Pagination<T>
     {
+
         public int TotalItemsCount { get; set; }
         public int PageSize { get; set; }
         public int TotalPagesCount
