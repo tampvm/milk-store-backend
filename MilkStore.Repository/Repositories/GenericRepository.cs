@@ -111,6 +111,48 @@ namespace MilkStore.Repository.Repositories
             return await _dbSet.FindAsync(id);
         }
 
+        //public async Task<TEntity?> GetByIdAsync(object id, params Expression<Func<TEntity, object>>[] includes)
+        //{
+        //    IQueryable<TEntity> query = _dbSet;
+
+        //    foreach (var include in includes)
+        //    {
+        //        query = query.Include(include);
+        //    }
+
+        //    return await query.SingleOrDefaultAsync(e => e.Id == (string)id);
+        //}
+
+        public async Task<TEntity?> GetByIdAsync(object id, Expression<Func<TEntity, bool>> filter = null, string includeProperties = "")
+        {
+            IQueryable<TEntity> query = _dbSet;
+
+            // Filter
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            // Include properties
+            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty);
+            }
+
+            var keyName = _context.Model.FindEntityType(typeof(TEntity)).FindPrimaryKey().Properties
+                .Select(x => x.Name).Single();
+
+            var parameter = Expression.Parameter(typeof(TEntity));
+            var property = Expression.Property(parameter, keyName);
+            var equal = Expression.Equal(property, Expression.Constant(id));
+            var lambda = Expression.Lambda<Func<TEntity, bool>>(equal, parameter);
+
+            //// Apply ID filter
+            //query = query.Where(lambda);
+
+            return await query.FirstOrDefaultAsync(lambda);
+        }
+
         public async Task AddAsync(TEntity entity)
         {
             entity.CreatedAt = _timeService.GetCurrentTime();
@@ -197,6 +239,7 @@ namespace MilkStore.Repository.Repositories
 
             return await query.CountAsync();
         }
+
         public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.FirstOrDefaultAsync(predicate);

@@ -18,6 +18,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
+using MilkStore.Service.Models.ViewModels.AddressViewModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -26,7 +27,9 @@ namespace MilkStore.Service.Mappers
 		public MapperConfigurationsProfile()
 		{
 			CreateMap(typeof(Pagination<>), typeof(Pagination<>));
-			CreateMap<RegisterDTO, Account>()
+
+            #region Account
+            CreateMap<RegisterDTO, Account>()
 				.ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
 				.ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
 				.ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
@@ -94,8 +97,44 @@ namespace MilkStore.Service.Mappers
 			CreateMap<Account, ViewUserRolesDTO>()
 				.ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id)).ReverseMap();
 			//.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).ToList()));
+			#endregion
 
-			CreateMap<Role, ViewListRoleDTO>()
+			#region Address
+			CreateMap<Address, ViewUserAddressDTO>()
+                .ForMember(dest => dest.AddressId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.AccountId))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.AddressLine, opt => opt.MapFrom(src => src.AddressLine))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District))
+                .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward))
+                .ForMember(dest => dest.IsDefault, opt => opt.MapFrom(src => src.IsDefault)).ReverseMap();
+
+            CreateMap<CreateAddressDTO, Address>()
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.UserId))
+				.ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+				.ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+				.ForMember(dest => dest.AddressLine, opt => opt.MapFrom(src => src.AddressLine))
+				.ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+				.ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District))
+				.ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward))
+				.ForMember(dest => dest.IsDefault, opt => opt.MapFrom(src => src.IsDefault)).ReverseMap();
+
+            CreateMap<UpdateAddressDTO, Address>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AddressId))
+                .ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.UserId))
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.AddressLine, opt => opt.MapFrom(src => src.AddressLine))
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City))
+                .ForMember(dest => dest.District, opt => opt.MapFrom(src => src.District))
+                .ForMember(dest => dest.Ward, opt => opt.MapFrom(src => src.Ward))
+                .ForMember(dest => dest.IsDefault, opt => opt.MapFrom(src => src.IsDefault)).ReverseMap();
+            #endregion
+
+            #region Role
+            CreateMap<Role, ViewListRoleDTO>()
 				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
 				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
 				.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
@@ -109,9 +148,10 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
 				.ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoleName))
 				.ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description)).ReverseMap();
+            #endregion
 
-			#region Brand
-			CreateMap<Brand, ViewListBrandDTO>()
+            #region Brand
+            CreateMap<Brand, ViewListBrandDTO>()
 				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
 				.ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Name))
 				.ForMember(dest => dest.BrandOrigin, otp => otp.MapFrom(src => src.BrandOrigin))
