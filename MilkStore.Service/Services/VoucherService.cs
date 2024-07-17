@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
@@ -43,10 +44,62 @@ namespace MilkStore.Service.Services
 			};
 		}
 
+		// Get a voucher by code
+		public async Task<ResponseModel> GetVoucherByCodeAsync(string code)
+		{
+			var voucher = await _unitOfWork.VoucherRepository.GetVoucherByCodeAsync(code);
+
+			if (voucher == null)
+			{
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "Voucher not found."
+				};
+			}
+
+			var voucherDto = _mapper.Map<ViewDetailVoucherDTO>(voucher);
+
+			return new SuccessResponseModel<object>
+			{
+				Success = true,
+				Message = "Voucher retrieved successfully.",
+				Data = voucherDto
+			};
+		}
+
 		// Create a new voucher
 		public async Task<ResponseModel> CreateVoucherAsync(CreateVoucherDTO model)
 		{
 			var voucher = _mapper.Map<Voucher>(model);
+
+			switch (voucher.DiscountType)
+			{
+				case "FixedAmount" when voucher.DiscountValue <= 0:
+					return new ErrorResponseModel<object>
+					{
+						Success = false,
+						Message = "Discount amount must be greater than 0."
+					};
+
+				case "Percentage" when voucher.DiscountValue <= 0 || voucher.DiscountValue > 100:
+					return new ErrorResponseModel<object>
+					{
+						Success = false,
+						Message = "Discount percentage must be greater than 0 and less than or equal to 100."
+					};
+
+				case "FixedAmount":
+				case "Percentage":
+					break;
+
+				default:
+					return new ErrorResponseModel<object>
+					{
+						Success = false,
+						Message = "Invalid discount type."
+					};
+			}
 
 			await _unitOfWork.VoucherRepository.AddAsync(voucher);
 			await _unitOfWork.SaveChangeAsync();
@@ -72,6 +125,34 @@ namespace MilkStore.Service.Services
 				};
 			}
 
+			switch (model.DiscountType)
+			{
+				case "FixedAmount" when model.DiscountValue <= 0:
+					return new ErrorResponseModel<object>
+					{
+						Success = false,
+						Message = "Discount amount must be greater than 0."
+					};
+
+				case "Percentage" when model.DiscountValue <= 0 || model.DiscountValue > 100:
+					return new ErrorResponseModel<object>
+					{
+						Success = false,
+						Message = "Discount percentage must be greater than 0 and less than or equal to 100."
+					};
+
+				case "FixedAmount":
+				case "Percentage":
+					break;
+
+				default:
+					return new ErrorResponseModel<object>
+					{
+						Success = false,
+						Message = "Invalid discount type."
+					};
+			}
+
 			_mapper.Map(model, voucher);
 
 			_unitOfWork.VoucherRepository.Update(voucher);
@@ -83,6 +164,7 @@ namespace MilkStore.Service.Services
 				Message = "Voucher updated successfully."
 			};
 		}
+
 
 		// Delete a voucher
 		public async Task<ResponseModel> DeleteVoucherAsync(int id)
@@ -98,8 +180,8 @@ namespace MilkStore.Service.Services
 				};
 			}
 
-			voucher.IsDeleted = true;
-			_unitOfWork.VoucherRepository.Update(voucher);
+			//voucher.IsDeleted = true;
+			_unitOfWork.VoucherRepository.SoftRemove(voucher);
 			await _unitOfWork.SaveChangeAsync();
 
 			return new SuccessResponseModel<object>

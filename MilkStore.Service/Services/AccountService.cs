@@ -461,8 +461,10 @@ namespace MilkStore.Service.Services
             {
                 var user = await _userManager.FindByIdAsync(userDto.Id); // Tìm người dùng theo Id để lấy vai trò
                 var roles = await _userManager.GetRolesAsync(user); // Lấy danh sách vai trò của người dùng
+                var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
 
                 // Gán danh sách vai trò vào DTO
+                userDto.Avatar = avatar?.ImageUrl;
                 userDto.Roles = roles;
                 userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
                 userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;

@@ -82,7 +82,7 @@ namespace MilkStore.Service.Services
                 }
 
                 var emailCode = GenerateVerificationCode();
-                await _emailSender.SendEmailAsync(model.PhoneNumberOrEmail, "Verification Code", $"Mã xác thực của bạn là: {emailCode}, mã sẽ hết hiệu lực sau 10 phút.");
+                await _emailSender.SendEmailAsync(model.PhoneNumberOrEmail, "Xác thực tài khoản", $"Mã xác thực của bạn là: {emailCode}, mã sẽ hết hiệu lực sau 10 phút.");
                 _cache.Set(model.PhoneNumberOrEmail, emailCode, TimeSpan.FromMinutes(10));
             }
             else if (IsPhoneNumber(model.PhoneNumberOrEmail))
@@ -99,7 +99,7 @@ namespace MilkStore.Service.Services
                 }
 
                 var phoneCode = GenerateVerificationCode();
-                await _smsSender.SendSmsAsync(model.PhoneNumberOrEmail, $"Your verification code is: {phoneCode}. The code will expire in 10 minutes.");
+                await _smsSender.SendSmsAsync(model.PhoneNumberOrEmail, $"Mã xác thực của bạn là: {phoneCode}, mã sẽ hết hiệu lực sau 10 phút.");
                 _cache.Set(model.PhoneNumberOrEmail, phoneCode, TimeSpan.FromMinutes(10));
             }
             else
@@ -258,7 +258,7 @@ namespace MilkStore.Service.Services
                 };
             }
 
-            // Kiểm tra xem username có đủ độ dài yêu cầu không (tối thiểu 6 ký tự)
+            // Kiểm tra xem userId có đủ độ dài yêu cầu không (tối thiểu 6 ký tự)
             if (model.Username.Length < 6)
             {
                 return new ResponseModel
@@ -414,7 +414,7 @@ namespace MilkStore.Service.Services
             }
         }
 
-        // Find usern by username, email, or phone number
+        // Find usern by userId, email, or phone number
         private async Task<Account> FindByUsernameOrEmailOrPhoneNumberAsync(string identifier, bool includeUsername = true)
         {
             // Try to find the usern by phone number first
@@ -426,7 +426,7 @@ namespace MilkStore.Service.Services
                 user = await _userManager.FindByEmailAsync(identifier);
             }
 
-            // If not found by email and if username search is included, try to find by username
+            // If not found by email and if userId search is included, try to find by userId
             if (user == null && includeUsername)
             {
                 user = await _userManager.FindByNameAsync(identifier);
@@ -449,7 +449,7 @@ namespace MilkStore.Service.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 //new Claim(JwtRegisteredClaimNames.Email, usern.Email),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
-                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Name, user.Id),
                 //new Claim(ClaimTypes.Sid, usern.Id.ToString()),
                 new Claim ("userId", user.Id.ToString())
             };
@@ -517,9 +517,9 @@ namespace MilkStore.Service.Services
             try
             {
                 var principal = GetPrincipalFromExpiredToken(model.AccessToken);
-                var username = principal.Identity.Name;
+                var userId = principal.Identity.Name;
 
-                var user = await FindByUsernameOrEmailOrPhoneNumberAsync(username);
+                var user = await _userManager.FindByIdAsync(userId);
 
                 if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 {
@@ -594,7 +594,7 @@ namespace MilkStore.Service.Services
             if (model.PhoneNumberOrEmail.Contains("@"))
             {
                 code = GenerateVerificationCode();
-                await _emailSender.SendEmailAsync(user.Email, "Reset mật khẩu", $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
+                await _emailSender.SendEmailAsync(model.PhoneNumberOrEmail, "Quên mật khẩu?", $"Mã xác thực của bạn là: {code}, mã sẽ hết hiệu lực sau 10 phút.");
             }
             else
             {
@@ -633,11 +633,11 @@ namespace MilkStore.Service.Services
             }
 
             // Retrieve the code from the cache
-            if (_cache.TryGetValue(model.PhoneNumberOrEmail, out string? cachedCode) && cachedCode == model.Code)
+            if (_cache.TryGetValue(model.PhoneNumberOrEmail, out string? cachedCode) && cachedCode == model.VerificationCode)
             {
                 bool isTokenValid;
                 if (model.PhoneNumberOrEmail.Contains("@")) isTokenValid = true; // For email, assume token is valid if it matches the cached code
-                else isTokenValid = await _userManager.VerifyChangePhoneNumberTokenAsync(user, model.Code, model.PhoneNumberOrEmail);
+                else isTokenValid = await _userManager.VerifyChangePhoneNumberTokenAsync(user, model.VerificationCode, model.PhoneNumberOrEmail);
 
                 if (!isTokenValid)
                 {
@@ -687,12 +687,26 @@ namespace MilkStore.Service.Services
             }
 
             string method = model.PhoneNumberOrEmail.Contains("@") ? "email" : "phone";
-            if (!_tokenService.ValidateToken(model.PhoneNumberOrEmail, method, "reset", model.ResetToken))
+            if (!_tokenService.ValidateToken(model.PhoneNumberOrEmail, method, "reset", model.ResetPasswordToken))
             {
                 return new ResponseModel
                 {
                     Success = false,
                     Message = "Invalid or expired reset token."
+                };
+            }
+
+            // Validate the new password
+            var passwordValidator = new PasswordValidator<Account>();
+            var passwordValidationResult = await passwordValidator.ValidateAsync(_userManager, user, model.NewPassword);
+
+            if (!passwordValidationResult.Succeeded)
+            {
+                return new ErrorResponseModel<List<string>>
+                {
+                    Success = false,
+                    Message = "Password is not in correct format.",
+                    Errors = passwordValidationResult.Errors.Select(e => e.Description).ToList()
                 };
             }
 
@@ -735,7 +749,7 @@ namespace MilkStore.Service.Services
         //        };
         //    }
 
-        //    var result = await _userManager.ResetPasswordAsync(usern, model.ResetToken, model.NewPassword);
+        //    var result = await _userManager.ResetPasswordAsync(usern, model.ResetPasswordToken, model.NewPassword);
         //    if (result.Succeeded)
         //    {
         //        return new ResponseModel

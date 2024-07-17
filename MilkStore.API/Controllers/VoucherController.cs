@@ -23,6 +23,20 @@ namespace MilkStore.API.Controllers
 			return Ok(vouchers);
 		}
 
+		// Get a voucher by code
+		[HttpGet]
+		public async Task<IActionResult> GetVoucherByCodeAsync(string code)
+		{
+			var voucher = await _voucherService.GetVoucherByCodeAsync(code);
+
+			if (voucher.Success)
+			{
+				return Ok(voucher);
+			}
+
+			return BadRequest(voucher);
+		}
+
 		// Create a new voucher
 		[HttpPost]
 		public async Task<IActionResult> CreateVoucherAsync(CreateVoucherDTO model)
@@ -66,7 +80,7 @@ namespace MilkStore.API.Controllers
 		}
 
 		// Delete a voucher
-		[HttpDelete("{id}")]
+		[HttpDelete]
 		public async Task<IActionResult> DeleteVoucherAsync(int id)
 		{
 			var result = await _voucherService.DeleteVoucherAsync(id);

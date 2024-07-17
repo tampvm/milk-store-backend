@@ -128,7 +128,7 @@ namespace MilkStore.API.Controllers
 
         #region Forgot Password
         [HttpPost]
-        public async Task<IActionResult> SendForgotPasswordVerificationCodeByPhoneNumberAsync(SendForgotPasswordCodeDTO model)
+        public async Task<IActionResult> SendForgotPasswordVerificationCodeAsync(SendForgotPasswordCodeDTO model)
         {
             var response = await _authService.SendForgotPasswordVerificationCodeByPhoneNumberOrEmailAsync(model);
             if (response.Success)
@@ -139,7 +139,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> VerifyForgotPasswordCodeByPhoneNumberAsync(VerifyForgotPasswordCodeDTO model)
+        public async Task<IActionResult> VerifyForgotPasswordCodeAsync(VerifyForgotPasswordCodeDTO model)
         {
             var response = await _authService.VerifyForgotPasswordCodeByPhoneNumberOrEmailAsync(model);
             if (response.Success)
@@ -150,7 +150,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetPasswordByPhoneNumberAsync(ResetPasswordDTO model)
+        public async Task<IActionResult> ResetPasswordAsync(ResetPasswordDTO model)
         {
             var response = await _authService.ResetPasswordAsync(model);
             if (response.Success)

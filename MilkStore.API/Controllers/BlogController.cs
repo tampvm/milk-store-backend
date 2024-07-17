@@ -6,9 +6,8 @@ using MilkStore.Service.Services;
 
 namespace MilkStore.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class BlogController : ControllerBase
+  
+    public class BlogController : BaseController
     {
         private readonly IBlogService _blogService;
 
@@ -24,7 +23,7 @@ namespace MilkStore.API.Controllers
             var blogs = await _blogService.GetAllBlog(pageIndex, pageSize);
             return Ok(blogs);
         }
-        [HttpPost("create", Name = "CreateBlog")]
+        [HttpPost]
         public async Task<IActionResult> CreateBlog([FromBody] CreateBlogDTO model)
         {
             // Check if the model state is valid
@@ -44,7 +43,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPut("update/{id}")]
+        [HttpPut]
         public async Task<IActionResult> UpdateBlog(int id, [FromBody] UpdateBlogDTO model)
         {
             if (model == null)
@@ -69,7 +68,7 @@ namespace MilkStore.API.Controllers
                 return BadRequest(response);
             }
         }
-        [HttpPut("delete/{id}")]
+        [HttpPut]
         public async Task<IActionResult> DeleteBlog(int id, string deleteBy)
         {
             var response = await _blogService.DeleteBlog(id, deleteBy);
@@ -82,10 +81,10 @@ namespace MilkStore.API.Controllers
             {
                 return BadRequest(response);
             }
-            
+
         }
-        [HttpGet("getByUserId/{id}")]
-        public async Task<IActionResult> GetBlogByUserId(string id,int postId, int pageIndex = 0, int pageSize = 10)
+        [HttpGet]
+        public async Task<IActionResult> GetBlogByUserId(string id, int postId, int pageIndex = 0, int pageSize = 10)
         {
             var blogs = await _blogService.GetBlogByUserId(pageIndex, pageSize, id, postId);
             return Ok(blogs);
@@ -96,7 +95,7 @@ namespace MilkStore.API.Controllers
         //    var blogs = await _blogService.GetBlogByUserIdWithouImg(id);
         //    return Ok(blogs);
         //}
-        [HttpPost("createImg", Name = "CreateBlogImg")]
+        [HttpPost]
         public async Task<IActionResult> CreateBlogImg([FromBody] CreateBlogImgDTO model)
         {
             // Check if the model state is valid
@@ -115,6 +114,12 @@ namespace MilkStore.API.Controllers
             {
                 return BadRequest(response);
             }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetBlogByBlogId(int blogId)
+        {
+            var blogs = await _blogService.GetBlogByBlogId(blogId);
+            return Ok(blogs);
         }
 
 

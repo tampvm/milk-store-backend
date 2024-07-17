@@ -6,9 +6,8 @@ using MilkStore.Service.Services;
 
 namespace MilkStore.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class LikeBlogController : ControllerBase
+    
+    public class LikeBlogController : BaseController
     {
         private readonly ILikeBlogService _likeblogService;
 
@@ -33,8 +32,8 @@ namespace MilkStore.API.Controllers
            
         }
 
-        [HttpGet("likes/{blogId}")]
-        public async Task<IActionResult> GetLikeByBlogId([FromRoute] int blogId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        [HttpGet]
+        public async Task<IActionResult> GetLikeByBlogId(int blogId, int pageIndex = 0, int pageSize = 10)
         {
             var result = await _likeblogService.GetLikeByBlogId(pageIndex, pageSize, blogId);
             return Ok(result);

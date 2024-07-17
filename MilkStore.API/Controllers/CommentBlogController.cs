@@ -6,9 +6,8 @@ using MilkStore.Service.Services;
 
 namespace MilkStore.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CommentBlogController : ControllerBase
+    
+    public class CommentBlogController : BaseController
     {
         private readonly ICommentBlogService _commentblogService;
 
@@ -17,14 +16,14 @@ namespace MilkStore.API.Controllers
             _commentblogService = commentblogService;
         }
 
-        [HttpGet("likes/{blogId}")]
-        public async Task<IActionResult> GetLikeByBlogId([FromRoute] int blogId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+        [HttpGet]
+        public async Task<IActionResult> GetLCommentyBlogId(int blogId, int pageIndex = 0, int pageSize = 10)
         {
             var result = await _commentblogService.GetCommentByBlogId(pageIndex, pageSize, blogId);
             return Ok(result);
         }
         //Create comment
-        [HttpPost("create", Name = "CreateComment")]
+        [HttpPost]
         public async Task<IActionResult> CreateComment([FromBody] CreateCommentByBlogId model, string userId, int blogId)
         {
             // Check if the model state is valid
@@ -45,8 +44,8 @@ namespace MilkStore.API.Controllers
             }
         }
 
-        [HttpPut("update/{commentId}/{blogId}")]
-        public async Task<IActionResult> UpdateComment([FromRoute] int commentId, [FromRoute] int blogId, [FromBody] CreateCommentByBlogId model)
+        [HttpPut]
+        public async Task<IActionResult> UpdateComment(int commentId,  int blogId, [FromBody] CreateCommentByBlogId model)
         {
             if (model == null)
             {
@@ -71,7 +70,7 @@ namespace MilkStore.API.Controllers
             }
         }
         //Delete comment
-        [HttpPut("delete/{commentId}/{blogId}")]
+        [HttpPut]
         public async Task<IActionResult> DeleteComment([FromBody] SoftDeleteCommentByBlogId model, int commentId, int blogId)
         {
             var response = await _commentblogService.DeleteCommentByBlogID(model, commentId, blogId);

@@ -342,5 +342,25 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+        public async Task<ResponseModel> GetBlogByBlogId(int blogId)
+        {
+            // Fetch the blog by the blogId
+            var blog = await _unitOfWork.BlogRepostiory.GetByIdAsync(blogId);
+            var blogDTO = _mapper.Map<ViewBlogModel>(blog);
+            //Ensure blogImg is not null before accessing ImageUrl  
+            var blogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == blog.Id);
+            if (blogImg != null)
+            {
+                var image = await _unitOfWork.ImageRepository.FindAsync(img => img.Id == blogImg.ImageId);
+                blogDTO.BlogImg = image?.ImageUrl;
+
+            }
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog retrieved successfully.",
+                Data = blogDTO
+            };
+        }
     }
 }

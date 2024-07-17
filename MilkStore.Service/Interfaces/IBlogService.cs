@@ -17,5 +17,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> DeleteBlog(int id, string deleteBy);
         Task<ResponseModel> GetBlogByUserIdWithouImg(int id);
         Task<ResponseModel> CreateBlogImg(CreateBlogImgDTO model);
+        Task<ResponseModel> GetBlogByBlogId(int blogId);
     }
 }
