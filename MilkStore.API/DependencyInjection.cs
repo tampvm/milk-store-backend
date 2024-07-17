@@ -142,6 +142,15 @@ namespace MilkStore.API
 			//BlogImage
 			services.AddScoped<IBlogImageRepository, BlogImageRepository>();
 
+			//Like
+			services.AddScoped<ILikeRepository, LikeRepository>();
+			services.AddScoped<ILikeBlogService, LikeBlogService>();
+			
+			//CommentBlog
+			services.AddScoped<ICommentBlogRepository, CommentBlogRepository>();
+			services.AddScoped<ICommentBlogService, CommentBlogService>();
+
+
 			
 
 

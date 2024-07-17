@@ -10,11 +10,10 @@ using System.Threading.Tasks;
 namespace MilkStore.Service.Models.ViewModels.BogViewModel
 {
     public class CreateBlogImgDTO
-    { 
- 
-        public int PostId { get; set; }
+    {
 
+        public int PostId { get; set; }
         public int ImageId { get; set; }
-     
+
     }
 }

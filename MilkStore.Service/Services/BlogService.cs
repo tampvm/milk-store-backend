@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MilkStore.Domain.Entities;
 using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
@@ -34,14 +35,14 @@ namespace MilkStore.Service.Services
 
         public async Task<ResponseModel> CreateBlog(CreateBlogDTO model)
         {
-            // Create blog   
+            var blog = new Post
+            {
+                Title = model.Title,
+                Content = model.Content,
+                Status = true,
+                IsDeleted = false
+            };
 
-            var blog = _mapper.Map<Post>(model);
-
-            blog.Title = model.Title;
-            blog.Content = model.Content;
-            blog.IsDeleted = false;
-            blog.Status = true;
             var newAvatar = new Image
             {
                 ImageUrl = model.Img,
@@ -52,59 +53,91 @@ namespace MilkStore.Service.Services
 
             try
             {
+                // Thêm ảnh mới vào cơ sở dữ liệu
                 await _unitOfWork.ImageRepository.AddAsync(newAvatar);
-                // Add blog to the repository
+                await _unitOfWork.SaveChangeAsync(); // Lưu thay đổi để tạo Id cho newAvatar
+
+                // Thêm blog vào cơ sở dữ liệu
                 await _unitOfWork.BlogRepostiory.AddAsync(blog);
+                await _unitOfWork.SaveChangeAsync(); // Lưu thay đổi để tạo Id cho blog
 
-
+                // Thêm hình ảnh vào blog
                 await _unitOfWork.BlogImageRepository.AddAsync(new PostImage
                 {
                     ImageId = newAvatar.Id,
                     PostId = blog.Id,
                     IsDeleted = false
                 });
-                // Commit the changes to the database
-                await _unitOfWork.SaveChangeAsync();
+                await _unitOfWork.SaveChangeAsync(); // Lưu tất cả các thay đổi
 
-                // Return the appropriate response
+                // Tạo DTO cho phản hồi
+                var postDTO = new BlogResponeDTO
+                {
+                    Id = blog.Id,
+                    Title = blog.Title,
+                    Content = blog.Content,
+                    Status = blog.Status,
+                    PostImages = new List<CreateBlogImgDTO>
+            {
+                new CreateBlogImgDTO
+                {
+                    PostId = blog.Id,
+                    ImageId = newAvatar.Id
+                }
+            }
+                };
+
                 return new SuccessResponseModel<object>
                 {
                     Success = true,
                     Message = "Blog created successfully.",
-                    Data = blog
+                    Data = postDTO
                 };
             }
             catch (Exception ex)
             {
-                // Log the exception (consider using a logging framework)
+                // Ghi lỗi nếu có
                 Console.WriteLine(ex.Message);
 
-                // Return a failure response
+                // Trả về phản hồi lỗi
                 return new ErrorResponseModel<object>
                 {
                     Success = false,
                     Message = "An error occurred while creating the blog.",
-
                 };
             }
         }
 
         public async Task<ResponseModel> GetAllBlog(int pageIndex, int pageSize)
         {
+            // Fetch blogs with pagination
             var blogs = await _unitOfWork.BlogRepostiory.GetAsync(
-              filter: r => r.Status.Equals(true),
-              pageIndex: pageIndex,
-              pageSize: pageSize
-              );
+                filter: r => r.Status.Equals(true),
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
 
+            // Map blogs to DTOs
             var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blogs);
+
+            // Fetch and assign images for each blog
+            foreach (var blog in blogDTO.Items)
+            {
+                var blogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == blog.Id);
+                if (blogImg != null)
+                {
+                    var image = await _unitOfWork.ImageRepository.FindAsync(img => img.Id == blogImg.ImageId);
+                    blog.BlogImg = image?.ImageUrl;
+                }
+            }
+
+            // Return the response
             return new SuccessResponseModel<object>
             {
                 Success = true,
                 Message = "Blog retrieved successfully.",
                 Data = blogDTO
             };
-
         }
         public async Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, string id, int postId)
         {

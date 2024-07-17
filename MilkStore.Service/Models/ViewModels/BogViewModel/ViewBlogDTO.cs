@@ -21,7 +21,7 @@ namespace MilkStore.Service.Models.ViewModels.BogViewModel
         public DateTime deleteAt { get; set; }
         public string deleteBy { get; set; }
         public bool isDeleted { get; set; }
-
+        public List<string> BlogImgs { get; set; }
 
     }
 }

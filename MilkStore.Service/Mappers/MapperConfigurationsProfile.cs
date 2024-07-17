@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
+using MilkStore.Service.Models.ViewModels.InteractionModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -200,6 +201,7 @@ namespace MilkStore.Service.Mappers
                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+				.ForMember(dest => dest.BlogImg, opt => opt.MapFrom(src => src.PostImages.FirstOrDefault().ImageId))
                 .ForMember(dest => dest.createAt, opt => opt.MapFrom(src => src.CreatedAt))
                 .ForMember(dest => dest.createBy, opt => opt.MapFrom(src => src.CreatedBy))
                 .ForMember(dest => dest.updateBy, opt => opt.MapFrom(src => src.UpdatedBy))
@@ -223,19 +225,16 @@ namespace MilkStore.Service.Mappers
              .ForMember(dest => dest.isDeleted, opt => opt.MapFrom(src => src.IsDeleted))
              .ReverseMap();
 
-            // Mapping from CreateBlogDTO to Post
-            CreateMap<CreateBlogDTO, Post>()
-                .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => true))
-             
-				
-				;
+
 
             // Mapping from Post to CreateBlogDTO
             CreateMap<Post, CreateBlogDTO>()
-                .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
-                .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))          
-                .ReverseMap();
+                 .ForMember(dest => dest.Title, opt => opt.MapFrom(src => src.Title))
+                 .ForMember(dest => dest.Content, opt => opt.MapFrom(src => src.Content))
+				 .ReverseMap();
+			CreateMap<CreateBlogDTO, Post>()
+				.ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.Now))
+				.ForMember(dest => dest.Status, opt => opt.MapFrom(src => true));
 
             // Mapping from UpdateBlogDTO to Post
             CreateMap<UpdateBlogDTO, Post>()
@@ -338,6 +337,57 @@ namespace MilkStore.Service.Mappers
 				
 				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
 				.ReverseMap();
+            #endregion
+
+            #region Interaction
+            CreateMap<LikePost, GetBlogLike>()
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.IsLike, opt => opt.MapFrom(src => src.IsLike))
+				.ForMember(dest => dest.LikeAt, opt => opt.MapFrom(src => src.LikeAt))
+				.ForMember(dest => dest.UnLikeAt, opt => opt.MapFrom(src => src.UnLikeAt))
+				.ReverseMap();
+
+            CreateMap<LikePost, GetBlogLikeByUserId>()
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.IsLike, opt => opt.MapFrom(src => src.IsLike))
+				.ForMember(dest => dest.LikeAt, opt => opt.MapFrom(src => src.LikeAt))
+				.ForMember(dest => dest.UnLikeAt, opt => opt.MapFrom(src => src.UnLikeAt))
+				.ReverseMap();
+
+			CreateMap<UpdateLike, LikePost>()
+				.ForMember(dest => dest.IsLike, opt => opt.MapFrom(src => src.IsLike))
+				.ForMember(dest => dest.LikeAt, opt => opt.MapFrom(src => src.LikeAt))
+				.ForMember(dest => dest.UnLikeAt, opt => opt.MapFrom(src => src.UnLikeAt))
+				.ReverseMap();
+
+			//create like
+			CreateMap<CreateLike, LikePost>()
+				
+				.ForMember(dest => dest.IsLike, opt => opt.MapFrom(src => src.IsLike))
+				.ForMember(dest => dest.LikeAt, opt => opt.MapFrom(src => src.LikeAt))
+				.ForMember(dest => dest.UnLikeAt, opt => opt.MapFrom(src => src.UnLikeAt))
+				.ReverseMap();
+
+		
+			CreateMap<CommentPost, GetBlogComments>()
+				.ForMember(dest => dest.AccountId, opt => opt.MapFrom(src => src.AccountId))
+				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+				.ForMember(dest => dest.CommentText, opt => opt.MapFrom(src => src.CommentText))
+				.ReverseMap();
+
+			//Create comment
+			CreateMap<CreateCommentByBlogId, CommentPost>()
+				.ForMember(dest => dest.CommentText, opt => opt.MapFrom(src => src.CommentText))
+				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+				.ReverseMap();
+
+			CreateMap<CommentPost, CreateCommentByBlogId>()
+				.ForMember(dest => dest.CommentText, opt => opt.MapFrom(src => src.CommentText))
+				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
+				.ReverseMap();
+
             #endregion
         }
 

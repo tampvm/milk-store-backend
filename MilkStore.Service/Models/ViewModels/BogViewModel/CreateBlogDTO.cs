@@ -12,12 +12,14 @@ namespace MilkStore.Service.Models.ViewModels.BogViewModel
         [Required(ErrorMessage = "Title is required.")]
         [StringLength(100, ErrorMessage = "Title cannot be longer than 100 characters.")]
         public string Title { get; set; }
+
         [Required(ErrorMessage = "Content is required.")]
         public string Content { get; set; }
+
         public string Img { get; set; }
 
 
 
-        
+
     }
 }
