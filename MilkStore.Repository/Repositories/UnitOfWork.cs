@@ -51,7 +51,7 @@ namespace MilkStore.Repository.Repositories
             IBlogImageRepository blogImageRepository,
             ILikeRepository likeRepository,
             ICommentBlogRepository commentBlogRepository,
-            IOrderDetailRepository orderDetailRepository
+            IOrderDetailRepository orderDetailRepository,
             ICartRepository cartRepository)
 
         {

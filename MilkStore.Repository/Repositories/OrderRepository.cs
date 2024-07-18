@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
 using MilkStore.Repository.Interfaces;
@@ -14,7 +15,17 @@ public class OrderRepository : GenericRepository<Order>, IOrderRepository
 
     public async Task<List<Order>> GetOrderByAccountIdAsync(string accountId, int pageIndex, int pageSize)
     {
-        var points = _context.Orders.Where(p => p.AccountId == accountId).Skip(pageIndex * pageSize).Take(pageSize).ToList();
+        var sqlQuery = @"
+        SELECT *
+        FROM [Order]
+        WHERE [AccountId] = {0}
+       
+    ";
+
+        var points = await _context.Orders
+            .FromSqlRaw(sqlQuery, accountId, pageIndex * pageSize, pageSize)
+            .ToListAsync();
+
         return points;
     }
 }
