@@ -162,7 +162,7 @@ namespace MilkStore.API
 			services.AddScoped<ICartRepository, CartRepository>();
 			services.AddScoped<ICartService, CartService>();
       
-       //Product
+			//Product
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductService, ProductService>();
 
@@ -173,13 +173,6 @@ namespace MilkStore.API
             //ProductType
             services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
             services.AddScoped<IProductTypeService, ProductTypeService>();
-
-            // Add DbContext
-            services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
-
-            // Add AutoMapper
-            services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
-
 
             //ProductImage
             services.AddScoped<IProductImageRepository, ProductImageRepository>();
