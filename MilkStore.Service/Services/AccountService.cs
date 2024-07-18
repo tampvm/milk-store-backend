@@ -666,7 +666,6 @@ namespace MilkStore.Service.Services
         }
         #endregion
 
-
         #region Update User Avatar And Background
         public async Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model)
         {
@@ -699,6 +698,7 @@ namespace MilkStore.Service.Services
             };
 
             await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+            await _unitOfWork.SaveChangeAsync();
 
             user.AvatarId = newAvatar.Id;
             _unitOfWork.AcccountRepository.Update(user);

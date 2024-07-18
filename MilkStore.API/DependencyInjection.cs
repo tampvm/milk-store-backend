@@ -156,9 +156,9 @@ namespace MilkStore.API
 			services.AddScoped<ICommentBlogRepository, CommentBlogRepository>();
 			services.AddScoped<ICommentBlogService, CommentBlogService>();
 
-
-			
-
+			//Cart
+			services.AddScoped<ICartRepository, CartRepository>();
+			services.AddScoped<ICartService, CartService>();
 
             // Add DbContext
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
