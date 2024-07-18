@@ -18,5 +18,6 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> GetBlogByUserIdWithouImg(int id);
         Task<ResponseModel> CreateBlogImg(CreateBlogImgDTO model);
         Task<ResponseModel> GetBlogByBlogId(int blogId);
+        Task<ResponseModel> UpdateImgBlog(UpdateImgBlogDTO model, int blogid);
     }
 }
