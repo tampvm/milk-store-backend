@@ -37,18 +37,35 @@ public class CartService : ICartService
 
         // Set the account ID to the order
         cart.AccountId = currentUserId.ToString();
-        cart.ProductId = model.ProductId;
-        cart.Status = CartStatusEnum.InCart.ToString();
-        await _unitOfWork.CartRepository.AddAsync(cart);
+
+        // Check if there is an existing cart item with the same AccountId, ProductId, and Status InCart
+        var existingCartItem = await _unitOfWork.CartRepository
+            .GetCartItemAsync(cart.AccountId, cart.ProductId, CartStatusEnum.InCart.ToString());
+
+        if (existingCartItem != null)
+        {
+            // If the cart item exists, update the quantity
+            existingCartItem.Quanity += model.Quanity; // Update this to the appropriate increment if Quantity is 1 in the model
+            _unitOfWork.CartRepository.Update(existingCartItem);
+        }
+        else
+        {
+            // If the cart item does not exist, add a new cart item
+            cart.Status = CartStatusEnum.InCart.ToString();
+            await _unitOfWork.CartRepository.AddAsync(cart);
+        }
+
         await _unitOfWork.SaveChangeAsync();
 
         return new SuccessResponseModel<string>
         {
             Success = true,
             Message = "Product added to cart successfully.",
-            Data = cart.Product.Name
+            Data = model.ProductId
         };
     }
+
+
 
     public async Task<ResponseModel> GetCartByAccountID(int pageIndex, int pageSize)
     {
@@ -84,8 +101,60 @@ public class CartService : ICartService
     }
 
 
-    public Task<ResponseModel> UpdateCartByID(int Id, CartDTO model)
+    public async Task<ResponseModel> UpdateCartByID(int id, CartDTO model , int khonglatang1lagiam)
     {
-        throw new NotImplementedException();
+        // Lấy mục giỏ hàng hiện tại dựa trên Id
+        var cartItem = await _unitOfWork.CartRepository.GetByIdAsync(id);
+        if (cartItem == null)
+        {
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "Cart item not found."
+            };
+        }
+
+        // Kiểm tra trạng thái của mục giỏ hàng
+        if (cartItem.Status != CartStatusEnum.InCart.ToString())
+        {
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "Only items with status 'InCart' can be updated."
+            };
+        }
+
+        // Cập nhật số lượng sản phẩm
+        if (khonglatang1lagiam == 1)
+        {
+            cartItem.Quanity -= model.Quanity;
+        }
+        else
+        {
+            cartItem.Quanity += model.Quanity;
+        }
+        
+        var quantity = cartItem.Quanity - model.Quanity;
+        if (quantity <= 0)
+        {
+            _unitOfWork.CartRepository.Delete(id);
+        }
+        else
+        {
+            _unitOfWork.CartRepository.Update(cartItem);
+        }
+        
+
+        // Cập nhật mục giỏ hàng trong cơ sở dữ liệu
+        //_unitOfWork.CartRepository.Update(cartItem);
+        await _unitOfWork.SaveChangeAsync();
+
+        return new SuccessResponseModel<string>
+        {
+            Success = true,
+            Message = "Cart item updated successfully.",
+            Data = cartItem.ProductId.ToString()
+        };
     }
+
 }

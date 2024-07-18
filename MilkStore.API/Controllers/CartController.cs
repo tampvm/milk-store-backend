@@ -49,4 +49,25 @@ public class CartController : BaseController
 
         return Ok(result);
     }
+    [HttpPut("update-cart/{id}")]
+    public async Task<IActionResult> UpdateCartByID(int id, [FromBody] CartDTO model, int khonglatang1lagiam)
+    {
+        if (model == null)
+        {
+            return BadRequest(new ResponseModel
+            {
+                Success = false,
+                Message = "Invalid cart data."
+            });
+        }
+
+        var result = await _cartService.UpdateCartByID(id, model, khonglatang1lagiam);
+
+        if (!result.Success)
+        {
+            return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
 }

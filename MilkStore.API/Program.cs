@@ -7,6 +7,7 @@ using MilkStore.API;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
 using MilkStore.Service.Common;
+using Net.payOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,10 @@ var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
 builder.Services.AddWebAPIService(configuration.JWT);
 builder.Services.AddSingleton(configuration);
-
+IConfiguration configuration1 = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+PayOS payOS = new PayOS(configuration1["Environment:PAYOS_CLIENT_ID"],
+    configuration1["Environment:PAYOS_API_KEY"],
+    configuration1["Environment:PAYOS_CHECKSUM_KEY"]);
 // Connection string for database
 // builder.Services.AddDbContext<AppDbContext>(options =>
 //     options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
@@ -33,7 +37,7 @@ builder.Services.AddSingleton(configuration);
 //             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
 //         };
 //     });
-
+builder.Services.AddSingleton(payOS);
 var app = builder.Build();
 
 // Call this method to seed data

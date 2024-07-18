@@ -8,5 +8,5 @@ public interface ICartService
 {
     Task<ResponseModel> AddProductToCartAsync(CartDTO model);
     Task<ResponseModel> GetCartByAccountID(int pageIndex, int pageSize);
-    Task<ResponseModel> UpdateCartByID(int Id, CartDTO model);
+    Task<ResponseModel> UpdateCartByID(int Id, CartDTO model, int khonglatang1lagiam);
 }

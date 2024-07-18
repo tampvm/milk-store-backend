@@ -13,6 +13,7 @@ using MilkStore.Service.Mappers;
 using MilkStore.Service.Services;
 using MilkStore.Service.Utils;
 using System.Text;
+using Net.payOS;
 
 namespace MilkStore.API
 {
@@ -104,6 +105,8 @@ namespace MilkStore.API
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IGoogleSerive, GoogleService>();
             services.AddScoped<IFacebookService, FacebookService>();
+            
+            //services.AddScoped<PayOS>();
 
             services.AddScoped<IAcccountRepository, AccountRepository>();
             services.AddScoped<IAuthService, AuthService>();
@@ -159,6 +162,9 @@ namespace MilkStore.API
             //Cart
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<ICartRepository, CartRepository>();
+            
+            //OrderDetail
+            services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 
             //ProductImage
             services.AddScoped<IProductImageRepository, ProductImageRepository>();

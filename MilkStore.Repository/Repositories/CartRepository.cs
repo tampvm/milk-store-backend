@@ -16,11 +16,21 @@ public class CartRepository : GenericRepository<Cart>, ICartRepository
 
     public async Task<List<Cart>> GetCartsByAccountIdAsync(string accountId, int pageIndex, int pageSize)
     {
+        var sqlQuery = @"
+        SELECT * 
+        FROM [Cart]
+        WHERE [AccountId] = {0} AND [Status] = {1}
+        ";
+
         var points = await _context.Carts
-            .Where(p => p.AccountId == accountId && p.Status == CartStatusEnum.InCart.ToString())
-            .Skip(pageIndex * pageSize)
-            .Take(pageSize)
+            .FromSqlRaw(sqlQuery, accountId, "InCart", pageIndex * pageSize, pageSize)
             .ToListAsync();
+
         return points;
+    }
+    public async Task<Cart> GetCartItemAsync(string accountId, string productId, string status)
+    {
+        return await _context.Carts
+            .SingleOrDefaultAsync(c => c.AccountId == accountId && c.ProductId == productId && c.Status == status);
     }
 }

@@ -25,6 +25,7 @@ namespace MilkStore.Repository.Repositories
         private readonly IProductTypeRepository _productTypeRepository;
         private readonly IProductImageRepository _productImageRepository;
         private readonly ICartRepository _cartRepository;
+        private readonly IOrderDetailRepository _orderDetailRepository;
 
         public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -43,7 +44,8 @@ namespace MilkStore.Repository.Repositories
             IAgeRangeRepository ageRangeRepository,
             IProductTypeRepository productTypeRepository,
             IProductImageRepository productImageRepository,
-            ICartRepository cartRepository
+            ICartRepository cartRepository,
+            IOrderDetailRepository orderDetailRepository
             )
         {
             _dbContext = dbContext;
@@ -64,6 +66,8 @@ namespace MilkStore.Repository.Repositories
             _productImageRepository = productImageRepository;
             _orderRepository = orderRepository;
             _cartRepository = cartRepository;
+            _orderDetailRepository = orderDetailRepository;
+
 
         }
 
@@ -84,6 +88,7 @@ namespace MilkStore.Repository.Repositories
         public IProductImageRepository ProductImageRepository => _productImageRepository;
         public IOrderRepository OrderRepository => _orderRepository;
         public ICartRepository CartRepository => _cartRepository;
+        public IOrderDetailRepository OrderDetailRepository => _orderDetailRepository;
 
         public async Task<int> SaveChangeAsync()
         {

@@ -10,6 +10,7 @@ public class Cart : BaseEntity
     public int Id { get; set; }
     public string AccountId { get; set; }
     public string ProductId { get; set; }
+    public int Quanity { get; set; }
     public string Status { get; set; }
     [ForeignKey("AccountId")]
     public virtual Account Account { get; set; }

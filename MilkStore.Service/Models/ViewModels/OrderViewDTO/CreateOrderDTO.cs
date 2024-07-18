@@ -2,6 +2,7 @@ namespace MilkStore.Service.Models.ViewModels.OrderViewDTO;
 
 public class CreateOrderDTO
 {
+    public List<int> cartIds { get; set; }
     public string ShippingAddress { get; set; }
     public decimal Discount { get; set; }
     public int TotalAmount { get; set; } 
