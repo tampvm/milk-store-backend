@@ -887,7 +887,7 @@ namespace MilkStore.Service.Services
                     await _userManager.AddToRoleAsync(user, role);
 
                     // Cập nhật avatar sau khi tạo người dùng
-                    var updateUserAvatarDto = new UpdateUserAvatarDTO
+                    var updateUserAvatarDto = new UpdateAvatarDTO
                     {
                         GoogleEmail = dto.Provider == "Google" ? dto.Email : null,
                         FacebookEmail = dto.Provider == "Facebook" ? dto.Email : null,
@@ -895,7 +895,7 @@ namespace MilkStore.Service.Services
                     };
 
                     // Cập nhật ảnh đại diện
-                    await _accountService.UpdateUserAvatarAsync(updateUserAvatarDto);
+                    await _accountService.UpdateAvatarAsync(updateUserAvatarDto);
                 }
                 else
                 {
