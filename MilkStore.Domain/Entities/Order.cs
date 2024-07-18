@@ -24,6 +24,7 @@ namespace MilkStore.Domain.Entities
 		public int PointSaved { get; set; } // Diem kiem duoc trong don hang nay
 
 		// OrderDate = CreatedDate
+		
 		//[ForeignKey("Account")]
 		public string AccountId { get; set; }
 		//[ForeignKey("AccountVoucher")]

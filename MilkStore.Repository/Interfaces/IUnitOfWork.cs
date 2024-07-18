@@ -28,7 +28,9 @@ namespace MilkStore.Repository.Interfaces
 		IBlogImageRepository BlogImageRepository { get; }
 		ILikeRepository LikeRepository { get; }
 		ICommentBlogRepository CommentBlogRepository { get; }
-        ICartRepository CartRepository { get; }
+		IOrderRepository OrderRepository { get; }
+		ICartRepository CartRepository { get; }
+		IOrderDetailRepository OrderDetailRepository { get;}
 
         Task<int> SaveChangeAsync();
 	}

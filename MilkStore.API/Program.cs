@@ -1,8 +1,13 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MilkStore.API;
 using MilkStore.Domain.Entities;
 using MilkStore.Repository.Data;
 using MilkStore.Service.Common;
+using Net.payOS;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,39 +15,30 @@ var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
 builder.Services.AddWebAPIService(configuration.JWT);
 builder.Services.AddSingleton(configuration);
-
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(builder =>
-    {
-        builder.WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-});
-// Conection string for database
-//builder.Services.AddDbContext<AppDbContext>(options =>
-//	options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
+IConfiguration configuration1 = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+PayOS payOS = new PayOS(configuration1["Environment:PAYOS_CLIENT_ID"],
+    configuration1["Environment:PAYOS_API_KEY"],
+    configuration1["Environment:PAYOS_CHECKSUM_KEY"]);
+// Connection string for database
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
 
 // Add JWT authentication
-//var jwtKey = builder.Configuration.GetSection("JWT:JWTSecretKey").Get<string>();
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-// .AddJwtBearer(options =>
-// {
-//     options.TokenValidationParameters = new TokenValidationParameters
+// var jwtKey = builder.Configuration.GetSection("JWT:JWTSecretKey").Get<string>();
+// builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//     .AddJwtBearer(options =>
 //     {
-//         ValidateIssuer = false,
-//         ValidateAudience = false,
-//         ValidateLifetime = true,
-//         ValidateIssuerSigningKey = true,
-//         //ValidIssuer = jwtIssuer,
-//         //ValidAudience = jwtIssuer,
-//         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-//     };
-// });
-
+//         options.TokenValidationParameters = new TokenValidationParameters
+//         {
+//             ValidateIssuer = false,
+//             ValidateAudience = false,
+//             ValidateLifetime = true,
+//             ValidateIssuerSigningKey = true,
+//             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+//         };
+//     });
+builder.Services.AddSingleton(payOS);
 var app = builder.Build();
-
 
 // Call this method to seed data
 using (var scope = app.Services.CreateScope())
@@ -61,7 +57,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();

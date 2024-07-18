@@ -18,8 +18,10 @@ using System.Text;
 using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
+using MilkStore.Service.Models.ViewModels.OrderViewDTO;
 using MilkStore.Service.Models.ViewModels.ProductViewModels;
 using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
+using MilkStore.Service.Models.ViewModels.CartViewModel;
 using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
 using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
 using MilkStore.Service.Models.ViewModels.InteractionModels;
@@ -589,7 +591,17 @@ namespace MilkStore.Service.Mappers
             #region ProductType
             CreateMap<ProductType, ViewListProductTypeDTO>();
             #endregion
-        }
+
+            #region Order
+
+            CreateMap<CreateOrderDTO, Order>()
+	            
+	            .ReverseMap();
+            CreateMap<AddOrderDetailDTO, OrderDetail>().ReverseMap();
+            CreateMap<CartDTO, Cart>().ReverseMap();
+
+            #endregion
+		}
 
     }
 }
