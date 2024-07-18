@@ -25,6 +25,7 @@ namespace MilkStore.Repository.Repositories
         private readonly IBlogImageRepository _blogImageRepository;
         private readonly ILikeRepository _likeRepository;
         private readonly ICommentBlogRepository _commentBlogRepository;
+        private readonly ICartRepository _cartRepository;
 
         public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -40,7 +41,8 @@ namespace MilkStore.Repository.Repositories
             ICategoryRepository categoryRepository,
             IBlogImageRepository blogImageRepository,
             ILikeRepository likeRepository,
-            ICommentBlogRepository commentBlogRepository
+            ICommentBlogRepository commentBlogRepository,
+            ICartRepository cartRepository
             )
         {
             _dbContext = dbContext;
@@ -58,6 +60,7 @@ namespace MilkStore.Repository.Repositories
             _blogImageRepository = blogImageRepository;
             _likeRepository = likeRepository;
             _commentBlogRepository = commentBlogRepository;
+            _cartRepository = cartRepository;
         }
 
         public IAcccountRepository AcccountRepository => _accountRepository;
@@ -74,6 +77,7 @@ namespace MilkStore.Repository.Repositories
         public IBlogImageRepository BlogImageRepository => _blogImageRepository;
         public ILikeRepository LikeRepository => _likeRepository;
         public ICommentBlogRepository CommentBlogRepository => _commentBlogRepository;
+        public ICartRepository CartRepository => _cartRepository;
 
         public async Task<int> SaveChangeAsync()
         {
