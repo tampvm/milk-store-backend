@@ -423,14 +423,11 @@ namespace MilkStore.Service.Mappers
             #endregion
 
             #region ProductImage
-            CreateMap<ProductImage, ViewListProductImageDTO>();
-			CreateMap<Image, ImageDTO>();
-			CreateMap<ImageDTO, Image>();
-			CreateMap<UpdateProductImageDTO, ProductImage>()
-				.ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
-                .ForMember(dest => dest.ImageId, opt => opt.MapFrom(src => src.ImageId))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy))
-                .ReverseMap();
+            CreateMap<ProductImage, ViewListProductImageDTO>()
+            .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image)); 
+            CreateMap<Image, ImageDTO>();
+            CreateMap<ImageDTO, Image>();
+			CreateMap<UpdateProductImageDTO, ProductImage>();
             #endregion
 
             #region AgeRange

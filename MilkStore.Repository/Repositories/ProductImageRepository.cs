@@ -21,9 +21,10 @@ namespace MilkStore.Repository.Repositories
         {
             try
             {
-                List<ProductImage> productImages = new List<ProductImage>();
-                productImages = await _context.ProductImages.Where(x => x.ProductId == productId).ToListAsync();
-                return productImages;
+                return await _context.ProductImages
+                .Where(pi => pi.ProductId == productId && !pi.IsDeleted)
+                .Include(pi => pi.Image) 
+                .ToListAsync();
             }
             catch
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MilkStore.Domain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,7 @@ namespace MilkStore.Service.Models.ViewModels.ProductImageViewModels
         public DateTime DeletedAt { get; set; }
         public string DeletedBy { get; set; }
         public bool IsDeleted { get; set; }
+        public ImageDTO Image { get; set; }
 
     }
 }
