@@ -47,7 +47,7 @@ namespace MilkStore.Service.Services
             {
                 //Product
                 var product = _mapper.Map<Product>(productCreateDTO);
-                product.Id = GenerateRandomString(12);
+                product.Id = GenerateRandomString(20);
                 product.Active = true;
                 product.IsDeleted = false;
                 product.CreatedAt = DateTime.UtcNow;
@@ -227,6 +227,22 @@ namespace MilkStore.Service.Services
             try
             {
                 var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(productId);
+                var productDTO = _mapper.Map<ViewListProductsDTO>(product);
+                return new SuccessResponseModel<object> { Success = true, Message = "Product retrieved successfully.", Data = productDTO };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+        #endregion
+
+        #region GetProductBySku
+        public async Task<ResponseModel> GetProductBySkuAsync(string sku)
+        {
+            try
+            {
+                var product = await _unitOfWork.ProductRepository.GetProductBySKUAsync(sku);
                 var productDTO = _mapper.Map<ViewListProductsDTO>(product);
                 return new SuccessResponseModel<object> { Success = true, Message = "Product retrieved successfully.", Data = productDTO };
             }

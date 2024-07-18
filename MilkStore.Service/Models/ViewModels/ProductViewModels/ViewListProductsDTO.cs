@@ -1,4 +1,8 @@
-﻿using System;
+﻿using MilkStore.Domain.Entities;
+using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
+using MilkStore.Service.Models.ViewModels.BrandViewModels;
+using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,5 +31,8 @@ namespace MilkStore.Service.Models.ViewModels.ProductViewModels
         public DateTime DeletedAt { get; set; }
         public string DeletedBy { get; set; }
         public bool IsDeleted { get; set; }
+        public ViewBrandDetailDTO Brand { get; set; }
+        public ViewListProductTypeDTO Type { get; set; }
+        public ViewListAgeRangeDTO AgeRange { get; set; }
     }
 }

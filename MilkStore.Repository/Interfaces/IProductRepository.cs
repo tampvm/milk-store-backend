@@ -13,5 +13,6 @@ namespace MilkStore.Repository.Interfaces
         Task<IEnumerable<Product>> GetAllProductsAsync();
         Task<Product> GetProductByIdAsync(String productId);
         Task UpdateProductAsync(Product product);
+        Task<Product> GetProductBySKUAsync(string sku);
     }
 }

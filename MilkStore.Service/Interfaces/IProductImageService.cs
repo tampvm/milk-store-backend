@@ -12,7 +12,7 @@ namespace MilkStore.Service.Interfaces
     public interface IProductImageService
     {
         Task<ResponseModel> GetProductImagesAsync(string productId);
-        Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, IFormFile imageFile, IFormFile thumbnailFile);
+        Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, List<IFormFile> imageFiles, IFormFile thumbnailFile);
         Task<ResponseModel> UpdateProductImageAsync(UpdateProductImageDTO updateProductImageDTO, IFormFile imageFile, IFormFile thumbnailFile);
         Task<ResponseModel> DeleteProductImageAsync(DeleteProductImageDTO deleteProductImageDTO);
     }

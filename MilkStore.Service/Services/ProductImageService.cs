@@ -65,7 +65,7 @@ namespace MilkStore.Service.Services
         #endregion
 
         #region CreateProductImage
-        public async Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, IFormFile imageFile, IFormFile thumbnailFile)
+        public async Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, List<IFormFile> imageFiles, IFormFile thumbnailFile)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace MilkStore.Service.Services
                     return new ErrorResponseModel<object> { Success = false, Message = "Empty product image data." };
                 }
 
-                if (imageFile == null)
+                if (imageFiles == null)
                 {
                     return new ErrorResponseModel<object> { Success = false, Message = "Image file is required." };
                 }
@@ -84,43 +84,45 @@ namespace MilkStore.Service.Services
                     return new ErrorResponseModel<object> { Success = false, Message = "Thumbnail file is required." };
                 }
 
-                var imageUrl = await UploadProductImageAsync(imageFile);
-                if (string.IsNullOrEmpty(imageUrl))
-                {
-                    return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
-                }
-
                 var thumbnailUrl = await UploadProductImageAsync(thumbnailFile);
                 if (string.IsNullOrEmpty(thumbnailUrl))
                 {
                     return new ErrorResponseModel<object> { Success = false, Message = "Thumbnail upload failed." };
                 }
 
-                var image = new Image
+                foreach (var imageFile in imageFiles)
                 {
-                    ImageUrl = imageUrl,
-                    ThumbnailUrl = thumbnailUrl,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = createProductImageDTO.CreatedBy,
-                    Type = "Product",
-                    IsDeleted = false
-                };
+                    var imageUrl = await UploadProductImageAsync(imageFile);
+                    if (string.IsNullOrEmpty(imageUrl))
+                    {
+                        return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
+                    }
 
-                await _unitOfWork.ImageRepository.AddAsync(image);
-                await _unitOfWork.SaveChangeAsync();
+                    var image = new Image
+                    {
+                        ImageUrl = imageUrl,
+                        ThumbnailUrl = thumbnailUrl,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = createProductImageDTO.CreatedBy,
+                        Type = "Product",
+                        IsDeleted = false
+                    };
 
-                var productImage = new ProductImage
-                {
-                    ImageId = image.Id,
-                    ProductId = createProductImageDTO.ProductId,
-                    CreatedBy = createProductImageDTO.CreatedBy,
-                    CreatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                };
+                    await _unitOfWork.ImageRepository.AddAsync(image);
+                    await _unitOfWork.SaveChangeAsync();
 
-                await _unitOfWork.ProductImageRepository.AddAsync(productImage);
-                await _unitOfWork.SaveChangeAsync();
+                    var productImage = new ProductImage
+                    {
+                        ImageId = image.Id,
+                        ProductId = createProductImageDTO.ProductId,
+                        CreatedBy = createProductImageDTO.CreatedBy,
+                        CreatedAt = DateTime.UtcNow,
+                        IsDeleted = false
+                    };
 
+                    await _unitOfWork.ProductImageRepository.AddAsync(productImage);
+                    await _unitOfWork.SaveChangeAsync();
+                }
                 return new SuccessResponseModel<object>
                 {
                     Success = true,
