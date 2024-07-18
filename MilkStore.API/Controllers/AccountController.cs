@@ -41,6 +41,18 @@ namespace MilkStore.API.Controllers
             }
             return BadRequest(response);
         }
+
+        [HttpPut]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserAvatarAsync(UpdateUserAvatarDTO model)
+        {
+            var response = await _accountService.UpdateUserAvatarAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
         #endregion
 
         #region Update User Phone Number Or Link Phone Number

@@ -48,8 +48,7 @@ namespace MilkStore.Domain.Entities
         public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
         public virtual ICollection<Point> Points { get; set; } = new List<Point>();
         public virtual ICollection<AccountVoucher> AccountVouchers { get; set; } = new List<AccountVoucher>();
-
-        //public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
+        public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
         //public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     }

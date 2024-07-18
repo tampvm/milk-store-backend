@@ -22,6 +22,8 @@ namespace MilkStore.Repository.Interfaces
             int? pageIndex = null, // Optional parameter for pagination (page number)
             int? pageSize = null);  // Optional parameter for pagination (number of records per page)
         Task<TEntity?> GetByIdAsync(object id);
+        //Task<TEntity?> GetByIdAsync(object id, params Expression<Func<TEntity, object>>[] includes);
+        Task<TEntity?> GetByIdAsync(object id, Expression<Func<TEntity, bool>> filter = null, string includeProperties = "");
         Task AddAsync(TEntity entity);
         Task AddRangeAsync(List<TEntity> entities);
         void Update(TEntity entity);
@@ -30,7 +32,6 @@ namespace MilkStore.Repository.Interfaces
         void SoftRemoveRange(List<TEntity> entities);
         void Delete(object id);
         void Delete(TEntity entity);
-
         Task<int> CountAsync(Expression<Func<TEntity, bool>> filter = null);
         //findAsync
         Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> filter = null);

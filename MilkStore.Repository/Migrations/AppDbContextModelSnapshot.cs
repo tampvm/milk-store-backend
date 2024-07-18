@@ -346,11 +346,19 @@ namespace MilkStore.Repository.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsDefault")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -466,6 +474,59 @@ namespace MilkStore.Repository.Migrations
                         .HasFilter("[ImageId] IS NOT NULL");
 
                     b.ToTable("Brand");
+                });
+
+            modelBuilder.Entity("MilkStore.Domain.Entities.Cart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProductId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Quanity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Cart");
                 });
 
             modelBuilder.Entity("MilkStore.Domain.Entities.Category", b =>
@@ -1537,6 +1598,25 @@ namespace MilkStore.Repository.Migrations
                     b.Navigation("Image");
                 });
 
+            modelBuilder.Entity("MilkStore.Domain.Entities.Cart", b =>
+                {
+                    b.HasOne("MilkStore.Domain.Entities.Account", "Account")
+                        .WithMany("Carts")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MilkStore.Domain.Entities.Product", "Product")
+                        .WithMany("Carts")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("MilkStore.Domain.Entities.CommentBrand", b =>
                 {
                     b.HasOne("MilkStore.Domain.Entities.Account", "Account")
@@ -1790,6 +1870,8 @@ namespace MilkStore.Repository.Migrations
 
                     b.Navigation("Addresses");
 
+                    b.Navigation("Carts");
+
                     b.Navigation("CommentBrands");
 
                     b.Navigation("CommentPosts");
@@ -1874,6 +1956,8 @@ namespace MilkStore.Repository.Migrations
 
             modelBuilder.Entity("MilkStore.Domain.Entities.Product", b =>
                 {
+                    b.Navigation("Carts");
+
                     b.Navigation("Feedbacks");
 
                     b.Navigation("OrderDetails");

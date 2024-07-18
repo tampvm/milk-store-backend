@@ -258,7 +258,7 @@ namespace MilkStore.Service.Services
                 };
             }
 
-            // Kiểm tra xem username có đủ độ dài yêu cầu không (tối thiểu 6 ký tự)
+            // Kiểm tra xem userId có đủ độ dài yêu cầu không (tối thiểu 6 ký tự)
             if (model.Username.Length < 6)
             {
                 return new ResponseModel
@@ -414,7 +414,7 @@ namespace MilkStore.Service.Services
             }
         }
 
-        // Find usern by username, email, or phone number
+        // Find usern by userId, email, or phone number
         private async Task<Account> FindByUsernameOrEmailOrPhoneNumberAsync(string identifier, bool includeUsername = true)
         {
             // Try to find the usern by phone number first
@@ -426,7 +426,7 @@ namespace MilkStore.Service.Services
                 user = await _userManager.FindByEmailAsync(identifier);
             }
 
-            // If not found by email and if username search is included, try to find by username
+            // If not found by email and if userId search is included, try to find by userId
             if (user == null && includeUsername)
             {
                 user = await _userManager.FindByNameAsync(identifier);
@@ -449,7 +449,7 @@ namespace MilkStore.Service.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 //new Claim(JwtRegisteredClaimNames.Email, usern.Email),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
-                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Name, user.Id),
                 //new Claim(ClaimTypes.Sid, usern.Id.ToString()),
                 new Claim ("userId", user.Id.ToString())
             };
@@ -517,9 +517,9 @@ namespace MilkStore.Service.Services
             try
             {
                 var principal = GetPrincipalFromExpiredToken(model.AccessToken);
-                var username = principal.Identity.Name;
+                var userId = principal.Identity.Name;
 
-                var user = await FindByUsernameOrEmailOrPhoneNumberAsync(username);
+                var user = await _userManager.FindByIdAsync(userId);
 
                 if (user == null || user.RefreshToken != model.RefreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
                 {
@@ -887,7 +887,7 @@ namespace MilkStore.Service.Services
                     await _userManager.AddToRoleAsync(user, role);
 
                     // Cập nhật avatar sau khi tạo người dùng
-                    var updateUserAvatarDto = new UpdateUserAvatarDTO
+                    var updateUserAvatarDto = new UpdateAvatarDTO
                     {
                         GoogleEmail = dto.Provider == "Google" ? dto.Email : null,
                         FacebookEmail = dto.Provider == "Facebook" ? dto.Email : null,
@@ -895,7 +895,7 @@ namespace MilkStore.Service.Services
                     };
 
                     // Cập nhật ảnh đại diện
-                    await _accountService.UpdateUserAvatarAsync(updateUserAvatarDto);
+                    await _accountService.UpdateAvatarAsync(updateUserAvatarDto);
                 }
                 else
                 {

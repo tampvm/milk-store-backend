@@ -9,6 +9,8 @@ namespace MilkStore.Repository.Interfaces
 {
     public interface IAddressRepository : IGenericRepository<Address>
     {
+        Task<List<Address>> GetByUserIdAsync(string userId);
         Task<Address> GetDefaultAddressOrFirstAsync(string userId);
+        Task<Address?> GetDefaultAddressAsync(string userId);
     }
 }

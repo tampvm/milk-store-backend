@@ -8,9 +8,13 @@ namespace MilkStore.Service.Models.ViewModels.AddressViewModels
 {
     public class ViewUserAddressDTO
     {
-        public string AddressId { get; set; }
+        public int AddressId { get; set; }
 
         public string UserId { get; set; }
+
+        public string FullName { get; set; }
+
+        public string PhoneNumber { get; set; }
 
         public string AddressLine { get; set; }
 
