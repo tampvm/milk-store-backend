@@ -13,7 +13,7 @@ namespace MilkStore.Service.Interfaces
     public interface IProductService
     {
         Task<ResponseModel> GetAllProductsAsync();
-        Task<ResponseModel> GetProductsPaginationAsync (int pageIndex, int pageSize);
+        Task<ResponseModel> GetProductsPaginationAsync(string keySearch, int pageIndex, int pageSize);
         Task<ResponseModel> GetProductByIdAsync(String productId);
         Task<ResponseModel> CreateProductAsync(CreateProductDTO productCreateDTO);
         Task<ResponseModel> UpdateProductAsync(UpdateProductDTO productUpdateDTO);

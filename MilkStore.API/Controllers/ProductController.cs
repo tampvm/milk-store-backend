@@ -30,10 +30,10 @@ namespace MilkStore.API.Controllers
 
         [HttpGet]
         [Route("GetProductsPagination")]
-        public async Task<IActionResult> GetProductsPaginationAsync(int pageIndex = 0, int pageSize = 10)
+        public async Task<IActionResult> GetProductsPaginationAsync(string? keySearch = null, int pageIndex = 0, int pageSize = 10)
         {
-            var response = await _productService.GetProductsPaginationAsync(pageIndex, pageSize);
-            if (response != null)
+            var response = await _productService.GetProductsPaginationAsync(keySearch, pageIndex, pageSize);
+            if (response.Success)
             {
                 return Ok(response);
             }

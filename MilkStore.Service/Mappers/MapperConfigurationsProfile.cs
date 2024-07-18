@@ -560,6 +560,7 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Type, otp => otp.MapFrom(src => src.Type))
 				.ForMember(dest => dest.AgeRange, otp => otp.MapFrom(src => src.AgeRange));
 
+
             #endregion
 
             #region ProductImage

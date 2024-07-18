@@ -254,19 +254,39 @@ namespace MilkStore.Service.Services
         #endregion
 
         #region GetProductsPagination
-        public async Task<ResponseModel> GetProductsPaginationAsync(int pageIndex, int pageSize)
+        public async Task<ResponseModel> GetProductsPaginationAsync(string keySearch, int pageIndex, int pageSize)
         {
             try
             {
-                var products = await _unitOfWork.ProductRepository.GetAsync(
-                    pageSize: pageSize,
-                    pageIndex: pageIndex);
-                var productDTOs = _mapper.Map<Pagination<ViewListProductsDTO>>(products);
+                var products = await _unitOfWork.ProductRepository.GetAllProductsAsync();
+
+                if (!string.IsNullOrEmpty(keySearch))
+                {
+                    products = products
+                        .Where(p => p.Name.Contains(keySearch) || p.Description.Contains(keySearch))
+                        .Skip((pageIndex - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+                }
+                else
+                {
+                    products = products
+                        .Skip((pageIndex - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+                }
+
+                if (products == null || !products.Any())
+                {
+                    return new ErrorResponseModel<object> { Success = false, Message = "No products found." };
+                }
+
+                var productDTOs = _mapper.Map<List<ViewListProductsDTO>>(products);
                 return new SuccessResponseModel<object> { Success = true, Message = "Products retrieved successfully.", Data = productDTOs };
             }
             catch (Exception ex)
             {
-                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+                return new ErrorResponseModel<object> { Success = false, Message = $"An error occurred: {ex.Message}" };
             }
         }
         #endregion
