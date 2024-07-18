@@ -21,6 +21,7 @@ using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
 using MilkStore.Service.Models.ViewModels.OrderViewDTO;
 using MilkStore.Service.Models.ViewModels.ProductViewModels;
 using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
+using MilkStore.Service.Models.ViewModels.CartViewModel;
 using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
 
 namespace MilkStore.Service.Mappers
@@ -427,6 +428,7 @@ namespace MilkStore.Service.Mappers
 	            
 	            .ReverseMap();
             CreateMap<AddOrderDetailDTO, OrderDetail>().ReverseMap();
+            CreateMap<CartDTO, Cart>().ReverseMap();
 
             #endregion
 		}

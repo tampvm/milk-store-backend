@@ -24,6 +24,7 @@ namespace MilkStore.Repository.Interfaces
 		IProductTypeRepository ProductTypeRepository { get; }
 		IProductImageRepository ProductImageRepository { get; }
 		IOrderRepository OrderRepository { get; }
+		ICartRepository CartRepository { get; }
         Task<int> SaveChangeAsync();
 	}
 }

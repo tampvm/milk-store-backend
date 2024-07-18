@@ -156,6 +156,9 @@ namespace MilkStore.API
             //ProductType
             services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
             services.AddScoped<IProductTypeService, ProductTypeService>();
+            //Cart
+            services.AddScoped<ICartService, CartService>();
+            services.AddScoped<ICartRepository, CartRepository>();
 
             //ProductImage
             services.AddScoped<IProductImageRepository, ProductImageRepository>();
