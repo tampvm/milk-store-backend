@@ -16,6 +16,7 @@ using System.Text;
 
 namespace MilkStore.API
 {
+
 	public static class DependencyInjection
 	{
 		public static IServiceCollection AddWebAPIService(this IServiceCollection services, JWTSettings jwt)
@@ -116,26 +117,27 @@ namespace MilkStore.API
 			services.AddScoped<IImageRepository, ImageRepository>();
 
 			services.AddScoped<IAddressRepository, AddressRepository>();
+
             services.AddScoped<IAddressService, AddressService>();
 
             services.AddScoped<IBlogRepostiory, BlogRepository>();
             services.AddScoped<IBlogService, BlogService>();
 
-			// Brand
-			services.AddScoped<IBrandRepository, BrandRepository>();
-			services.AddScoped<IBrandService, BrandService>();
+            // Brand
+            services.AddScoped<IBrandRepository, BrandRepository>();
+            services.AddScoped<IBrandService, BrandService>();
 
-			// FollowBrand
-			services.AddScoped<IFollowBrandRepository, FollowBrandRepository>();
-			services.AddScoped<IFollowBrandService, FollowBrandService>();
+            // FollowBrand
+            services.AddScoped<IFollowBrandRepository, FollowBrandRepository>();
+            services.AddScoped<IFollowBrandService, FollowBrandService>();
 
-			// Voucher
-			services.AddScoped<IVoucherRepository, VoucherRepository>();
-			services.AddScoped<IVoucherService, VoucherService>();
+            // Voucher
+            services.AddScoped<IVoucherRepository, VoucherRepository>();
+            services.AddScoped<IVoucherService, VoucherService>();
 
-			// Point
-			services.AddScoped<IPointRepository, PointRepository>();
-			services.AddScoped<IPointService, PointService>();
+            // Point
+            services.AddScoped<IPointRepository, PointRepository>();
+            services.AddScoped<IPointService, PointService>();
 
 			//Category
 			services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -159,14 +161,28 @@ namespace MilkStore.API
 			//Cart
 			services.AddScoped<ICartRepository, CartRepository>();
 			services.AddScoped<ICartService, CartService>();
+      
+			//Product
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductService, ProductService>();
 
-            // Add DbContext
+            //AgeRange
+            services.AddScoped<IAgeRangeRepository, AgeRangeRepository>();
+            services.AddScoped<IAgeRangeService, AgeRangeService>();
+
+            //ProductType
+            services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
+            services.AddScoped<IProductTypeService, ProductTypeService>();
+
+            //ProductImage
+            services.AddScoped<IProductImageRepository, ProductImageRepository>();
+            services.AddScoped<IProductImageService, ProductImageService>();
+
             services.AddDbContext<AppDbContext>(option => option.UseSqlServer(databaseConnection));
 
-            // Add AutoMapper
             services.AddAutoMapper(typeof(MapperConfigurationsProfile).Assembly);
 
-			return services;
-		}
-	}
+            return services;
+        }
+    }
 }

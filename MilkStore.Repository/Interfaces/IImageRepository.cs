@@ -10,5 +10,8 @@ namespace MilkStore.Repository.Interfaces
     public interface IImageRepository : IGenericRepository<Image>
     {
         Task<Image> FindByImageUrlAsync(string imageUrl);
+
+        Task<Image> FindByImageIdAsync(int imageId);
+        Task UpdateImageAsync(Image image);
     }
 }

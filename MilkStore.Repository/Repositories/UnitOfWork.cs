@@ -22,10 +22,15 @@ namespace MilkStore.Repository.Repositories
         private readonly IAddressRepository _addressRepository;
         private readonly IBlogCategoryRepository _blogCategoryRepository;
         private readonly ICategoryRepository _categoryRepository;
+        private readonly IProductRepository _productRepository;
+        private readonly IAgeRangeRepository _ageRangeRepository;
+        private readonly IProductTypeRepository _productTypeRepository;
+        private readonly IProductImageRepository _productImageRepository;
         private readonly IBlogImageRepository _blogImageRepository;
         private readonly ILikeRepository _likeRepository;
         private readonly ICommentBlogRepository _commentBlogRepository;
         private readonly ICartRepository _cartRepository;
+
 
         public UnitOfWork(AppDbContext dbContext, 
             IAcccountRepository accountRepository, 
@@ -39,11 +44,15 @@ namespace MilkStore.Repository.Repositories
             IAddressRepository addressRepository,
             IBlogCategoryRepository blogCategoryRepository, 
             ICategoryRepository categoryRepository,
+            IProductRepository productRepository,
+            IAgeRangeRepository ageRangeRepository,
+            IProductTypeRepository productTypeRepository,
+            IProductImageRepository productImageRepository,
             IBlogImageRepository blogImageRepository,
             ILikeRepository likeRepository,
             ICommentBlogRepository commentBlogRepository,
-            ICartRepository cartRepository
-            )
+            ICartRepository cartRepository)
+
         {
             _dbContext = dbContext;
             _accountRepository = accountRepository;
@@ -57,6 +66,10 @@ namespace MilkStore.Repository.Repositories
             _addressRepository = addressRepository;
             _blogCategoryRepository = blogCategoryRepository;
             _categoryRepository = categoryRepository;
+            _productRepository = productRepository;
+            _ageRangeRepository = ageRangeRepository;
+            _productTypeRepository = productTypeRepository;
+            _productImageRepository = productImageRepository;
             _blogImageRepository = blogImageRepository;
             _likeRepository = likeRepository;
             _commentBlogRepository = commentBlogRepository;
@@ -74,6 +87,10 @@ namespace MilkStore.Repository.Repositories
         public IAddressRepository AddressRepository => _addressRepository;
         public IBlogCategoryRepository BlogCategoryRepository => _blogCategoryRepository;
         public ICategoryRepository CategoryRepository => _categoryRepository;
+        public IProductRepository ProductRepository => _productRepository;
+        public IAgeRangeRepository AgeRangeRepository => _ageRangeRepository;
+        public IProductTypeRepository ProductTypeRepository => _productTypeRepository;
+        public IProductImageRepository ProductImageRepository => _productImageRepository;
         public IBlogImageRepository BlogImageRepository => _blogImageRepository;
         public ILikeRepository LikeRepository => _likeRepository;
         public ICommentBlogRepository CommentBlogRepository => _commentBlogRepository;

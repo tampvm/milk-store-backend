@@ -18,6 +18,10 @@ using System.Text;
 using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
+using MilkStore.Service.Models.ViewModels.ProductViewModels;
+using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
+using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
+using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
 using MilkStore.Service.Models.ViewModels.InteractionModels;
 using MilkStore.Service.Models.ViewModels.AddressViewModels;
 
@@ -467,7 +471,7 @@ namespace MilkStore.Service.Mappers
 
 				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
 				.ReverseMap();
-            #endregion
+			#endregion
 
             #region Interaction
             CreateMap<LikePost, GetBlogLike>()
@@ -521,7 +525,68 @@ namespace MilkStore.Service.Mappers
             #endregion
         
 			
-		}
+		
 
-	}
+			#region Product
+
+			CreateMap<Product, CreateProductDTO>();
+			CreateMap<CreateProductDTO, Product>();
+
+			CreateMap<UpdateProductDTO, Product>();
+			CreateMap<Product, UpdateProductDTO>();
+
+			CreateMap<Product, DeleteProductDTO>();
+            CreateMap<DeleteProductDTO, Product>();
+
+            CreateMap<Product, RestoreProductDTO>();
+            CreateMap<RestoreProductDTO, Product>();
+
+            CreateMap<Product, ViewProductDTO>()
+           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku))
+           .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+           .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+           .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+           .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
+           .ForMember(dest => dest.Weight, opt => opt.MapFrom(src => src.Weight))
+           .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+           .ForMember(dest => dest.TypeId, opt => opt.MapFrom(src => src.TypeId))
+           .ForMember(dest => dest.AgeId, opt => opt.MapFrom(src => src.AgeId))
+           .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
+           .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
+
+            CreateMap<Product, ViewListProductsDTO>()
+           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku))
+           .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+           .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+           .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+           .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
+           .ForMember(dest => dest.Weight, opt => opt.MapFrom(src => src.Weight))
+           .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+           .ForMember(dest => dest.TypeId, opt => opt.MapFrom(src => src.TypeId))
+           .ForMember(dest => dest.AgeId, opt => opt.MapFrom(src => src.AgeId))
+           .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
+           .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
+
+            #endregion
+
+            #region ProductImage
+            CreateMap<ProductImage, ViewListProductImageDTO>()
+            .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image)); 
+            CreateMap<Image, ImageDTO>();
+            CreateMap<ImageDTO, Image>();
+			CreateMap<UpdateProductImageDTO, ProductImage>();
+            #endregion
+
+            #region AgeRange
+            CreateMap<AgeRange, ViewListAgeRangeDTO>();
+            #endregion
+
+            #region ProductType
+            CreateMap<ProductType, ViewListProductTypeDTO>();
+            #endregion
+        }
+
+    }
 }
