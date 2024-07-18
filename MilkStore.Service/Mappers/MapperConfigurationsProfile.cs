@@ -391,6 +391,9 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.DeletedBy, opt => opt.Ignore()) // Assuming DeletedBy should not be updated
 				.ForMember(dest => dest.IsDeleted, opt => opt.Ignore()) // Assuming IsDeleted should not be updated
 				.ReverseMap();
+
+			// Mapping from UpdateImgBlogDTO to Post
+		
 			#endregion
 
 			#region Category

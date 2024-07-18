@@ -74,7 +74,7 @@ namespace MilkStore.Service.Services
         public async Task<ResponseModel> GetLikeByBlogId(int pageIndex, int pageSize, int blogId)
         {
             //get all like by blog id
-            var likes = await _unitOfWork.LikeRepository.FindAsync(x => x.PostId.Equals(blogId));
+            var likes = await _unitOfWork.LikeRepository.GetAsync(x => x.PostId.Equals(blogId));
             if (likes == null)
             {
                 return new ErrorResponseModel<object>
@@ -84,7 +84,7 @@ namespace MilkStore.Service.Services
                 };
 
             }
-            var likeViewModel =  _mapper.Map<GetBlogLike>(likes);
+            var likeViewModel =  _mapper.Map< Pagination<GetBlogLike>>(likes);
             return new SuccessResponseModel<object>
             {
                 Success = true,
