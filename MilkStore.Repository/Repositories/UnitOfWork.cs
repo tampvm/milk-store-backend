@@ -52,7 +52,6 @@ namespace MilkStore.Repository.Repositories
             ILikeRepository likeRepository,
             ICommentBlogRepository commentBlogRepository,
             ICartRepository cartRepository)
-            )
 
         {
             _dbContext = dbContext;
