@@ -525,7 +525,7 @@ namespace MilkStore.Service.Mappers
             #endregion
         
 			
-		}
+		
 
 			#region Product
 
