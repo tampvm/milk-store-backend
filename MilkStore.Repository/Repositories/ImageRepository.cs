@@ -24,5 +24,21 @@ namespace MilkStore.Repository.Repositories
             return await _context.Images.FirstOrDefaultAsync(x => x.ImageUrl == imageUrl);
         }
 
+        public async Task<Image> FindByImageIdAsync(int imageId)
+        {
+            return await _context.Images.FirstOrDefaultAsync(x => x.Id == imageId);
+        }
+
+        public Task UpdateImageAsync(Image image)
+        {
+            try
+            {
+                _context.Entry(image).State = EntityState.Modified;
+                return _context.SaveChangesAsync();
+            }
+            catch (Exception ex) {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
