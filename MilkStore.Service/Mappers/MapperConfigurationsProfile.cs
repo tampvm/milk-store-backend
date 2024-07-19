@@ -105,10 +105,19 @@ namespace MilkStore.Service.Mappers
 			CreateMap<Account, ViewUserRolesDTO>()
 				.ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.Id)).ReverseMap();
 			//.ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.UserRoles.Select(ur => ur.Role.Name).ToList()));
-			#endregion
 
-			#region Address
-			CreateMap<Address, ViewUserAddressDTO>()
+			CreateMap<CreateAccountDTO, Account>()
+                .ForMember(dest => dest.FirstName, opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName, opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.PhoneNumber, opt => opt.MapFrom(src => src.PhoneNumber))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username))
+                .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status))
+				.ReverseMap();
+            #endregion
+
+            #region Address
+            CreateMap<Address, ViewUserAddressDTO>()
                 .ForMember(dest => dest.AddressId, opt => opt.MapFrom(src => src.Id))
                 .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.AccountId))
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.FullName))
