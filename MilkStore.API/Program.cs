@@ -15,10 +15,13 @@ var configuration = builder.Configuration.Get<AppConfiguration>();
 builder.Services.AddInfrastructuresService(configuration.DatabaseConnection);
 builder.Services.AddWebAPIService(configuration.JWT);
 builder.Services.AddSingleton(configuration);
+
 IConfiguration configuration1 = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 PayOS payOS = new PayOS(configuration1["Environment:PAYOS_CLIENT_ID"],
     configuration1["Environment:PAYOS_API_KEY"],
     configuration1["Environment:PAYOS_CHECKSUM_KEY"]);
+
+
 // Connection string for database
 // builder.Services.AddDbContext<AppDbContext>(options =>
 //     options.UseSqlServer(builder.Configuration.GetConnectionString("DatabaseConnection")));
@@ -57,6 +60,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors();
 app.UseAuthorization();
 
 app.MapControllers();

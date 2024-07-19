@@ -85,6 +85,16 @@ namespace MilkStore.API
 				});
 			});
 
+			services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(builder =>
+				{
+					builder.WithOrigins("http://localhost:5173")
+						.AllowAnyHeader()
+						.AllowAnyMethod();
+				});
+			});
+
 			// Add services to the container.
 			services.AddTransient<SeedData>();
 			services.AddControllers();
