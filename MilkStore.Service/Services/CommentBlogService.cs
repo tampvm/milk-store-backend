@@ -78,7 +78,11 @@ namespace MilkStore.Service.Services
         public async Task<ResponseModel> GetCommentByBlogId(int pageIndex, int pageSize, int blogId)
         {
             // Tìm bản ghi dựa trên PostId
-            var existingComment = await _unitOfWork.CommentBlogRepository.FindAsync(c => c.PostId == blogId);
+            var existingComment = await _unitOfWork.CommentBlogRepository.GetAsync(
+                filter: r => r.PostId.Equals(blogId),
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            ); 
             if (existingComment == null) {
                 return new ErrorResponseModel<object>
                 {
@@ -88,7 +92,7 @@ namespace MilkStore.Service.Services
 
                 };
             }
-           var comment = _mapper.Map<GetBlogComments>(existingComment);
+           var comment = _mapper.Map<Pagination<GetBlogComments>>(existingComment);
             return new SuccessResponseModel<object>
             {
                 Data = comment,

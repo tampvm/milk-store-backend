@@ -1,13 +1,9 @@
-﻿using MilkStore.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using MilkStore.Domain.Entities;
 
-namespace MilkStore.Repository.Interfaces
+namespace MilkStore.Repository.Interfaces;
+
+public interface ICartRepository : IGenericRepository<Cart>
 {
-    public interface ICartRepository : IGenericRepository<Cart>
-    {
-    }
+    Task<List<Cart>> GetCartsByAccountIdAsync(string accountId, int pageIndex, int pageSize);
+    Task<Cart> GetCartItemAsync(string accountId, string productId, string status);
 }

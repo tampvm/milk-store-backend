@@ -121,6 +121,31 @@ namespace MilkStore.API.Controllers
             var blogs = await _blogService.GetBlogByBlogId(blogId);
             return Ok(blogs);
         }
+        [HttpPut]
+        public async Task<IActionResult> UpdateImgBlog(int blogid, [FromBody] UpdateImgBlogDTO model)
+        {
+            if (model == null)
+            {
+                return BadRequest("Update model cannot be null.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Call the service to update the blog
+            var response = await _blogService.UpdateImgBlog(model, blogid);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+        }
 
 
     }

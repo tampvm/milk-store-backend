@@ -18,6 +18,8 @@ namespace MilkStore.Repository.Data
 		{
 		}
 
+		
+
 		public DbSet<Account> Accounts { get; set; }
 		public DbSet<Role> Roles { get; set; }
 		public DbSet<AccountVoucher> AccountVouchers { get; set; }

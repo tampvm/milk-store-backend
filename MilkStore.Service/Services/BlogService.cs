@@ -112,7 +112,7 @@ namespace MilkStore.Service.Services
         {
             // Fetch blogs with pagination
             var blogs = await _unitOfWork.BlogRepostiory.GetAsync(
-                filter: r => r.Status.Equals(true),
+                filter: r => r.IsDeleted.Equals(false),
                 pageIndex: pageIndex,
                 pageSize: pageSize
             );
@@ -361,6 +361,51 @@ namespace MilkStore.Service.Services
                 Message = "Blog retrieved successfully.",
                 Data = blogDTO
             };
+        }
+
+        public async Task<ResponseModel> UpdateImgBlog(UpdateImgBlogDTO model, int blogid)
+        {
+            var blogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == blogid);
+            if (blogImg == null)
+            {
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "Blog not found."
+                };
+            }
+            if(blogImg != null)
+            {
+                var oldAvatar = await _unitOfWork.ImageRepository.GetByIdAsync(blogImg.ImageId);
+                oldAvatar.ImageUrl = model.ImgUrl;
+                oldAvatar.ThumbnailUrl = model.ImgUrl;
+                _unitOfWork.ImageRepository.Update(oldAvatar);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Blog updated img successfully.",
+                    Data = oldAvatar
+                };
+            }
+            var newAvatar = new Image
+            {
+                ImageUrl = model.ImgUrl,
+                ThumbnailUrl = model.ImgUrl,
+                Type = ImageTypeEnums.Avatar.ToString(),
+            };
+            await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+            await _unitOfWork.SaveChangeAsync();
+            blogImg.ImageId = newAvatar.Id;
+            _unitOfWork.BlogImageRepository.Update(blogImg);
+            await _unitOfWork.SaveChangeAsync();
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog updated img successfully.",
+                Data = newAvatar
+            };
+
         }
     }
 }

@@ -13,6 +13,7 @@ using MilkStore.Service.Mappers;
 using MilkStore.Service.Services;
 using MilkStore.Service.Utils;
 using System.Text;
+using Net.payOS;
 
 namespace MilkStore.API
 {
@@ -84,6 +85,16 @@ namespace MilkStore.API
 				});
 			});
 
+			services.AddCors(options =>
+			{
+				options.AddDefaultPolicy(builder =>
+				{
+					builder.WithOrigins("http://localhost:5173")
+						.AllowAnyHeader()
+						.AllowAnyMethod();
+				});
+			});
+
 			// Add services to the container.
 			services.AddTransient<SeedData>();
 			services.AddControllers();
@@ -93,19 +104,20 @@ namespace MilkStore.API
 			return services;
 		}
 
-		public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, string databaseConnection)
-		{
-			services.AddScoped<IUnitOfWork, UnitOfWork>();
-			services.AddScoped<ICurrentTime, CurrentTime>();
-			services.AddScoped<IClaimsService, ClaimsService>();
-
-			services.AddScoped<ISmsSender, TwilioSmsSender>();
-			services.AddScoped<IZaloService, ZaloService>();
-			services.AddScoped<IEmailSender, EmailSender>();
-			services.AddScoped<ITokenService, TokenService>();
-			services.AddScoped<IFirebaseService, FirebaseService>();
-			services.AddScoped<IGoogleSerive, GoogleService>();
-			services.AddScoped<IFacebookService, FacebookService>();
+        public static IServiceCollection AddInfrastructuresService(this IServiceCollection services, string databaseConnection)
+        {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICurrentTime, CurrentTime>();
+            services.AddScoped<IClaimsService, ClaimsService>();
+            services.AddScoped<ISmsSender, TwilioSmsSender>();
+            services.AddScoped<IZaloService, ZaloService>();
+            services.AddScoped<IEmailSender, EmailSender>();
+            services.AddScoped<ITokenService, TokenService>();
+            services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddScoped<IGoogleSerive, GoogleService>();
+            services.AddScoped<IFacebookService, FacebookService>();
+            
+            //services.AddScoped<PayOS>();
 
 			services.AddScoped<IAcccountRepository, AccountRepository>();
 			services.AddScoped<IAuthService, AuthService>();
@@ -114,7 +126,9 @@ namespace MilkStore.API
 			services.AddScoped<IRoleRepository, RoleRepository>();
 			services.AddScoped<IRoleService, RoleService>();
 
-			services.AddScoped<IImageRepository, ImageRepository>();
+            services.AddScoped<IImageRepository, ImageRepository>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
 
 			services.AddScoped<IAddressRepository, AddressRepository>();
 
@@ -173,6 +187,10 @@ namespace MilkStore.API
             //ProductType
             services.AddScoped<IProductTypeRepository, ProductTypeRepository>();
             services.AddScoped<IProductTypeService, ProductTypeService>();
+          
+            
+            //OrderDetail
+            services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
 
             //ProductImage
             services.AddScoped<IProductImageRepository, ProductImageRepository>();

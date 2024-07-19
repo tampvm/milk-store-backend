@@ -8,6 +8,7 @@ namespace MilkStore.Domain.Enums
 {
 	public enum OrderStatusEnums
 	{
+		InCart,
 		Waiting,
 		Preparing,
 		Prepared,
