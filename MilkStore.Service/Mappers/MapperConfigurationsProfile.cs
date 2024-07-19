@@ -26,6 +26,7 @@ using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
 using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
 using MilkStore.Service.Models.ViewModels.InteractionModels;
 using MilkStore.Service.Models.ViewModels.AddressViewModels;
+using MilkStore.Service.Models.ViewModels.ImageViewModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -527,10 +528,15 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
 				.ReverseMap();
 
-            #endregion
-        
-			
-		
+			#endregion
+
+			#region Image
+			CreateMap<UploadImageDTO, Image>()
+				.ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+				.ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.ThumbnailUrl))
+				.ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type)).ReverseMap();
+			#endregion
+
 
 			#region Product
 
