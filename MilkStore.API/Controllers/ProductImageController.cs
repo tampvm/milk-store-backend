@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
 
@@ -27,10 +28,11 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("CreateProductImage")]
-        public async Task<IActionResult> CreateProductImageAsync([FromForm]CreateProductImageDTO model, IFormFile imageFile, IFormFile thumbnailFile)
+        public async Task<IActionResult> CreateProductImageAsync([FromForm]CreateProductImageDTO model, List<IFormFile> imageFiles, IFormFile thumbnailFile)
         {
-            var response = await _productImageService.CreateProductImageAsync(model, imageFile, thumbnailFile);
+            var response = await _productImageService.CreateProductImageAsync(model, imageFiles, thumbnailFile);
             if (response != null)
             {
                 return Ok(response);
@@ -39,10 +41,11 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("UpdateProductImage")]
-        public async Task<IActionResult> UpdateProductImageAsync([FromForm]UpdateProductImageDTO model, IFormFile? imageFile = null, IFormFile? thumbnailFile = null)
+        public async Task<IActionResult> UpdateProductImageAsync([FromForm]UpdateProductImageDTO model, List<IFormFile>? imageFiles = null, IFormFile? thumbnailFile = null)
         {
-            var response = await _productImageService.UpdateProductImageAsync(model, imageFile, thumbnailFile);
+            var response = await _productImageService.UpdateProductImageAsync(model, imageFiles, thumbnailFile);
             if (response != null)
             {
                 return Ok(response);

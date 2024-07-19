@@ -47,7 +47,7 @@ namespace MilkStore.Service.Services
             {
                 //Product
                 var product = _mapper.Map<Product>(productCreateDTO);
-                product.Id = GenerateRandomString(12);
+                product.Id = GenerateRandomString(20);
                 product.Active = true;
                 product.IsDeleted = false;
                 product.CreatedAt = DateTime.UtcNow;
@@ -237,20 +237,56 @@ namespace MilkStore.Service.Services
         }
         #endregion
 
-        #region GetProductsPagination
-        public async Task<ResponseModel> GetProductsPaginationAsync(int pageIndex, int pageSize)
+        #region GetProductBySku
+        public async Task<ResponseModel> GetProductBySkuAsync(string sku)
         {
             try
             {
-                var products = await _unitOfWork.ProductRepository.GetAsync(
-                    pageSize: pageSize,
-                    pageIndex: pageIndex);
-                var productDTOs = _mapper.Map<Pagination<ViewListProductsDTO>>(products);
-                return new SuccessResponseModel<object> { Success = true, Message = "Products retrieved successfully.", Data = productDTOs };
+                var product = await _unitOfWork.ProductRepository.GetProductBySKUAsync(sku);
+                var productDTO = _mapper.Map<ViewListProductsDTO>(product);
+                return new SuccessResponseModel<object> { Success = true, Message = "Product retrieved successfully.", Data = productDTO };
             }
             catch (Exception ex)
             {
                 return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+        #endregion
+
+        #region GetProductsPagination
+        public async Task<ResponseModel> GetProductsPaginationAsync(string keySearch, int pageIndex, int pageSize)
+        {
+            try
+            {
+                var products = await _unitOfWork.ProductRepository.GetAllProductsAsync();
+
+                if (!string.IsNullOrEmpty(keySearch))
+                {
+                    products = products
+                        .Where(p => p.Name.Contains(keySearch) || p.Description.Contains(keySearch))
+                        .Skip((pageIndex - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+                }
+                else
+                {
+                    products = products
+                        .Skip((pageIndex - 1) * pageSize)
+                        .Take(pageSize)
+                        .ToList();
+                }
+
+                if (products == null || !products.Any())
+                {
+                    return new ErrorResponseModel<object> { Success = false, Message = "No products found." };
+                }
+
+                var productDTOs = _mapper.Map<List<ViewListProductsDTO>>(products);
+                return new SuccessResponseModel<object> { Success = true, Message = "Products retrieved successfully.", Data = productDTOs };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = $"An error occurred: {ex.Message}" };
             }
         }
         #endregion
