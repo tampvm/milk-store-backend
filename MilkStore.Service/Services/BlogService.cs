@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using MilkStore.Domain.Entities;
+using MilkStore.Domain.Enums;
 using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Repository.Repositories;
@@ -20,10 +22,12 @@ namespace MilkStore.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly UserManager<Account> _userManager;
 
         string currentDate = DateTime.Now.ToString("yyyy/MM/dd");
-        public BlogService(IUnitOfWork unitOfWork, IMapper mapper)
+        public BlogService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<Account> userManager)
         {
+            _userManager = userManager;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
 
@@ -31,74 +35,138 @@ namespace MilkStore.Service.Services
 
         public async Task<ResponseModel> CreateBlog(CreateBlogDTO model)
         {
-            // Create blog   
-            var blog = _mapper.Map<Post>(model);
-            blog.Title = model.Title;
-            blog.Content = model.Content;
-            blog.IsDeleted = false;
-            blog.Status = true;
-            
+            var blog = new Post
+            {
+                Title = model.Title,
+                Content = model.Content,
+                Status = true,
+                IsDeleted = false
+            };
+
+            var newAvatar = new Image
+            {
+                ImageUrl = model.Img,
+                ThumbnailUrl = model.Img,
+                Type = ImageTypeEnums.Avatar.ToString(),
+                CreatedBy = blog.CreatedBy,
+            };
 
             try
             {
-                // Add blog to the repository
+                // Thêm ảnh mới vào cơ sở dữ liệu
+                await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+                await _unitOfWork.SaveChangeAsync(); // Lưu thay đổi để tạo Id cho newAvatar
+
+                // Thêm blog vào cơ sở dữ liệu
                 await _unitOfWork.BlogRepostiory.AddAsync(blog);
+                await _unitOfWork.SaveChangeAsync(); // Lưu thay đổi để tạo Id cho blog
 
-                // Commit the changes to the database
-                await _unitOfWork.SaveChangeAsync();
+                // Thêm hình ảnh vào blog
+                await _unitOfWork.BlogImageRepository.AddAsync(new PostImage
+                {
+                    ImageId = newAvatar.Id,
+                    PostId = blog.Id,
+                    IsDeleted = false
+                });
+                await _unitOfWork.SaveChangeAsync(); // Lưu tất cả các thay đổi
 
-                // Return the appropriate response
+                // Tạo DTO cho phản hồi
+                var postDTO = new BlogResponeDTO
+                {
+                    Id = blog.Id,
+                    Title = blog.Title,
+                    Content = blog.Content,
+                    Status = blog.Status,
+                    PostImages = new List<CreateBlogImgDTO>
+            {
+                new CreateBlogImgDTO
+                {
+                    PostId = blog.Id,
+                    ImageId = newAvatar.Id
+                }
+            }
+                };
+
                 return new SuccessResponseModel<object>
                 {
                     Success = true,
                     Message = "Blog created successfully.",
-                    Data = blog
+                    Data = postDTO
                 };
             }
             catch (Exception ex)
             {
-                // Log the exception (consider using a logging framework)
+                // Ghi lỗi nếu có
                 Console.WriteLine(ex.Message);
 
-                // Return a failure response
+                // Trả về phản hồi lỗi
                 return new ErrorResponseModel<object>
                 {
                     Success = false,
                     Message = "An error occurred while creating the blog.",
-                    
                 };
             }
         }
 
         public async Task<ResponseModel> GetAllBlog(int pageIndex, int pageSize)
         {
+            // Fetch blogs with pagination
             var blogs = await _unitOfWork.BlogRepostiory.GetAsync(
-              filter: r => r.Status.Equals(true),
-              pageIndex: pageIndex,
-              pageSize: pageSize
-              );
+                filter: r => r.IsDeleted.Equals(false),
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            // Map blogs to DTOs
             var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blogs);
+
+            // Fetch and assign images for each blog
+            foreach (var blog in blogDTO.Items)
+            {
+                var blogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == blog.Id);
+                if (blogImg != null)
+                {
+                    var image = await _unitOfWork.ImageRepository.FindAsync(img => img.Id == blogImg.ImageId);
+                    blog.BlogImg = image?.ImageUrl;
+                }
+            }
+
+            // Return the response
             return new SuccessResponseModel<object>
             {
                 Success = true,
                 Message = "Blog retrieved successfully.",
                 Data = blogDTO
             };
-
         }
-        public async Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, int id)
+        public async Task<ResponseModel> GetBlogByUserId(int pageIndex, int pageSize, string id, int postId)
         {
-            var blogs = await _unitOfWork.BlogRepostiory.GetByIdAsync(id);
+            // Fetch the blog by the postId
+            var createrBlog = await _unitOfWork.BlogRepostiory.FindAsync(r => r.Id == postId && r.CreatedBy == id);
+            var createrBlogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == postId);
+            if (createrBlog == null)
+            {
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "Blog not found or you do not have permission to view it."
+                };
+            }
 
+            // Fetch the image related to the postId
+            var blogImg = await _unitOfWork.ImageRepository.FindAsync(img => img.Id == createrBlogImg.ImageId);
 
-            var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blogs);
+            var blogDTO = _mapper.Map<ViewBlogModel>(createrBlog);
+
+            // Ensure blogImg is not null before accessing ImageUrl
+            blogDTO.BlogImg = blogImg?.ImageUrl;
+
             return new SuccessResponseModel<object>
             {
                 Success = true,
                 Message = "Blog retrieved successfully.",
                 Data = blogDTO
             };
-
         }
 
         public async Task<ResponseModel> UpdateBlog(UpdateBlogDTO model, int id)
@@ -140,7 +208,7 @@ namespace MilkStore.Service.Services
                 blog.Title = model.Title;
                 blog.Content = model.Content;
                 blog.Status = model.Status;
-               
+
 
                 // Use the Update method
                 _unitOfWork.BlogRepostiory.Update(blog);
@@ -194,8 +262,8 @@ namespace MilkStore.Service.Services
                 }
 
                 // Map the properties
-               
-               
+
+
 
                 // Use the Update method
                 _unitOfWork.BlogRepostiory.SoftRemove(blog);
@@ -220,6 +288,124 @@ namespace MilkStore.Service.Services
                     Message = "An error occurred while deleting the blog."
                 };
             }
+        }
+
+        public async Task<ResponseModel> GetBlogByUserIdWithouImg(int id)
+        {
+            // Fetch the blog by the postId
+            var blog = await _unitOfWork.BlogRepostiory.GetByIdAsync(id);
+            var blogDTO = _mapper.Map<Pagination<ViewBlogModel>>(blog);
+            //Ensure blogImg is not null before accessing ImageUrl
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog retrieved successfully.",
+                Data = blogDTO
+            };
+
+        }
+
+        public async Task<ResponseModel> CreateBlogImg(CreateBlogImgDTO model)
+        {
+            var blogImg =  _mapper.Map<PostImage>(model);
+            blogImg.ImageId = model.ImageId;
+            blogImg.IsDeleted = false;
+            blogImg.PostId = model.PostId;
+            try
+            {
+                // Add blog to the repository
+                await _unitOfWork.BlogImageRepository.AddAsync(blogImg);
+
+                // Commit the changes to the database
+                await _unitOfWork.SaveChangeAsync();
+
+                // Return the appropriate response
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Blog created successfully.",
+                    Data = blogImg
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex.Message);
+
+                // Return a failure response
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "An error occurred while creating the blog.",
+
+                };
+            }
+        }
+        public async Task<ResponseModel> GetBlogByBlogId(int blogId)
+        {
+            // Fetch the blog by the blogId
+            var blog = await _unitOfWork.BlogRepostiory.GetByIdAsync(blogId);
+            var blogDTO = _mapper.Map<ViewBlogModel>(blog);
+            //Ensure blogImg is not null before accessing ImageUrl  
+            var blogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == blog.Id);
+            if (blogImg != null)
+            {
+                var image = await _unitOfWork.ImageRepository.FindAsync(img => img.Id == blogImg.ImageId);
+                blogDTO.BlogImg = image?.ImageUrl;
+
+            }
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog retrieved successfully.",
+                Data = blogDTO
+            };
+        }
+
+        public async Task<ResponseModel> UpdateImgBlog(UpdateImgBlogDTO model, int blogid)
+        {
+            var blogImg = await _unitOfWork.BlogImageRepository.FindAsync(r => r.PostId == blogid);
+            if (blogImg == null)
+            {
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "Blog not found."
+                };
+            }
+            if(blogImg != null)
+            {
+                var oldAvatar = await _unitOfWork.ImageRepository.GetByIdAsync(blogImg.ImageId);
+                oldAvatar.ImageUrl = model.ImgUrl;
+                oldAvatar.ThumbnailUrl = model.ImgUrl;
+                _unitOfWork.ImageRepository.Update(oldAvatar);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Blog updated img successfully.",
+                    Data = oldAvatar
+                };
+            }
+            var newAvatar = new Image
+            {
+                ImageUrl = model.ImgUrl,
+                ThumbnailUrl = model.ImgUrl,
+                Type = ImageTypeEnums.Avatar.ToString(),
+            };
+            await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+            await _unitOfWork.SaveChangeAsync();
+            blogImg.ImageId = newAvatar.Id;
+            _unitOfWork.BlogImageRepository.Update(blogImg);
+            await _unitOfWork.SaveChangeAsync();
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog updated img successfully.",
+                Data = newAvatar
+            };
+
         }
     }
 }

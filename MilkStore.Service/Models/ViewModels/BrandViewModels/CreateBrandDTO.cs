@@ -11,6 +11,7 @@ namespace MilkStore.Service.Models.ViewModels.BrandViewModels
 		public string Name { get; set; }
 		public string BrandOrigin { get; set; }
 		public string? Description { get; set; }
-		public int? ImageId { get; set; }
+		public string? ImageUrl { get; set; }
+		public bool Active { get; set; }
 	}
 }

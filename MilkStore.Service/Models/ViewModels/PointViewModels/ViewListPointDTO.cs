@@ -16,5 +16,6 @@ namespace MilkStore.Service.Models.ViewModels.PointViewModels
 
 		public string AccountId { get; set; }
 		public string OrderId { get; set; }
+		//public int totalPoints { get; set; }
 	}
 }

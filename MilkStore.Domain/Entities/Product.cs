@@ -43,5 +43,6 @@ namespace MilkStore.Domain.Entities
 		public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
         public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
         public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+        public virtual ICollection<Cart> Carts { get; set; } = new List<Cart>();
     }
 }

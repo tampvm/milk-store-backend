@@ -10,6 +10,7 @@ namespace MilkStore.Domain.Enums
 	{
 		Active,
 		Expired,
-		Used
+		Used,
+		Disabled
 	}
 }

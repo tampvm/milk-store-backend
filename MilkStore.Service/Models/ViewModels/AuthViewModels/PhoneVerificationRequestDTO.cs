@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Service.Models.ViewModels.AccountViewModels
 {
-    public class PhoneNumberDTO
+    public class PhoneNumberOrEmailDTO
     {
-        public string PhoneNumber { get; set; }
+        public string PhoneNumberOrEmail { get; set; }
     }
 
-    public class VerifyPhoneNumberDTO : PhoneNumberDTO
+    public class VerifyRegisterCodeDTO : PhoneNumberOrEmailDTO
     {
-        public string Code { get; set; }
+        public string VerificationCode { get; set; }
     }
 }

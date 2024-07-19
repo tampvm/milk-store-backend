@@ -12,6 +12,7 @@ namespace MilkStore.Service.Models.ViewModels.BogViewModel
         public string Title { get; set; }
         public string Content { get; set; }
         //status
+        public string? BlogImg { get; set; }
         public bool Status { get; set; }
         public DateTime createAt {  get; set; }
         public string createBy { get; set; } 
@@ -20,7 +21,7 @@ namespace MilkStore.Service.Models.ViewModels.BogViewModel
         public DateTime deleteAt { get; set; }
         public string deleteBy { get; set; }
         public bool isDeleted { get; set; }
-
+        public List<string> BlogImgs { get; set; }
 
     }
 }

@@ -41,6 +41,81 @@ namespace MilkStore.Service.Services
             _roleManager = roleManager;
         }
 
+        #region Get User Profile
+        public async Task<ResponseModel> GetUserProfileAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+            var background = await _unitOfWork.ImageRepository.GetByIdAsync(user.BackgroundId);
+            var address = await _unitOfWork.AddressRepository.GetDefaultAddressOrFirstAsync(userId);
+
+            var userProfileDTO = _mapper.Map<ViewUserProfileDTO>(user);
+            userProfileDTO.Roles = roles.ToList();
+            userProfileDTO.Avatar = avatar?.ImageUrl;
+            userProfileDTO.Background = background?.ImageUrl;
+            if (address != null) userProfileDTO.Address = address.AddressLine + ", " + address.Ward + ", " + address.District + ", " + address.City;
+
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User profile found.",
+                Data = userProfileDTO
+            };
+        }
+        #endregion
+
+        #region Update User Profile
+        public async Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(model.UserId);
+                if (user == null)
+                {
+                    return new ResponseModel { Success = false, Message = "User not found." };
+                }
+
+                // Sử dụng mapper để cập nhật thuộc tính của đối tượng user từ model
+                _mapper.Map(model, user);
+
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return new ResponseModel { Success = true, Message = "User profile updated successfully." };
+                }
+                else
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update user profile.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating user profile.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+        #endregion
+
         #region Update User Phone Number Or Link Phone Number
         // Send verification code to the new phone number when user wants to change phone number
         public async Task<ResponseModel> SendVerificationCodeAsync(NewPhoneNumberDTO model)
@@ -149,361 +224,13 @@ namespace MilkStore.Service.Services
         }
         #endregion
 
-        #region Get All Users For Admin
-        // Get all users for admin
-        public async Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize)
-        {
-            //var users = await _userManager.Users.ToListAsync(); // Lấy danh sách người dùng từ DB
-
-            var users = await _unitOfWork.AcccountRepository.GetAsync(
-                filter: u => !u.IsDeleted,
-                orderBy: u => u.OrderBy(u => u.Id),
-                pageIndex: pageIndex,
-                pageSize: pageSize
-            );
-
-            var userDtos = _mapper.Map<Pagination<ViewListUserDTO>>(users); // Ánh xạ danh sách người dùng sang ViewListUserDTO
-
-            // Lặp qua từng người dùng để lấy và ánh xạ vai trò
-            foreach (var userDto in userDtos.Items)
-            {
-                var user = await _userManager.FindByIdAsync(userDto.Id); // Tìm người dùng theo Id để lấy vai trò
-                var roles = await _userManager.GetRolesAsync(user); // Lấy danh sách vai trò của người dùng
-
-                // Gán danh sách vai trò vào DTO
-                userDto.Roles = roles;
-                userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
-                userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;
-                userDto.DeletedBy = string.IsNullOrEmpty(user.DeletedBy) ? null : (await _userManager.FindByIdAsync(user.DeletedBy))?.UserName ?? user.DeletedBy;
-            }
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "Users found.",
-                Data = userDtos
-            };
-        }
-        #endregion
-
-        #region Update User Roles For Admin
-        // Add role to user
-        public async Task<ResponseModel> AddRoleToUserAsync(UpdateUserRolesDTO model)
-        {
-            var user = await _userManager.FindByIdAsync(model.UserId);
-            if (user == null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User not found.",
-                };
-            }
-
-            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName);
-            if (!roleExists)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "Role does not exist.",
-                };
-            }
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (userRoles.Contains(model.RoleName))
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User already has this role.",
-                };
-            }
-
-            var result = await _userManager.AddToRoleAsync(user, model.RoleName);
-
-            if (result.Succeeded)
-            {
-                user.UpdatedAt = _currentTime.GetCurrentTime();
-                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-
-                await _userManager.UpdateAsync(user);
-
-                return new SuccessResponseModel<object>
-                {
-                    Success = true,
-                    Message = "Role added to user successfully.",
-                    Data = new 
-                    {
-                        UserId = user.Id,
-                        RoleName = model.RoleName
-                    }
-                };
-            }
-            else
-            {
-                return new ErrorResponseModel<string>
-                {
-                    Success = false,
-                    Message = "Failed to add role to user.",
-                    Errors = result.Errors.Select(e => e.Description).ToList()
-                };
-            }
-        }
-
-        // Remove role from user
-        public async Task<ResponseModel> RemoveRoleToUserAsync(UpdateUserRolesDTO model)
-        {
-            var user = await _userManager.FindByIdAsync(model.UserId);
-            if (user == null)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User not found.",
-                };
-            }
-
-            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName);
-            if (!roleExists)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "Role does not exist.",
-                };
-            }
-
-            var userRoles = await _userManager.GetRolesAsync(user);
-            if (!userRoles.Contains(model.RoleName))
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User does not have this role.",
-                };
-            }
-
-            // Check if the user has only one role
-            if (userRoles.Count == 1)
-            {
-                return new ResponseModel
-                {
-                    Success = false,
-                    Message = "User cannot be without any role.",
-                };
-            }
-
-            var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
-
-            if (result.Succeeded)
-            {
-                user.UpdatedAt = _currentTime.GetCurrentTime();
-                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-
-                await _userManager.UpdateAsync(user);
-
-                return new SuccessResponseModel<object>
-                {
-                    Success = true,
-                    Message = "Role removed from user successfully.",
-                    Data = new 
-                    {
-                        UserId = user.Id,
-                        RoleName = model.RoleName
-                    }
-                };
-            }
-            else
-            {
-                return new ErrorResponseModel<string>
-                {
-                    Success = false,
-                    Message = "Failed to remove role from user.",
-                    Errors = result.Errors.Select(e => e.Description).ToList()
-                };
-            }
-        }
-
-        // Get a list of user roles
-        public async Task<ResponseModel> GetUserRolesAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-
-            var roles = await _userManager.GetRolesAsync(user);
-
-            // Sử dụng AutoMapper để ánh xạ thông tin người dùng sang DTO
-            var userRolesDTO = _mapper.Map<ViewUserRolesDTO>(user);
-
-            // Thêm danh sách vai trò vào DTO
-            userRolesDTO.RoleNames = roles.ToList();
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "User roles found.",
-                Data = userRolesDTO
-            };
-        }
-
-        // Get the list of roles that have not been assigned to the user
-        public async Task<ResponseModel> GetNotAssignedUserRolesAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                throw new Exception("User not found.");
-            }
-
-            var allRoles = await _roleManager.Roles.ToListAsync();
-            var userRoles = await _userManager.GetRolesAsync(user);
-            var notAssignedRoles = allRoles.Where(role => !userRoles.Contains(role.Name)).Select(role => role.Name).ToList();
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "Not assigned user roles found.",
-                Data = notAssignedRoles
-            };
-        }
-        #endregion
-
-        public async Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model)
-        {
-            try
-            {
-                // Tìm người dùng dựa trên các tiêu chí tìm kiếm khác nhau
-                var user = await _unitOfWork.AcccountRepository.FindByAnyCriteriaAsync(
-                    model.Email, model.PhoneNumber, model.UserName, model.GoogleEmail, model.FacebookEmail
-                );
-
-                if (user == null)
-                {
-                    return new ResponseModel { Success = false, Message = "User not found." };
-                }
-
-                // Tạo một bản ghi mới cho hình ảnh avatar
-                var newAvatar = new Image
-                {
-                    ImageUrl = model.AvatarUrl,
-                    ThumbnailUrl = model.AvatarUrl,
-                    Type = ImageTypeEnums.Avatar.ToString(),
-                    CreatedBy = user.Id
-                };
-
-                await _unitOfWork.ImageRepository.AddAsync(newAvatar);
-                await _unitOfWork.SaveChangeAsync();
-
-                // Cập nhật avatar cho user
-                user.AvatarId = newAvatar.Id;
-                var result = await _userManager.UpdateAsync(user);
-
-                if (result.Succeeded)
-                {
-                    return new ResponseModel { Success = true, Message = "Avatar updated successfully." };
-                }
-                else
-                {
-                    return new ResponseModel { Success = false, Message = "Failed to update user avatar." };
-                }
-            }
-            catch (Exception ex)
-            {
-                return new ErrorResponseModel<string>
-                {
-                    Success = false,
-                    Message = "An error occurred while updating avatar.",
-                    Errors = new List<string> { ex.Message }
-                };
-            }
-        }
-
-        #region Get User Profile
-        public async Task<ResponseModel> GetUserProfileAsync(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user == null)
-            {
-                return new ResponseModel { Success = false, Message = "User not found." };
-            }
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
-            var background = await _unitOfWork.ImageRepository.GetByIdAsync(user.BackgroundId);
-            var address = await _unitOfWork.AddressRepository.GetDefaultAddressOrFirstAsync(userId);
-
-            var userProfileDTO = _mapper.Map<ViewUserProfileDTO>(user);
-            userProfileDTO.Roles = roles.ToList();
-            userProfileDTO.Avatar = avatar?.ImageUrl;
-            userProfileDTO.Background = background?.ImageUrl;
-            if (address != null) userProfileDTO.Address = address.AddressLine + ", " + address.Ward + ", " + address.District + ", " + address.City;
-
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "User profile found.",
-                Data = userProfileDTO
-            };
-        }
-        #endregion
-
-        #region Update User Profile
-        public async Task<ResponseModel> UpdateUserProfileAsync(UpdateUserProfileDTO model)
-        {
-            try
-            {
-                var user = await _userManager.FindByIdAsync(model.UserId);
-                if (user == null)
-                {
-                    return new ResponseModel { Success = false, Message = "User not found." };
-                }
-
-                // Sử dụng mapper để cập nhật thuộc tính của đối tượng user từ model
-                _mapper.Map(model, user);
-
-                user.UpdatedAt = _currentTime.GetCurrentTime();
-                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
-
-                var result = await _userManager.UpdateAsync(user);
-
-                if (result.Succeeded)
-                {
-                    return new ResponseModel { Success = true, Message = "User profile updated successfully." };
-                }
-                else
-                {
-                    return new ErrorResponseModel<string>
-                    {
-                        Success = false,
-                        Message = "Failed to update user profile.",
-                        Errors = result.Errors.Select(e => e.Description).ToList()
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                return new ErrorResponseModel<string>
-                {
-                    Success = false,
-                    Message = "An error occurred while updating user profile.",
-                    Errors = new List<string> { ex.Message }
-                };
-            }
-        }
-        #endregion
-
+        #region Update User Email Or Link Email
         // Generate verification code
         private string GenerateVerificationCode()
         {
             return new Random().Next(100000, 999999).ToString();
         }
 
-        #region Update User Email Or Link Email
         // Send verification code to the new email when user wants to change email
         public async Task<ResponseModel> SendVerificationCodeEmailAsync(NewEmailDTO model)
         {
@@ -711,6 +438,324 @@ namespace MilkStore.Service.Services
                 Success = true,
                 Message = "Password changed successfully."
             };
+        }
+        #endregion
+
+        #region Get All Users For Admin
+        // Get all users for admin
+        public async Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize)
+        {
+            //var users = await _userManager.Users.ToListAsync(); // Lấy danh sách người dùng từ DB
+
+            var users = await _unitOfWork.AcccountRepository.GetAsync(
+                filter: u => !u.IsDeleted,
+                orderBy: u => u.OrderBy(u => u.Id),
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            var userDtos = _mapper.Map<Pagination<ViewListUserDTO>>(users); // Ánh xạ danh sách người dùng sang ViewListUserDTO
+
+            // Lặp qua từng người dùng để lấy và ánh xạ vai trò
+            foreach (var userDto in userDtos.Items)
+            {
+                var user = await _userManager.FindByIdAsync(userDto.Id); // Tìm người dùng theo Id để lấy vai trò
+                var roles = await _userManager.GetRolesAsync(user); // Lấy danh sách vai trò của người dùng
+                var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+
+                // Gán danh sách vai trò vào DTO
+                userDto.Avatar = avatar?.ImageUrl;
+                userDto.Roles = roles;
+                userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
+                userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;
+                userDto.DeletedBy = string.IsNullOrEmpty(user.DeletedBy) ? null : (await _userManager.FindByIdAsync(user.DeletedBy))?.UserName ?? user.DeletedBy;
+            }
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Users found.",
+                Data = userDtos
+            };
+        }
+        #endregion
+
+        #region Update User Roles For Admin
+        // Add role to user
+        public async Task<ResponseModel> AddRoleToUserAsync(UpdateUserRolesDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found.",
+                };
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName);
+            if (!roleExists)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Role does not exist.",
+                };
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userRoles.Contains(model.RoleName))
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User already has this role.",
+                };
+            }
+
+            var result = await _userManager.AddToRoleAsync(user, model.RoleName);
+
+            if (result.Succeeded)
+            {
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                await _userManager.UpdateAsync(user);
+
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Role added to user successfully.",
+                    Data = new 
+                    {
+                        UserId = user.Id,
+                        RoleName = model.RoleName
+                    }
+                };
+            }
+            else
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to add role to user.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+        }
+
+        // Remove role from user
+        public async Task<ResponseModel> RemoveRoleToUserAsync(UpdateUserRolesDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User not found.",
+                };
+            }
+
+            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName);
+            if (!roleExists)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "Role does not exist.",
+                };
+            }
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (!userRoles.Contains(model.RoleName))
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User does not have this role.",
+                };
+            }
+
+            // Check if the user has only one role
+            if (userRoles.Count == 1)
+            {
+                return new ResponseModel
+                {
+                    Success = false,
+                    Message = "User cannot be without any role.",
+                };
+            }
+
+            var result = await _userManager.RemoveFromRoleAsync(user, model.RoleName);
+
+            if (result.Succeeded)
+            {
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                await _userManager.UpdateAsync(user);
+
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Role removed from user successfully.",
+                    Data = new 
+                    {
+                        UserId = user.Id,
+                        RoleName = model.RoleName
+                    }
+                };
+            }
+            else
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to remove role from user.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+        }
+
+        // Get a list of user roles
+        public async Task<ResponseModel> GetUserRolesAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            // Sử dụng AutoMapper để ánh xạ thông tin người dùng sang DTO
+            var userRolesDTO = _mapper.Map<ViewUserRolesDTO>(user);
+
+            // Thêm danh sách vai trò vào DTO
+            userRolesDTO.RoleNames = roles.ToList();
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "User roles found.",
+                Data = userRolesDTO
+            };
+        }
+
+        // Get the list of roles that have not been assigned to the user
+        public async Task<ResponseModel> GetNotAssignedUserRolesAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new Exception("User not found.");
+            }
+
+            var allRoles = await _roleManager.Roles.ToListAsync();
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var notAssignedRoles = allRoles.Where(role => !userRoles.Contains(role.Name)).Select(role => role.Name).ToList();
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Not assigned user roles found.",
+                Data = notAssignedRoles
+            };
+        }
+        #endregion
+
+        #region Update User Avatar And Background
+        public async Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            if (user.AvatarId != null)
+            {
+                var oldAvatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+                if (oldAvatar != null)
+                {
+                    oldAvatar.ImageUrl = model.AvatarUrl;
+
+                    _unitOfWork.ImageRepository.Update(oldAvatar);
+                    await _unitOfWork.SaveChangeAsync();
+
+                    return new ResponseModel { Success = true, Message = "User avatar updated successfully." };
+                }
+            }
+
+            var newAvatar = new Image
+            {
+                ImageUrl = model.AvatarUrl,
+                ThumbnailUrl = model.AvatarUrl,
+                Type = ImageTypeEnums.Avatar.ToString()
+            };
+
+            await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+            await _unitOfWork.SaveChangeAsync();
+
+            user.AvatarId = newAvatar.Id;
+            _unitOfWork.AcccountRepository.Update(user);
+
+            await _unitOfWork.SaveChangeAsync();
+
+            return new ResponseModel { Success = true, Message = "User avatar updated successfully." };
+        }
+
+        public async Task<ResponseModel> UpdateAvatarAsync(UpdateAvatarDTO model)
+        {
+            try
+            {
+                // Tìm người dùng dựa trên các tiêu chí tìm kiếm khác nhau
+                var user = await _unitOfWork.AcccountRepository.FindByAnyCriteriaAsync(
+                    model.Email, model.PhoneNumber, model.UserName, model.GoogleEmail, model.FacebookEmail
+                );
+
+                if (user == null)
+                {
+                    return new ResponseModel { Success = false, Message = "User not found." };
+                }
+
+                // Tạo một bản ghi mới cho hình ảnh avatar
+                var newAvatar = new Image
+                {
+                    ImageUrl = model.AvatarUrl,
+                    ThumbnailUrl = model.AvatarUrl,
+                    Type = ImageTypeEnums.Avatar.ToString(),
+                    CreatedBy = user.Id
+                };
+
+                await _unitOfWork.ImageRepository.AddAsync(newAvatar);
+                await _unitOfWork.SaveChangeAsync();
+
+                // Cập nhật avatar cho user
+                user.AvatarId = newAvatar.Id;
+                var result = await _userManager.UpdateAsync(user);
+
+                if (result.Succeeded)
+                {
+                    return new ResponseModel { Success = true, Message = "Avatar updated successfully." };
+                }
+                else
+                {
+                    return new ResponseModel { Success = false, Message = "Failed to update user avatar." };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating avatar.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
         }
         #endregion
     }

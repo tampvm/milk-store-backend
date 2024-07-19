@@ -31,7 +31,7 @@ namespace MilkStore.Service.Services
             var result = await _unitOfWork.BlogCategoryRepository.FindAsync(x => x.PostId == model.PostId && x.CategoryId == model.CategoryId);
             if (result != null)
             {
-                return new ErrorResponseModel<BlogCategory>
+                return new ErrorResponseModel<object>
                 {
                     Success = false,
                     Message = "This category already exist for this post."
@@ -78,7 +78,7 @@ namespace MilkStore.Service.Services
             var blogCategory = await _unitOfWork.BlogCategoryRepository.GetByIdAsync(id);
             if (blogCategory == null)
                 {
-                return new ErrorResponseModel<BlogCategory>
+                return new ErrorResponseModel<object>
                 {
                     Success = false,
                     Message = "Blog category not found."
@@ -128,7 +128,7 @@ namespace MilkStore.Service.Services
             var result = await _unitOfWork.BlogCategoryRepository.FindAsync(x => x.PostId == id && x.CategoryId == model.CategoryId);
             if (result != null)
             {
-                return new ErrorResponseModel<BlogCategory>
+                return new ErrorResponseModel<object>
                 {
                     Success = false,
                     Message = "This category already exist for this post."
@@ -139,7 +139,7 @@ namespace MilkStore.Service.Services
                 var blogCategoryToUpdate = await _unitOfWork.BlogCategoryRepository.FindAsync(x => x.PostId == id);
                 if (blogCategoryToUpdate == null)
                 {
-                    return new ErrorResponseModel<BlogCategory>
+                    return new ErrorResponseModel<object>
                     {
                         Success = false,
                         Message = "Blog not found."

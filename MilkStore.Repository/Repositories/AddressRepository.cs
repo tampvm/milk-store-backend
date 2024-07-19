@@ -32,5 +32,15 @@ namespace MilkStore.Repository.Repositories
             return defaultAddress;
         }
 
+        public async Task<Address?> GetDefaultAddressAsync(string userId)
+        {
+            return await _context.Addresses.FirstOrDefaultAsync(a => a.AccountId == userId && a.IsDefault);
+        }
+
+        public async Task<List<Address>> GetByUserIdAsync(string userId)
+        {
+            return await _context.Addresses.Where(a => a.AccountId == userId).ToListAsync();
+        }
+
     }
 }
