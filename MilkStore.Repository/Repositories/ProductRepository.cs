@@ -23,7 +23,12 @@ namespace MilkStore.Repository.Repositories
             try
             {
                 List<Product> products = new List<Product>();
-                products = await _context.Products.ToListAsync();
+                products = await _context.Products
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToListAsync();
 
                 if (products == null)
                 {
@@ -43,7 +48,12 @@ namespace MilkStore.Repository.Repositories
             try 
             {
                 Product product = new Product();
-                product = await _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+                product = await _context.Products
+                    .Where(x => x.Id == productId)
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .FirstAsync();
                 if (product == null)
                 {
                     throw new Exception("Product not found");
@@ -53,6 +63,28 @@ namespace MilkStore.Repository.Repositories
             catch
             {
                 throw new Exception("Get product by id failed");
+            }
+        }
+
+        public async Task<Product> GetProductBySKUAsync(string sku)
+        {
+            try {
+                Product product = new Product();
+                product = _context.Products
+                    .Where(x => x.Sku == sku)
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .First();
+                if (product == null)
+                {
+                    throw new Exception("Product not found");
+                }
+                return product;
+            }
+            catch
+            {
+                throw new Exception("Get product by sku failed");
             }
         }
 
