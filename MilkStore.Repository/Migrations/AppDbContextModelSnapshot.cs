@@ -469,9 +469,7 @@ namespace MilkStore.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ImageId")
-                        .IsUnique()
-                        .HasFilter("[ImageId] IS NOT NULL");
+                    b.HasIndex("ImageId");
 
                     b.ToTable("Brand");
                 });
@@ -1592,8 +1590,8 @@ namespace MilkStore.Repository.Migrations
             modelBuilder.Entity("MilkStore.Domain.Entities.Brand", b =>
                 {
                     b.HasOne("MilkStore.Domain.Entities.Image", "Image")
-                        .WithOne("Brand")
-                        .HasForeignKey("MilkStore.Domain.Entities.Brand", "ImageId");
+                        .WithMany("Brands")
+                        .HasForeignKey("ImageId");
 
                     b.Navigation("Image");
                 });
@@ -1928,8 +1926,7 @@ namespace MilkStore.Repository.Migrations
 
                     b.Navigation("AccountBackgrounds");
 
-                    b.Navigation("Brand")
-                        .IsRequired();
+                    b.Navigation("Brands");
 
                     b.Navigation("PostImages");
 

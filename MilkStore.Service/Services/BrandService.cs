@@ -130,12 +130,24 @@ namespace MilkStore.Service.Services
 
 			if (existingBrand == null)
 			{
-				await _unitOfWork.ImageRepository.AddAsync(new Image { ImageUrl = model.ImageUrl, ThumbnailUrl = model.ImageUrl, Type = "brand" });
-				await _unitOfWork.SaveChangeAsync();
-				var imgId = _unitOfWork.ImageRepository.FindByImageUrlAsync(model.ImageUrl).Result.Id;
+				var existingImage = await _unitOfWork.ImageRepository.FindByImageUrlAsync(model.ImageUrl);
+				int imgId;
+				if (existingImage != null)
+				{
+					imgId = existingImage.Id;
+				}
+				else
+				{
+					// Add new image if it doesn't exist
+					var image = new Image { ImageUrl = model.ImageUrl, ThumbnailUrl = model.ImageUrl, Type = "brand" };
+					await _unitOfWork.ImageRepository.AddAsync(image);
+					await _unitOfWork.SaveChangeAsync();
+					imgId = image.Id;
+				}
 
 				var mapper = _mapper.Map<Brand>(model);
 				mapper.ImageId = imgId;
+				mapper.CreatedAt = DateTime.Now;
 				await _unitOfWork.BrandRepository.AddAsync(mapper);
 				await _unitOfWork.SaveChangeAsync();
 
@@ -170,6 +182,7 @@ namespace MilkStore.Service.Services
 			}
 
 			_mapper.Map(model, brand);
+			brand.UpdatedAt = DateTime.Now;
 			_unitOfWork.BrandRepository.Update(brand);
 			await _unitOfWork.SaveChangeAsync();
 
@@ -194,8 +207,10 @@ namespace MilkStore.Service.Services
 				};
 			}
 
-			brand.IsDeleted = true;
-			_unitOfWork.BrandRepository.Update(brand);
+			//brand.IsDeleted = true;
+			brand.DeletedAt = DateTime.Now;
+			//_unitOfWork.BrandRepository.Update(brand);
+			_unitOfWork.BrandRepository.SoftRemove(brand);
 			await _unitOfWork.SaveChangeAsync();
 
 			return new SuccessResponseModel<object>

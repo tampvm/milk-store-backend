@@ -85,6 +85,8 @@ namespace MilkStore.Service.Services
 			if (!existingFollowBrand)
 			{
 				var followBrand = _mapper.Map<FollowBrand>(model);
+
+				followBrand.CreatedAt = DateTime.Now;
 				await _unitOfWork.FollowBrandRepository.AddAsync(followBrand);
 				await _unitOfWork.SaveChangeAsync();
 

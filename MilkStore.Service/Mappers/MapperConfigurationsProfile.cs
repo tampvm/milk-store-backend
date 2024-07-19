@@ -18,8 +18,15 @@ using System.Text;
 using System.Threading.Tasks;
 using MilkStore.Service.Models.ViewModels.CategoryViewModel;
 using MilkStore.Service.Models.ViewModels.BlogCategoryViewModels;
+using MilkStore.Service.Models.ViewModels.OrderViewDTO;
+using MilkStore.Service.Models.ViewModels.ProductViewModels;
+using MilkStore.Service.Models.ViewModels.AgeRangeViewModels;
+using MilkStore.Service.Models.ViewModels.CartViewModel;
+using MilkStore.Service.Models.ViewModels.ProductTypeViewModels;
+using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
 using MilkStore.Service.Models.ViewModels.InteractionModels;
 using MilkStore.Service.Models.ViewModels.AddressViewModels;
+using MilkStore.Service.Models.ViewModels.ImageViewModels;
 
 namespace MilkStore.Service.Mappers
 {
@@ -177,7 +184,7 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Name))
 				.ForMember(dest => dest.BrandOrigin, otp => otp.MapFrom(src => src.BrandOrigin))
 				.ForMember(dest => dest.Description, otp => otp.MapFrom(src => src.Description))
-				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => true)).ReverseMap();
+				.ForMember(dest => dest.Active, otp => otp.MapFrom(src => src.Active)).ReverseMap();
 
 			CreateMap<UpdateBrandDTO, Brand>()
 				.ForMember(dest => dest.Id, otp => otp.MapFrom(src => src.Id))
@@ -396,6 +403,9 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.DeletedBy, opt => opt.Ignore()) // Assuming DeletedBy should not be updated
 				.ForMember(dest => dest.IsDeleted, opt => opt.Ignore()) // Assuming IsDeleted should not be updated
 				.ReverseMap();
+
+			// Mapping from UpdateImgBlogDTO to Post
+		
 			#endregion
 
 			#region Category
@@ -476,7 +486,7 @@ namespace MilkStore.Service.Mappers
 
 				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
 				.ReverseMap();
-            #endregion
+			#endregion
 
             #region Interaction
             CreateMap<LikePost, GetBlogLike>()
@@ -527,10 +537,78 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active))
 				.ReverseMap();
 
+			#endregion
+
+			#region Image
+			CreateMap<UploadImageDTO, Image>()
+				.ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.ImageUrl))
+				.ForMember(dest => dest.ThumbnailUrl, opt => opt.MapFrom(src => src.ThumbnailUrl))
+				.ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type)).ReverseMap();
+			#endregion
+
+
+			#region Product
+
+			CreateMap<Product, CreateProductDTO>();
+			CreateMap<CreateProductDTO, Product>();
+
+			CreateMap<UpdateProductDTO, Product>();
+			CreateMap<Product, UpdateProductDTO>();
+
+			CreateMap<Product, DeleteProductDTO>();
+            CreateMap<DeleteProductDTO, Product>();
+
+            CreateMap<Product, RestoreProductDTO>();
+            CreateMap<RestoreProductDTO, Product>();
+
+            CreateMap<Product, ViewProductDTO>()
+           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.Sku, opt => opt.MapFrom(src => src.Sku))
+           .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+           .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Description))
+           .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price))
+           .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount))
+           .ForMember(dest => dest.Weight, opt => opt.MapFrom(src => src.Weight))
+           .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity))
+           .ForMember(dest => dest.TypeId, opt => opt.MapFrom(src => src.TypeId))
+           .ForMember(dest => dest.AgeId, opt => opt.MapFrom(src => src.AgeId))
+           .ForMember(dest => dest.BrandId, opt => opt.MapFrom(src => src.BrandId))
+           .ForMember(dest => dest.Active, opt => opt.MapFrom(src => src.Active));
+
+			CreateMap<Product, ViewListProductsDTO>()
+				.ForMember(dest => dest.Brand, otp => otp.MapFrom(src => src.Brand))
+				.ForMember(dest => dest.Type, otp => otp.MapFrom(src => src.Type))
+				.ForMember(dest => dest.AgeRange, otp => otp.MapFrom(src => src.AgeRange));
+
+
             #endregion
-        
-			
+
+            #region ProductImage
+            CreateMap<ProductImage, ViewListProductImageDTO>()
+            .ForMember(dest => dest.Image, opt => opt.MapFrom(src => src.Image)); 
+            CreateMap<Image, ImageDTO>();
+            CreateMap<ImageDTO, Image>();
+			CreateMap<UpdateProductImageDTO, ProductImage>();
+            #endregion
+
+            #region AgeRange
+            CreateMap<AgeRange, ViewListAgeRangeDTO>();
+            #endregion
+
+            #region ProductType
+            CreateMap<ProductType, ViewListProductTypeDTO>();
+            #endregion
+
+            #region Order
+
+            CreateMap<CreateOrderDTO, Order>()
+	            
+	            .ReverseMap();
+            CreateMap<AddOrderDetailDTO, OrderDetail>().ReverseMap();
+            CreateMap<CartDTO, Cart>().ReverseMap();
+
+            #endregion
 		}
 
-	}
+    }
 }

@@ -21,8 +21,8 @@ namespace MilkStore.Domain.Entities
         public string Type { get; set; }
 
         // Navigation properties
-        public virtual Brand Brand { get; set; }
-        public virtual ICollection<Account> AccountAvatars { get; set; } = new List<Account>();
+        public virtual ICollection<Brand> Brands { get; set; } = new List<Brand>();
+		public virtual ICollection<Account> AccountAvatars { get; set; } = new List<Account>();
         public virtual ICollection<Account> AccountBackgrounds { get; set; } = new List<Account>();
         public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
         public virtual ICollection<PostImage> PostImages { get; set; } = new List<PostImage>();

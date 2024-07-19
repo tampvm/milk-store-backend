@@ -101,6 +101,7 @@ namespace MilkStore.Service.Services
 					};
 			}
 
+			voucher.CreatedAt = DateTime.Now;
 			await _unitOfWork.VoucherRepository.AddAsync(voucher);
 			await _unitOfWork.SaveChangeAsync();
 
@@ -155,6 +156,7 @@ namespace MilkStore.Service.Services
 
 			_mapper.Map(model, voucher);
 
+			voucher.UpdatedAt = DateTime.Now;
 			_unitOfWork.VoucherRepository.Update(voucher);
 			await _unitOfWork.SaveChangeAsync();
 
@@ -181,6 +183,7 @@ namespace MilkStore.Service.Services
 			}
 
 			//voucher.IsDeleted = true;
+			voucher.DeletedAt = DateTime.Now;
 			_unitOfWork.VoucherRepository.SoftRemove(voucher);
 			await _unitOfWork.SaveChangeAsync();
 

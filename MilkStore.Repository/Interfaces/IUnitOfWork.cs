@@ -19,10 +19,19 @@ namespace MilkStore.Repository.Interfaces
         IAddressRepository AddressRepository { get; }
 		IBlogCategoryRepository BlogCategoryRepository { get; }
 		ICategoryRepository CategoryRepository { get; }
+
+		IProductRepository ProductRepository { get; }
+		IAgeRangeRepository AgeRangeRepository { get; }
+		IProductTypeRepository ProductTypeRepository { get; }
+		IProductImageRepository ProductImageRepository { get; }
+
 		IBlogImageRepository BlogImageRepository { get; }
 		ILikeRepository LikeRepository { get; }
 		ICommentBlogRepository CommentBlogRepository { get; }
-        ICartRepository CartRepository { get; }
+		IOrderRepository OrderRepository { get; }
+		ICartRepository CartRepository { get; }
+		IOrderDetailRepository OrderDetailRepository { get;}
+
         Task<int> SaveChangeAsync();
 	}
 }
