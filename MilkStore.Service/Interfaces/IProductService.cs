@@ -19,7 +19,7 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> UpdateProductAsync(UpdateProductDTO productUpdateDTO);
         Task<ResponseModel> DeleteProductAsync(DeleteProductDTO productDeleteDTO);
         Task<ResponseModel> RestoreProductAsync(RestoreProductDTO productRestoreDTO);
-        Task<ResponseModel> UpdateProductStatusAsync(string productId);
+        Task<ResponseModel> UpdateProductStatusAsync(ChangeStatusProductDTO model);
         Task<ResponseModel> GetProductBySkuAsync(string sku);
     }
 }

@@ -188,14 +188,16 @@ namespace MilkStore.Service.Services
         #endregion
 
         #region UpdateProductStatus
-        public async Task<ResponseModel> UpdateProductStatusAsync(string productId)
+        public async Task<ResponseModel> UpdateProductStatusAsync(ChangeStatusProductDTO model)
         {
             try
             {
-                var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(productId);
+                var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(model.Id);
                 if (product == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product." };
                 product.Active = !product.Active;
-                _unitOfWork.ProductRepository.Update(product);
+                product.UpdatedAt = DateTime.UtcNow;
+                product.UpdatedBy = model.UpdatedBy;
+                await _unitOfWork.ProductRepository.UpdateProductAsync(product);
                 await _unitOfWork.SaveChangeAsync();
                 return new SuccessResponseModel<object> { Success = true, Message = "Product status updated successfully." };
             }
