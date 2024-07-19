@@ -147,6 +147,7 @@ namespace MilkStore.Service.Services
 
 				var mapper = _mapper.Map<Brand>(model);
 				mapper.ImageId = imgId;
+				mapper.CreatedAt = DateTime.Now;
 				await _unitOfWork.BrandRepository.AddAsync(mapper);
 				await _unitOfWork.SaveChangeAsync();
 
@@ -181,6 +182,7 @@ namespace MilkStore.Service.Services
 			}
 
 			_mapper.Map(model, brand);
+			brand.UpdatedAt = DateTime.Now;
 			_unitOfWork.BrandRepository.Update(brand);
 			await _unitOfWork.SaveChangeAsync();
 
@@ -205,8 +207,10 @@ namespace MilkStore.Service.Services
 				};
 			}
 
-			brand.IsDeleted = true;
-			_unitOfWork.BrandRepository.Update(brand);
+			//brand.IsDeleted = true;
+			brand.DeletedAt = DateTime.Now;
+			//_unitOfWork.BrandRepository.Update(brand);
+			_unitOfWork.BrandRepository.SoftRemove(brand);
 			await _unitOfWork.SaveChangeAsync();
 
 			return new SuccessResponseModel<object>
