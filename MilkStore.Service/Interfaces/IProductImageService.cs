@@ -13,7 +13,7 @@ namespace MilkStore.Service.Interfaces
     {
         Task<ResponseModel> GetProductImagesAsync(string productId);
         Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, List<IFormFile> imageFiles, IFormFile thumbnailFile);
-        Task<ResponseModel> UpdateProductImageAsync(UpdateProductImageDTO updateProductImageDTO, IFormFile imageFile, IFormFile thumbnailFile);
+        Task<ResponseModel> UpdateProductImageAsync(UpdateProductImageDTO updateProductImageDTO, List<IFormFile> imageFile, IFormFile thumbnailFile);
         Task<ResponseModel> DeleteProductImageAsync(DeleteProductImageDTO deleteProductImageDTO);
     }
 }
