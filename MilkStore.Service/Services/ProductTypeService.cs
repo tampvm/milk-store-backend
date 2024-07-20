@@ -46,5 +46,115 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+
+        public async Task<ResponseModel> GetProductTypeByIdAsync(int productTypeId)
+        {
+            try
+            {
+                var productType = await _unitOfWork.ProductTypeRepository.GetProductTypeByIdAsync(productTypeId);
+                var productTypeDTO = _mapper.Map<ViewListProductTypeDTO>(productType);
+                return new SuccessResponseModel<object>()
+                {
+                    Success = true,
+                    Message = "Product type retrieved successfully.",
+                    Data = productTypeDTO
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object>()
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseModel> CreateProductTypeAsync(CreateProductTypeDTO productType)
+        {
+            try
+            {
+                var productTypeEntity = _mapper.Map<ProductType>(productType);
+                productTypeEntity.IsDeleted = false;
+                productTypeEntity.CreatedAt = DateTime.UtcNow;
+                await _unitOfWork.ProductTypeRepository.AddAsync(productTypeEntity);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object>()
+                {
+                    Success = true,
+                    Message = "Product type created successfully.",
+                    Data = productType
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object>()
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseModel> UpdateProductTypeAsync(UpdateProductTypeDTO productType)
+        {
+            try
+            {
+                var productTypeEntity = _mapper.Map<ProductType>(productType);
+                productTypeEntity.UpdatedAt = DateTime.UtcNow;
+                await _unitOfWork.ProductTypeRepository.UpdateProductTypeAsync(productTypeEntity);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object>()
+                {
+                    Success = true,
+                    Message = "Product type updated successfully.",
+                    Data = productType
+                };
+            }
+            catch (Exception ex) {
+                return new ErrorResponseModel<object>()
+                {
+                    Success = false,
+                    Message = ex.Message
+                };
+            }
+        }
+
+        public async Task<ResponseModel> DeleteProductTypeAsync(DeleteProductTypeDTO deleteProductType)
+        {
+            try
+            {
+                var productType = await _unitOfWork.ProductTypeRepository.GetProductTypeByIdAsync(deleteProductType.Id);
+                if (productType == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product type." };
+                productType.IsDeleted = true;
+                productType.Active = false;
+                productType.DeletedAt = DateTime.UtcNow;
+                await _unitOfWork.ProductTypeRepository.UpdateProductTypeAsync(productType);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object> { Success = true, Message = "Product type deleted successfully." };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ResponseModel> RestoreProductTypeAsync(RestoreProductTypeDTO restoreProductType)
+        {
+            try
+            {
+                var productType = await _unitOfWork.ProductTypeRepository.GetProductTypeByIdAsync(restoreProductType.Id);
+                if (productType == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product type." };
+                productType.IsDeleted = false;
+                productType.Active = false;
+                productType.UpdatedAt = DateTime.UtcNow;
+                await _unitOfWork.ProductTypeRepository.UpdateProductTypeAsync(productType);
+                await _unitOfWork.SaveChangeAsync();
+                return new SuccessResponseModel<object> { Success = true, Message = "Product type restored successfully." };
+            }
+            catch (Exception ex) {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
     }
 }

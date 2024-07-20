@@ -119,9 +119,9 @@ namespace MilkStore.API.Controllers
         [HttpPost]
         [Authorize(Roles = "Staff, Admin")]
         [Route("UpdateStatusProduct")]
-        public async Task<IActionResult> UpdateStatusProductAsync(string productId)
+        public async Task<IActionResult> UpdateStatusProductAsync([FromForm]ChangeStatusProductDTO model)
         {
-            var response = await _productService.UpdateProductStatusAsync(productId);
+            var response = await _productService.UpdateProductStatusAsync(model);
             if (response != null)
             {
                 return Ok(response);
