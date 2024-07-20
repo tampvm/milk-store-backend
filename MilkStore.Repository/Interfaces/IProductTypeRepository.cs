@@ -10,5 +10,7 @@ namespace MilkStore.Repository.Interfaces
     public interface IProductTypeRepository : IGenericRepository<ProductType>
     {
         Task<List<ProductType>> GetAllProductTypesAsync();
+        Task UpdateProductTypeAsync(ProductType productType);
+        Task<ProductType> GetProductTypeByIdAsync(int productTypeId);
     }
 }
