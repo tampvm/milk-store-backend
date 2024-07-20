@@ -126,6 +126,15 @@ namespace MilkStore.Service.Services
                     };
                 }
 
+                if (existingProductType.Active == false && existingProductType.IsDeleted == true && productType.Active == true)
+                {
+                    return new ErrorResponseModel<object>()
+                    {
+                        Success = false,
+                        Message = "Product type is not active."
+                    };
+                }
+
                 existingProductType.Name = productType.Name;
                 existingProductType.Description = productType.Description;
                 existingProductType.Active = productType.Active;
