@@ -99,6 +99,8 @@ namespace MilkStore.Service.Services
 
                 var ageRange = await _unitOfWork.AgeRangeRepository.GetAgeRangeByIdAsync(updateAgeRangeDTO.Id);
                 if (ageRange == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found ageRange." };
+                
+                if (ageRange.Active == false && ageRange.IsDeleted == true && updateAgeRangeDTO.Active == true) return new ErrorResponseModel<object> { Success = false, Message = "AgeRange is not active." };
 
                 ageRange.UpdatedAt = DateTime.UtcNow;
                 ageRange.Name = updateAgeRangeDTO.Name;
