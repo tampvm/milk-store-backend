@@ -25,5 +25,9 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> LinkAccountWithUserNameAsync(UpdateUserAccountDTO model);
         Task<ResponseModel> ChangePasswordAsync(ChangePasswordDTO model);
         Task<ResponseModel> UpdateUserAvatarAsync(UpdateUserAvatarDTO model);
+        Task<ResponseModel> AddNewUserByAdminAsync(CreateAccountDTO model);
+        Task<ResponseModel> EditUserByAdminAsync(EditAccountDTO model);
+        Task<ResponseModel> BlockOrUnBlockUserByAdmin(BlockOrUnBlockAccountDTO model);
+        Task<ResponseModel> SearchUsersAsync(string? keyword, string? status, int pageIndex, int pageSize);
     }
 }
