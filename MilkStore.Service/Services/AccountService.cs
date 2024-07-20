@@ -12,7 +12,9 @@ using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.AccountViewModels;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using static MilkStore.Service.Models.ViewModels.AccountViewModels.ViewUserRolesDTO;
@@ -441,45 +443,6 @@ namespace MilkStore.Service.Services
         }
         #endregion
 
-        #region Get All Users For Admin
-        // Get all users for admin
-        public async Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize)
-        {
-            //var users = await _userManager.Users.ToListAsync(); // Lấy danh sách người dùng từ DB
-
-            var users = await _unitOfWork.AcccountRepository.GetAsync(
-                filter: u => !u.IsDeleted,
-                orderBy: u => u.OrderBy(u => u.Id),
-                pageIndex: pageIndex,
-                pageSize: pageSize
-            );
-
-            var userDtos = _mapper.Map<Pagination<ViewListUserDTO>>(users); // Ánh xạ danh sách người dùng sang ViewListUserDTO
-
-            // Lặp qua từng người dùng để lấy và ánh xạ vai trò
-            foreach (var userDto in userDtos.Items)
-            {
-                var user = await _userManager.FindByIdAsync(userDto.Id); // Tìm người dùng theo Id để lấy vai trò
-                var roles = await _userManager.GetRolesAsync(user); // Lấy danh sách vai trò của người dùng
-                var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
-
-                // Gán danh sách vai trò vào DTO
-                userDto.Avatar = avatar?.ImageUrl;
-                userDto.Roles = roles;
-                userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
-                userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;
-                userDto.DeletedBy = string.IsNullOrEmpty(user.DeletedBy) ? null : (await _userManager.FindByIdAsync(user.DeletedBy))?.UserName ?? user.DeletedBy;
-            }
-
-            return new SuccessResponseModel<object>
-            {
-                Success = true,
-                Message = "Users found.",
-                Data = userDtos
-            };
-        }
-        #endregion
-
         #region Update User Roles For Admin
         // Add role to user
         public async Task<ResponseModel> AddRoleToUserAsync(UpdateUserRolesDTO model)
@@ -757,6 +720,326 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+        #endregion
+
+        #region Manage User For Admin
+        // Get all users for admin
+        public async Task<ResponseModel> GetAllUsersForAdminAsync(int pageIndex, int pageSize)
+        {
+            //var users = await _userManager.Users.ToListAsync(); // Lấy danh sách người dùng từ DB
+
+            // lấy danh sách người dùng chưa bị xóa
+            var users = await _unitOfWork.AcccountRepository.GetAsync(
+                filter: u => !u.IsDeleted,
+                orderBy: u => u.OrderBy(u => u.Id),
+                pageIndex: pageIndex,
+                pageSize: pageSize
+            );
+
+            // lọc từ danh sách người dùng để lấy ko có role admin
+            var nonAdminUsers = new List<Account>();
+            foreach (var user in users.Items)
+            {
+                if (!await _userManager.IsInRoleAsync(user, "Admin"))
+                {
+                    nonAdminUsers.Add(user);
+                }
+            }
+
+            // phân trang từ list trên lại để map
+            var pagedNonAdminUsers = new Pagination<Account>
+            {
+                TotalItemsCount = nonAdminUsers.Count,
+                PageSize = pageSize,
+                PageIndex = pageIndex,
+                Items = nonAdminUsers
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList()
+            };
+
+            var userDtos = _mapper.Map<Pagination<ViewListUserDTO>>(users); // Ánh xạ danh sách người dùng sang ViewListUserDTO
+
+            // Lặp qua từng người dùng để lấy và ánh xạ vai trò
+            foreach (var userDto in userDtos.Items)
+            {
+                var user = await _userManager.FindByIdAsync(userDto.Id); // Tìm người dùng theo Id để lấy vai trò
+                var roles = await _userManager.GetRolesAsync(user); // Lấy danh sách vai trò của người dùng
+                var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+
+                // Gán danh sách vai trò vào DTO
+                userDto.Avatar = avatar?.ImageUrl;
+                userDto.Roles = roles;
+                userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
+                userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;
+                userDto.DeletedBy = string.IsNullOrEmpty(user.DeletedBy) ? null : (await _userManager.FindByIdAsync(user.DeletedBy))?.UserName ?? user.DeletedBy;
+            }
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Users found.",
+                Data = userDtos
+            };
+        }
+
+        // Add a new user by admin
+        public async Task<ResponseModel> AddNewUserByAdminAsync(CreateAccountDTO model)
+        {
+            try
+            {
+                // Check if the username is already in use
+                if (model.Username.Length < 6 || model.Username.Length > 20)
+                {
+                    return new ResponseModel { Success = false, Message = "Username must be between 6 and 20 characters." };
+                }
+
+                var existingUser = await _userManager.FindByNameAsync(model.Username);
+                if (existingUser != null)
+                {
+                    return new ResponseModel { Success = false, Message = "Username is already in use." };
+                }
+
+                // Check if the phone number is already in use
+                if (model.PhoneNumber != null)
+                {
+                    existingUser = await _unitOfWork.AcccountRepository.FindByPhoneNumberAsync(model.PhoneNumber);
+                    if (existingUser != null)
+                    {
+                        return new ResponseModel { Success = false, Message = "Phone number is already in use." };
+                    }
+                }
+
+                // Check if all roles exist
+                if (model.Roles != null && model.Roles.Count > 0)
+                {
+                    var roles = await _roleManager.Roles.ToListAsync();
+                    var nonExistentRoles = model.Roles.Where(roleName => !roles.Any(r => r.Name == roleName)).ToList();
+
+                    if (nonExistentRoles.Count > 0)
+                    {
+                        return new ResponseModel
+                        {
+                            Success = false,
+                            Message = "One or more roles do not exist: " + string.Join(", ", nonExistentRoles)
+                        };
+                    }
+                }
+
+                // Map the model to the user entity
+                var user = _mapper.Map<Account>(model);
+                user.CreatedAt = _currentTime.GetCurrentTime();
+                user.CreatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                // Create a new user
+                var result = await _userManager.CreateAsync(user, model.Password);
+
+                if (result.Succeeded)
+                {
+                    // Add roles to the user
+                    if (model.Roles != null && model.Roles.Count > 0)
+                    {
+                        foreach (var roleName in model.Roles)
+                        {
+                            await _userManager.AddToRoleAsync(user, roleName);
+                        }
+                    }
+
+                    return new SuccessResponseModel<object>
+                    {
+                        Success = true,
+                        Message = "User created successfully.",
+                        Data = new { UserId = user.Id }
+                    };
+                }
+                else
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Password is not in correct format.",
+                        Errors = result.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while creating user.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        // Edit user by admin
+        public async Task<ResponseModel> EditUserByAdminAsync(EditAccountDTO model)
+        {
+            try
+            {
+                // Check if the user exists
+                var user = await _userManager.FindByIdAsync(model.UserId);
+                if (user == null)
+                {
+                    return new ResponseModel { Success = false, Message = "User not found." };
+                }
+
+                // Check if all roles exist
+                if (model.Roles != null && model.Roles.Count > 0)
+                {
+                    var roles = await _roleManager.Roles.ToListAsync();
+                    var nonExistentRoles = model.Roles.Where(roleName => !roles.Any(r => r.Name == roleName)).ToList();
+
+                    if (nonExistentRoles.Count > 0)
+                    {
+                        return new ResponseModel
+                        {
+                            Success = false,
+                            Message = "One or more roles do not exist: " + string.Join(", ", nonExistentRoles)
+                        };
+                    }
+                }
+
+                // Update user roles
+                var userRoles = await _userManager.GetRolesAsync(user);
+                var rolesToRemove = userRoles.Except(model.Roles).ToList();
+                var rolesToAdd = model.Roles.Except(userRoles).ToList();
+
+                foreach (var roleName in rolesToRemove)
+                {
+                    await _userManager.RemoveFromRoleAsync(user, roleName);
+                }
+
+                foreach (var roleName in rolesToAdd)
+                {
+                    await _userManager.AddToRoleAsync(user, roleName);
+                }
+
+                // Update user properties
+                user.Status = model.Status;
+                user.Gender = model.Gender;
+                user.UpdatedAt = _currentTime.GetCurrentTime();
+                user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+                var updateResult = await _userManager.UpdateAsync(user);
+
+                if (updateResult.Succeeded)
+                {
+                    return new ResponseModel { Success = true, Message = "User updated successfully." };
+                }
+                else
+                {
+                    return new ErrorResponseModel<string>
+                    {
+                        Success = false,
+                        Message = "Failed to update user.",
+                        Errors = updateResult.Errors.Select(e => e.Description).ToList()
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "An error occurred while updating user.",
+                    Errors = new List<string> { ex.Message }
+                };
+            }
+        }
+
+        // Block or unblock user by admin
+        public async Task<ResponseModel> BlockOrUnBlockUserByAdmin(BlockOrUnBlockAccountDTO model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+
+            if (user == null)
+            {
+                return new ResponseModel { Success = false, Message = "User not found." };
+            }
+
+            user.Status = model.Status;
+            user.UpdatedAt = _currentTime.GetCurrentTime();
+            user.UpdatedBy = _claimsService.GetCurrentUserId().ToString();
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return new ResponseModel { Success = true, Message = "User status updated successfully." };
+            }
+            else
+            {
+                return new ErrorResponseModel<string>
+                {
+                    Success = false,
+                    Message = "Failed to update user status.",
+                    Errors = result.Errors.Select(e => e.Description).ToList()
+                };
+            }
+        }
+
+        // Search users by phone number or first name or last name and filter by status
+        public async Task<ResponseModel> SearchUsersAsync(string? keyword, string? status, int pageIndex, int pageSize)
+        {
+            var statusFilter = string.IsNullOrEmpty(status) || status == "All" ? (string?)null : status;
+
+            var users = await _unitOfWork.AcccountRepository.GetAsync(
+                               filter: u => !u.IsDeleted && (string.IsNullOrEmpty(keyword) ||
+                                                            (u.LastName + " " + u.FirstName).Contains(keyword) ||
+                                                            u.PhoneNumber.Contains(keyword)) &&
+                                                            (statusFilter == null || u.Status == statusFilter),
+                               orderBy: u => u.OrderBy(u => u.Id),
+                               pageIndex: pageIndex,
+                               pageSize: pageSize
+                               );
+
+            var userDtos = _mapper.Map<Pagination<ViewListUserDTO>>(users);
+
+            foreach (var userDto in userDtos.Items)
+            {
+                var user = await _userManager.FindByIdAsync(userDto.Id);
+                var roles = await _userManager.GetRolesAsync(user);
+                var avatar = await _unitOfWork.ImageRepository.GetByIdAsync(user.AvatarId);
+
+                userDto.Avatar = avatar?.ImageUrl;
+                userDto.Roles = roles;
+                userDto.CreatedBy = user.CreatedBy == null ? null : (await _userManager.FindByIdAsync(user.CreatedBy))?.UserName ?? user.CreatedBy;
+                userDto.UpdatedBy = string.IsNullOrEmpty(user.UpdatedBy) ? null : (await _userManager.FindByIdAsync(user.UpdatedBy))?.UserName ?? user.UpdatedBy;
+                userDto.DeletedBy = string.IsNullOrEmpty(user.DeletedBy) ? null : (await _userManager.FindByIdAsync(user.DeletedBy))?.UserName ?? user.DeletedBy;
+            }
+
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Users found.",
+                Data = userDtos
+            };
+        }
+
+        // Remove diacritics from text
+        //private static string RemoveDiacritics(string text)
+        //{
+        //    if (string.IsNullOrEmpty(text))
+        //        return text;
+
+        //    var normalizedString = text.Normalize(NormalizationForm.FormD);
+        //    var stringBuilder = new StringBuilder();
+
+        //    foreach (var c in normalizedString)
+        //    {
+        //        var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+        //        if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+        //        {
+        //            stringBuilder.Append(c);
+        //        }
+        //    }
+
+        //    return stringBuilder.ToString().Normalize(NormalizationForm.FormC);
+        //}
+
+        // Filter users by status
         #endregion
     }
 }
