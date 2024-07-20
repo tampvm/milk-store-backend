@@ -74,6 +74,14 @@ namespace MilkStore.Service.Services
         {
             try
             {
+                var productTypeExist = await _unitOfWork.ProductTypeRepository.GetProductTypeByNameAsync(productType.Name);
+                if (productTypeExist != null)
+                    return new ErrorResponseModel<object>()
+                    {
+                        Success = false,
+                        Message = "Product type already exists."
+                    };
+
                 var productTypeEntity = _mapper.Map<ProductType>(productType);
                 productTypeEntity.IsDeleted = false;
                 productTypeEntity.CreatedAt = DateTime.UtcNow;
@@ -100,10 +108,33 @@ namespace MilkStore.Service.Services
         {
             try
             {
-                var productTypeEntity = _mapper.Map<ProductType>(productType);
-                productTypeEntity.UpdatedAt = DateTime.UtcNow;
-                await _unitOfWork.ProductTypeRepository.UpdateProductTypeAsync(productTypeEntity);
+                var productTypeExist = await _unitOfWork.ProductTypeRepository.GetProductTypeByNameAsync(productType.Name);
+                if (productTypeExist != null && productTypeExist.Id != productType.Id)
+                    return new ErrorResponseModel<object>()
+                    {
+                        Success = false,
+                        Message = "Product type already exists."
+                    };
+
+                var existingProductType = await _unitOfWork.ProductTypeRepository.GetByIdAsync(productType.Id);
+                if (existingProductType == null)
+                {
+                    return new ErrorResponseModel<object>()
+                    {
+                        Success = false,
+                        Message = "Product type not found."
+                    };
+                }
+
+                existingProductType.Name = productType.Name;
+                existingProductType.Description = productType.Description;
+                existingProductType.Active = productType.Active;
+                existingProductType.UpdatedBy = productType.UpdatedBy;
+                existingProductType.UpdatedAt = DateTime.UtcNow;
+
+                await _unitOfWork.ProductTypeRepository.UpdateProductTypeAsync(existingProductType);
                 await _unitOfWork.SaveChangeAsync();
+
                 return new SuccessResponseModel<object>()
                 {
                     Success = true,
@@ -111,7 +142,8 @@ namespace MilkStore.Service.Services
                     Data = productType
                 };
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 return new ErrorResponseModel<object>()
                 {
                     Success = false,
@@ -120,10 +152,14 @@ namespace MilkStore.Service.Services
             }
         }
 
+
         public async Task<ResponseModel> DeleteProductTypeAsync(DeleteProductTypeDTO deleteProductType)
         {
             try
             {
+                var productTypeExist = await _unitOfWork.ProductRepository.GetProductByProductTypeIdAsync(deleteProductType.Id);
+                if (productTypeExist != null) return new ErrorResponseModel<object> { Success = false, Message = "Product type is in use." };
+
                 var productType = await _unitOfWork.ProductTypeRepository.GetProductTypeByIdAsync(deleteProductType.Id);
                 if (productType == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product type." };
                 productType.IsDeleted = true;

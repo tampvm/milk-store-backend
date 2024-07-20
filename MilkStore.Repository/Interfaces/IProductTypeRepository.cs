@@ -12,5 +12,6 @@ namespace MilkStore.Repository.Interfaces
         Task<List<ProductType>> GetAllProductTypesAsync();
         Task UpdateProductTypeAsync(ProductType productType);
         Task<ProductType> GetProductTypeByIdAsync(int productTypeId);
+        Task<ProductType> GetProductTypeByNameAsync(string name);
     }
 }

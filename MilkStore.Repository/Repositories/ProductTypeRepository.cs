@@ -55,6 +55,20 @@ namespace MilkStore.Repository.Repositories
             }
         }
 
+        public async Task<ProductType> GetProductTypeByNameAsync(string name)
+        {
+            try
+            {
+                ProductType productType = new ProductType();
+                productType = await _context.Types.Where(x => x.Name == name).FirstOrDefaultAsync();
+                return productType;
+            }
+            catch
+            {
+                throw new Exception("Get productType by name failed");
+            }
+        }
+
         public async Task UpdateProductTypeAsync(ProductType productType)
         {
             try
@@ -62,9 +76,9 @@ namespace MilkStore.Repository.Repositories
                 _context.Entry(productType).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Update productType failed");
+                throw new Exception("Update productType failed: " + ex.Message);
             }
         }
     }
