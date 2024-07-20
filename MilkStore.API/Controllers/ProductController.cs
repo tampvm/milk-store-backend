@@ -64,6 +64,18 @@ namespace MilkStore.API.Controllers
             return BadRequest(response);
         }
 
+        [HttpGet]
+        [Route("GetProductsByBrandId")]
+        public async Task<IActionResult> GetProductByBrandIdAsync(int brandId)
+        {
+            var response = await _productService.GetProductsByBrandIdAsync(brandId);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
         [HttpPost]
         [Authorize(Roles = "Staff, Admin")]
         [Route("CreateProduct")]

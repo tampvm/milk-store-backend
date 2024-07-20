@@ -292,5 +292,21 @@ namespace MilkStore.Service.Services
             }
         }
         #endregion
+
+        #region GetProductsByBrandId
+        public async Task<ResponseModel> GetProductsByBrandIdAsync(int brandId)
+        {
+            try
+            {
+                var products = await _unitOfWork.ProductRepository.GetProductsByBrandIdAsync(brandId);
+                var productDTOs = _mapper.Map<List<ViewListProductsDTO>>(products);
+                return new SuccessResponseModel<object> { Success = true, Message = "Products retrieved successfully.", Data = productDTOs };
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResponseModel<object> { Success = false, Message = ex.Message };
+            }
+        }
+        #endregion
     }
 }
