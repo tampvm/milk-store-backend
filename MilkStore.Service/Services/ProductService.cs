@@ -230,6 +230,11 @@ namespace MilkStore.Service.Services
             {
                 var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(productId);
                 var productDTO = _mapper.Map<ViewListProductsDTO>(product);
+                var image = await _unitOfWork.ImageRepository.GetByIdAsync(product.Brand.Id);
+                if (image != null)
+                {
+                    productDTO.Brand.ImageUrl = image.ImageUrl;
+                }
                 return new SuccessResponseModel<object> { Success = true, Message = "Product retrieved successfully.", Data = productDTO };
             }
             catch (Exception ex)
@@ -300,6 +305,14 @@ namespace MilkStore.Service.Services
             {
                 var products = await _unitOfWork.ProductRepository.GetProductsByBrandIdAsync(brandId);
                 var productDTOs = _mapper.Map<List<ViewListProductsDTO>>(products);
+                foreach (var product in productDTOs)
+                {
+                    var image = await _unitOfWork.ImageRepository.GetByIdAsync(product.Brand.Id);
+                    if (image != null)
+                    {
+                        productDTOs[productDTOs.IndexOf(product)].Brand.ImageUrl = image.ImageUrl;
+                    }
+                }
                 return new SuccessResponseModel<object> { Success = true, Message = "Products retrieved successfully.", Data = productDTOs };
             }
             catch (Exception ex)
