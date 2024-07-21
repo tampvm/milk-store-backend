@@ -26,10 +26,11 @@ namespace MilkStore.Service.Services
 		}
 
 		#region Voucher management
-		// Get all vouchers
+		// Get all active vouchers
 		public async Task<ResponseModel> GetVouchersAsync(int pageIndex, int pageSize)
 		{
 			var vouchers = await _unitOfWork.VoucherRepository.GetAsync(
+				filter: x => x.IsDeleted == false,
 				pageIndex: pageIndex,
 				pageSize: pageSize
 				);
