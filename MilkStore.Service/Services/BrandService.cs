@@ -26,10 +26,11 @@ namespace MilkStore.Service.Services
 		}
 
 		#region Brand management
-		// Get all brands
+		// Get all active brands
 		public async Task<ResponseModel> GetBrandsAsync(int pageIndex, int pageSize)
 		{
 			var brands = await _unitOfWork.BrandRepository.GetAsync(
+				filter: x => x.IsDeleted == false,
 				pageIndex: pageIndex,
 				pageSize: pageSize
 				);

@@ -32,7 +32,7 @@ namespace MilkStore.Service.Services
 		{
 			var followBrands = await _unitOfWork.FollowBrandRepository
 									.GetAsync(
-											filter: x => x.BrandId == brandId,
+											filter: x => x.BrandId == brandId && x.UnfollowedAt == null,
 											pageIndex: pageIndex,
 											pageSize: pageSize
 											);
@@ -51,7 +51,7 @@ namespace MilkStore.Service.Services
 		{
 			var followBrands = await _unitOfWork.FollowBrandRepository
 									.GetAsync(
-											filter: x => x.AccountId == accountId,
+											filter: x => x.AccountId == accountId && x.UnfollowedAt == null,
 											pageIndex: pageIndex,
 											pageSize: pageSize
 											);
@@ -87,6 +87,7 @@ namespace MilkStore.Service.Services
 				var followBrand = _mapper.Map<FollowBrand>(model);
 
 				followBrand.CreatedAt = DateTime.Now;
+				followBrand.FollowedAt = DateTime.Now;
 				await _unitOfWork.FollowBrandRepository.AddAsync(followBrand);
 				await _unitOfWork.SaveChangeAsync();
 
@@ -107,22 +108,50 @@ namespace MilkStore.Service.Services
 		}
 
 		// User unfollows brand
-		public async Task<ResponseModel> UserUnfollowsBrandAsync(string AccountId, int BrandId)
+		//public async Task<ResponseModel> UserUnfollowsBrandAsync(string AccountId, int BrandId)
+		//{
+		//	var model = await _unitOfWork.FollowBrandRepository.GetFollowBrandByUserAsync(AccountId, BrandId);
+
+		//	if (model != null)
+		//	{
+		//		_unitOfWork.FollowBrandRepository.Delete(model.Id);
+		//	}
+
+		//	await _unitOfWork.SaveChangeAsync();
+
+		//	return new SuccessResponseModel<object>
+		//	{
+		//		Success = true,
+		//		Message = "Unfollow successfully."
+		//	};
+		//}
+		public async Task<ResponseModel> UserUnfollowsBrandAsync(UserFollowsBrandDTO model)
 		{
-			var model = await _unitOfWork.FollowBrandRepository.GetFollowBrandByUserAsync(AccountId, BrandId);
+			var existingFollowBrand = await _unitOfWork.FollowBrandRepository.
+											GetFollowBrandByUserAsync(model.AccountId, model.BrandId);
 
-			if (model != null)
+			if (existingFollowBrand != null)
 			{
-				_unitOfWork.FollowBrandRepository.Delete(model.Id);
+				_mapper.Map(model, existingFollowBrand);
+
+				existingFollowBrand.UnfollowedAt = DateTime.Now;
+				_unitOfWork.FollowBrandRepository.Update(existingFollowBrand);
+				await _unitOfWork.SaveChangeAsync();
+
+				return new SuccessResponseModel<object>
+				{
+					Success = true,
+					Message = "Unfollow successfully."
+				};
 			}
-
-			await _unitOfWork.SaveChangeAsync();
-
-			return new SuccessResponseModel<object>
+			else
 			{
-				Success = true,
-				Message = "Unfollow successfully."
-			};
+				return new ErrorResponseModel<object>
+				{
+					Success = false,
+					Message = "You have not followed this brand yet."
+				};
+			}
 		}
 	}
 }
