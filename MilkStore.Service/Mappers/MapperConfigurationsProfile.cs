@@ -580,7 +580,7 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Type, otp => otp.MapFrom(src => src.Type))
 				.ForMember(dest => dest.AgeRange, otp => otp.MapFrom(src => src.AgeRange));
 
-
+			CreateMap<Product, List<ViewListProductsDTO>>();
             #endregion
 
             #region ProductImage
@@ -593,10 +593,18 @@ namespace MilkStore.Service.Mappers
 
             #region AgeRange
             CreateMap<AgeRange, ViewListAgeRangeDTO>();
+            CreateMap<CreateAgeRangeDTO, AgeRange>();
+            CreateMap<UpdateAgeRangeDTO, AgeRange>();
+            CreateMap<AgeRange, DeleteAgeRangeDTO>();
+            CreateMap<AgeRange, RestoreAgeRangeDTO>();
             #endregion
 
             #region ProductType
             CreateMap<ProductType, ViewListProductTypeDTO>();
+			CreateMap<CreateProductTypeDTO, ProductType>();
+			CreateMap<UpdateProductTypeDTO, ProductType>();
+			CreateMap<ProductType, DeleteProductTypeDTO>();
+			CreateMap<ProductType, RestoreProductTypeDTO>();
             #endregion
 
             #region Order

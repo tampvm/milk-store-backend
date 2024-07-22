@@ -13,6 +13,7 @@ namespace MilkStore.Service.Interfaces
 		Task<ResponseModel> GetFollowBrandByBrandIdAsync(int brandId, int pageIndex, int pageSize);
 		Task<ResponseModel> GetFollowBrandByAccountIdAsync(string accountId, int pageIndex, int pageSize);
 		Task<ResponseModel> UserFollowsBrand(UserFollowsBrandDTO model);
-		Task<ResponseModel> UserUnfollowsBrandAsync(string AccountId, int BrandId);
+		//Task<ResponseModel> UserUnfollowsBrandAsync(string AccountId, int BrandId);
+		Task<ResponseModel> UserUnfollowsBrandAsync(UserFollowsBrandDTO model);
 	}
 }
