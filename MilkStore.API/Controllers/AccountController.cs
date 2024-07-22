@@ -9,10 +9,12 @@ namespace MilkStore.API.Controllers
     public class AccountController : BaseController
     {
         private readonly IAccountService _accountService;
+        private readonly IOrderService _orderService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, IOrderService orderService)
         {
             _accountService = accountService;
+            _orderService = orderService;
         }
 
         #region View User Profile
@@ -262,5 +264,49 @@ namespace MilkStore.API.Controllers
             return BadRequest(response);
         }
         #endregion
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrderHistory(string? orderId, string? status, int pageIndex = 0, int pageSize = 10)
+        {
+            var response = await _orderService.GetAllOrderAsync(orderId, status, pageIndex, pageSize);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrderById(string orderId)
+        {
+            var response = await _orderService.GetOrderByIdAsync(orderId);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrderByUserId(string userId, int pageIndex = 0, int pageSize = 10)
+        {
+            var response = await _orderService.GetOrderByUserIdAsync(userId, pageIndex, pageSize);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> ChangeOrderStatus(string orderId, string status)
+        {
+            var response = await _orderService.ChangeStatusAsync(orderId, status);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
