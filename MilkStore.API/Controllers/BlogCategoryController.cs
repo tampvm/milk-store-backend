@@ -14,6 +14,20 @@ namespace MilkStore.API.Controllers
         {
             _blogCategoryService = blogService;
         }
+        [HttpGet]
+        // Get all blog categories
+        public async Task<IActionResult> GetAllBlogCategories(int pageIndex = 0, int pageSize = 10)
+        {
+            var blogCategories = await _blogCategoryService.GetAllBlogCategory(pageIndex, pageSize);
+            return Ok(blogCategories);
+        }
+        [HttpGet]
+        // Get blog category by id
+        public async Task<IActionResult> GetBlogCategoryById(int id)
+        {
+            var blogCategory = await _blogCategoryService.GetBlogCategoryById(id);
+            return Ok(blogCategory);
+        }
         [HttpPost]
 
         public async Task<IActionResult> CreateBlogCategory([FromBody] CreateBlogCategoryDTO model)

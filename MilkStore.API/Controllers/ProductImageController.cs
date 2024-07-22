@@ -43,10 +43,10 @@ namespace MilkStore.API.Controllers
         [HttpPost]
         [Authorize(Roles = "Staff, Admin")]
         [Route("UpdateProductImage")]
-        public async Task<IActionResult> UpdateProductImageAsync([FromForm]UpdateProductImageDTO model, List<IFormFile>? imageFiles = null, IFormFile? thumbnailFile = null)
+        public async Task<IActionResult> UpdateProductImageAsync([FromForm] UpdateProductImageDTO model, [FromForm] List<IFormFile>? imageFiles = null, [FromForm] IFormFile? thumbnailFile = null)
         {
             var response = await _productImageService.UpdateProductImageAsync(model, imageFiles, thumbnailFile);
-            if (response != null)
+            if (response != null && response.Success)
             {
                 return Ok(response);
             }

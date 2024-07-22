@@ -466,6 +466,12 @@ namespace MilkStore.Service.Mappers
 				.ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.PostId))
 				.ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
 				.ReverseMap();
+			// Mapping from ViewBlogCategoryModel to BlogCategory
+			CreateMap<GetBlogCategoryDTO, PostCategory>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
+                .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.CategoryId))
+				.ReverseMap();
 			// Mapping from CreateBlogCategoryDTO to BlogCategory
 			CreateMap<CreateBlogCategoryDTO, PostCategory>()
 				.ForMember(dest => dest.PostId, opt => opt.MapFrom(src => src.PostId))
