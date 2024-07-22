@@ -29,5 +29,10 @@ namespace MilkStore.Service.Interfaces
         Task<ResponseModel> EditUserByAdminAsync(EditAccountDTO model);
         Task<ResponseModel> BlockOrUnBlockUserByAdmin(BlockOrUnBlockAccountDTO model);
         Task<ResponseModel> SearchUsersAsync(string? keyword, string? status, int pageIndex, int pageSize);
+
+        Task<ResponseModel> GetAllOrderAsync(string? orderId, string? status, int pageIndex, int pageSize);
+        Task<ResponseModel> GetOrderByIdAsync(string orderId);
+        Task<ResponseModel> GetOrderByUserIdAsync(string userId, int pageIndex, int pageSize);
+        Task<ResponseModel> ChangeOrderStatusAsync(string orderId, string status);
     }
 }
