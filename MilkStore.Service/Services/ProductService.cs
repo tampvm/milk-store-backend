@@ -101,7 +101,13 @@ namespace MilkStore.Service.Services
             product.Sku = productUpdateDTO.Sku;
             product.Description = productUpdateDTO.Description;
             product.Price = productUpdateDTO.Price;
-            product.Discount = productUpdateDTO.Discount;
+            if (productUpdateDTO.Discount < 0 || productUpdateDTO.Discount > 100)
+            {
+                product.Discount = 0;
+            }else
+            {
+                product.Discount = productUpdateDTO.Discount;
+            }
             product.Quantity = productUpdateDTO.Quantity;
             product.Weight = productUpdateDTO.Weight;
             product.TypeId = productUpdateDTO.TypeId;
@@ -153,6 +159,7 @@ namespace MilkStore.Service.Services
                 var product = await _unitOfWork.ProductRepository.GetProductByIdAsync(deleteProductDTO.Id);
                 if (product == null) return new ErrorResponseModel<object> { Success = false, Message = "Not found product." };
                 product.IsDeleted = true;
+                product.Active = false;
                 product.DeletedAt = DateTime.UtcNow;
                 product.DeletedBy = deleteProductDTO.DeletedBy;
                 _unitOfWork.ProductRepository.Update(product);
@@ -270,7 +277,7 @@ namespace MilkStore.Service.Services
                 if (!string.IsNullOrEmpty(keySearch))
                 {
                     products = products
-                        .Where(p => p.Name.Contains(keySearch) || p.Description.Contains(keySearch))
+                        .Where(p => p.Name.Contains(keySearch) || p.Description.Contains(keySearch) && p.IsDeleted == false)
                         .Skip((pageIndex - 1) * pageSize)
                         .Take(pageSize)
                         .ToList();
