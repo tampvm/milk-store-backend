@@ -11,5 +11,6 @@ namespace MilkStore.Repository.Interfaces
 	public interface IVoucherRepository : IGenericRepository<Voucher>
 	{
 		Task<Voucher?> GetVoucherByCodeAsync(string code);
+		Task<AccountVoucher> AddAccountVoucher(string AccountId, int VoucherId, string usedDate, string Status);
 	}
 }
