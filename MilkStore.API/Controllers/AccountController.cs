@@ -9,12 +9,10 @@ namespace MilkStore.API.Controllers
     public class AccountController : BaseController
     {
         private readonly IAccountService _accountService;
-        private readonly IOrderService _orderService;
 
-        public AccountController(IAccountService accountService, IOrderService orderService)
+        public AccountController(IAccountService accountService)
         {
             _accountService = accountService;
-            _orderService = orderService;
         }
 
         #region View User Profile
@@ -268,7 +266,7 @@ namespace MilkStore.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllOrderHistory(string? orderId, string? status, int pageIndex = 0, int pageSize = 10)
         {
-            var response = await _orderService.GetAllOrderAsync(orderId, status, pageIndex, pageSize);
+            var response = await _accountService.GetAllOrderAsync(orderId, status, pageIndex, pageSize);
             if (response.Success)
             {
                 return Ok(response);
@@ -279,7 +277,7 @@ namespace MilkStore.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrderById(string orderId)
         {
-            var response = await _orderService.GetOrderByIdAsync(orderId);
+            var response = await _accountService.GetOrderByIdAsync(orderId);
             if (response.Success)
             {
                 return Ok(response);
@@ -290,7 +288,7 @@ namespace MilkStore.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetOrderByUserId(string userId, int pageIndex = 0, int pageSize = 10)
         {
-            var response = await _orderService.GetOrderByUserIdAsync(userId, pageIndex, pageSize);
+            var response = await _accountService.GetOrderByUserIdAsync(userId, pageIndex, pageSize);
             if (response.Success)
             {
                 return Ok(response);
@@ -301,7 +299,7 @@ namespace MilkStore.API.Controllers
         [HttpPut]
         public async Task<IActionResult> ChangeOrderStatus(string orderId, string status)
         {
-            var response = await _orderService.ChangeStatusAsync(orderId, status);
+            var response = await _accountService.ChangeOrderStatusAsync(orderId, status);
             if (response.Success)
             {
                 return Ok(response);
