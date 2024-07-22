@@ -146,23 +146,33 @@ namespace MilkStore.Service.Services
         {
             try
             {
-                List<string> imageIds = new List<string>();
-                if (updateProductImageDTO.imageIds != null)
-                {
-                    imageIds = updateProductImageDTO.imageIds;
-                }
-                //Get product image
-                var productImageOriginal = await _unitOfWork.ProductImageRepository.GetProductImageByProductIdAsync(updateProductImageDTO.ProductId);
+                // Lấy danh sách các imageId đã lưu lại và lọc chỉ lấy các giá trị có thể chuyển thành số nguyên
+                List<int> validImageIds = updateProductImageDTO.imageIds?
+                    .Where(id => int.TryParse(id, out _))
+                    .Select(int.Parse)
+                    .ToList() ?? new List<int>();
 
-                // Get Image
-                var image = await _unitOfWork.ImageRepository.GetByIdAsync(productImageOriginal.FirstOrDefault().ImageId);
-                if (image == null)
+                // Lấy danh sách ProductImage của sản phẩm
+                List<ProductImage> productImages = await _unitOfWork.ProductImageRepository.GetProductImageByProductIdAsync(updateProductImageDTO.ProductId);
+
+                // Lấy danh sách các Image tương ứng với ProductImage
+                List<Image> images = new List<Image>();
+                foreach (var productImage in productImages)
+                {
+                    var image = await _unitOfWork.ImageRepository.GetByIdAsync(productImage.ImageId);
+                    if (image != null)
+                    {
+                        images.Add(image);
+                    }
+                }
+
+                if (images == null || images.Count == 0)
                 {
                     return new ErrorResponseModel<object> { Success = false, Message = "Image not found." };
                 }
 
-                // Check thumbnail
-                string thumbnailUrl = image.ThumbnailUrl;
+                // Kiểm tra và cập nhật thumbnail nếu cần thiết
+                string thumbnailUrl = images.FirstOrDefault()?.ThumbnailUrl;
                 if (thumbnailFile != null)
                 {
                     thumbnailUrl = await UploadProductImageAsync(thumbnailFile);
@@ -170,65 +180,41 @@ namespace MilkStore.Service.Services
                     {
                         return new ErrorResponseModel<object> { Success = false, Message = "Thumbnail upload failed." };
                     }
+
+                    // Cập nhật thumbnailUrl cho tất cả các image của sản phẩm
+                    foreach (var image in images)
+                    {
+                        image.ThumbnailUrl = thumbnailUrl;
+                        image.UpdatedAt = DateTime.UtcNow;
+                        image.UpdatedBy = updateProductImageDTO.UpdatedBy;
+                        await _unitOfWork.ImageRepository.UpdateImageAsync(image);
+                    }
+                    await _unitOfWork.SaveChangeAsync();
                 }
 
-                // Get all images of product
-                var productImages = await _unitOfWork.ProductImageRepository.GetProductImageByProductIdAsync(updateProductImageDTO.ProductId);
-
-                // Update only thumbnail
-                if (thumbnailFile != null && (imageFiles == null || imageFiles.Count == 0))
+                // Cập nhật hoặc xóa các ảnh cũ nếu cần thiết
+                foreach (var productImage in productImages)
                 {
-                    foreach (var productImage in productImages)
+                    var image = images.FirstOrDefault(img => img.Id == productImage.ImageId);
+                    if (image != null && !validImageIds.Contains(productImage.ImageId))
                     {
-                        // Update product image
-                        productImage.UpdatedAt = DateTime.UtcNow;
-                        productImage.UpdatedBy = updateProductImageDTO.UpdatedBy;
-                        await _unitOfWork.ProductImageRepository.UpdateProductImageAsync(productImage);
-                        await _unitOfWork.SaveChangeAsync();
+                        // Xóa ảnh cũ
+                        image.IsDeleted = true;
+                        image.DeletedAt = DateTime.UtcNow;
+                        image.DeletedBy = updateProductImageDTO.UpdatedBy;
+                        await _unitOfWork.ImageRepository.UpdateImageAsync(image);
 
-                        // Update image
-                        var imageOld = await _unitOfWork.ImageRepository.GetByIdAsync(productImage.ImageId);
-                        if (imageOld != null)
-                        {
-                            imageOld.ThumbnailUrl = thumbnailUrl;
-                            imageOld.UpdatedAt = DateTime.UtcNow;
-                            imageOld.UpdatedBy = updateProductImageDTO.UpdatedBy;
-                            await _unitOfWork.ImageRepository.UpdateImageAsync(imageOld);
-                            await _unitOfWork.SaveChangeAsync();
-                        }
+                        productImage.IsDeleted = true;
+                        productImage.DeletedAt = DateTime.UtcNow;
+                        productImage.DeletedBy = updateProductImageDTO.UpdatedBy;
+                        await _unitOfWork.ProductImageRepository.UpdateProductImageAsync(productImage);
                     }
                 }
+                await _unitOfWork.SaveChangeAsync();
 
-                // Update images
+                // Thêm các ảnh mới nếu có
                 if (imageFiles != null && imageFiles.Count > 0)
                 {
-                    // Remove old images if necessary
-                    if (imageIds != null || imageIds.Count > 0 && imageIds.Count < productImages.Count)
-                    {
-                        foreach (var productImage in productImages)
-                        {
-                            if (imageIds == null || !imageIds.Contains(productImage.ImageId.ToString()))
-                            {
-                                productImage.IsDeleted = true;
-                                productImage.DeletedAt = DateTime.UtcNow;
-                                productImage.DeletedBy = updateProductImageDTO.UpdatedBy;
-                                await _unitOfWork.ProductImageRepository.UpdateProductImageAsync(productImage);
-                                await _unitOfWork.SaveChangeAsync();
-
-                                var imageOld = await _unitOfWork.ImageRepository.GetByIdAsync(productImage.ImageId);
-                                if (imageOld != null)
-                                {
-                                    imageOld.IsDeleted = true;
-                                    imageOld.DeletedAt = DateTime.UtcNow;
-                                    imageOld.DeletedBy = updateProductImageDTO.UpdatedBy;
-                                    await _unitOfWork.ImageRepository.UpdateImageAsync(imageOld);
-                                    await _unitOfWork.SaveChangeAsync();
-                                }
-                            }
-                        }
-                    }
-
-                    // Add new images
                     foreach (var imageFile in imageFiles)
                     {
                         var imageUrl = await UploadProductImageAsync(imageFile);
@@ -280,6 +266,7 @@ namespace MilkStore.Service.Services
                 };
             }
         }
+
         #endregion
 
         #region DeleteProductImage
@@ -328,7 +315,6 @@ namespace MilkStore.Service.Services
             }
         }
         #endregion
-
         private async Task<string> UploadProductImageAsync(IFormFile imageFile)
         {
             if (imageFile == null) return null;
