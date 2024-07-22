@@ -1,7 +1,8 @@
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using MilkStore.Domain.Entities;
 using MilkStore.Domain.Enums;
+using MilkStore.Repository.Common;
 using MilkStore.Repository.Interfaces;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ResponseModels;
@@ -182,9 +183,6 @@ public class OrderService : IOrderService
                 Data = null
             };
         }
-
-        
-        
     }
 
     public async Task<ResponseModel> GetAllOrder(int pageIndex, int pageSize)
@@ -241,5 +239,241 @@ public class OrderService : IOrderService
         };
     }
 
+    public async Task<ResponseModel> GetAllOrderAsync(string? orderId, string? status, int pageIndex, int pageSize)
+    {
+        // Xác định điều kiện lọc trạng thái
+        var statusFilter = string.IsNullOrEmpty(status) || status == "All" ? (string?)null : status;
+
+        // Lấy danh sách đơn hàng từ repository
+        var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
+            filter: o => (string.IsNullOrEmpty(orderId) || o.Id.Contains(orderId)) &&
+                         (statusFilter == null || o.Status.Contains(statusFilter)),
+            includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages,Account,AccountVoucher.Voucher,Points", // Bao gồm các liên kết cần thiết
+            pageIndex: pageIndex,
+            pageSize: pageSize
+        );
+
+        // Chuyển đổi các thực thể đơn hàng thành DTO
+        var viewOrderHistories = orderEntities.Items.Select(o => new ViewOrderHistoryDTO
+        {
+            OrderId = o.Id,
+            OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
+            Customer = new CustomerDTO
+            {
+                Name = o.Account.LastName + " " + o.Account.FirstName,
+                Phone = o.Account.PhoneNumber
+            },
+            TotalAmount = o.TotalAmount,
+            Status = o.Status,
+            Type = o.Type,
+            PaymentMethod = o.PaymentMethod,
+            PaymentStatus = o.PaymentStatus,
+            Recipient = new RecipientDTO
+            {
+                Name = o.Account.LastName + " " + o.Account.FirstName,
+                Phone = o.Account.PhoneNumber,
+                Address = o.ShippingAddress
+            },
+            Payment = new PaymentDTO
+            {
+                Cash = "0 ₫",
+                VnpayQR = "0 ₫",
+                Momo = "0 ₫",
+                Paypal = "0 ₫",
+                Subtotal = o.TotalAmount.ToString(),
+                Discount = o.Discount.ToString(),
+                ShippingFee = "Miễn phí",
+                Coupon = o.AccountVoucher != null ? o.AccountVoucher.Voucher.Code : "0 ₫", // Lấy mã voucher
+                Points = o.PointUsed.HasValue ? o.PointUsed.Value.ToString() : "0",
+                Total = o.TotalAmount.ToString()
+            },
+            Products = o.OrderDetails.Select(d => new ProductDTO
+            {
+                Id = d.ProductId,
+                Image = d.Product.ProductImages.FirstOrDefault()?.Image.ImageUrl ?? "",
+                Name = d.Product.Name,
+                Quantity = d.Quantity,
+                UnitPrice = d.UnitPrice,
+                TotalPrice = d.UnitPrice * d.Quantity
+            }).ToList()
+        }).ToList();
+
+        // Tạo đối tượng phân trang
+        var pagination = new Pagination<ViewOrderHistoryDTO>
+        {
+            TotalItemsCount = await _unitOfWork.OrderRepository.CountAsync(
+                filter: o => (string.IsNullOrEmpty(orderId) || o.Id.Contains(orderId)) &&
+                             (statusFilter == null || o.Status.Contains(statusFilter))
+            ),
+            PageSize = pageSize,
+            PageIndex = pageIndex,
+            Items = viewOrderHistories
+        };
+
+        return new SuccessResponseModel<Pagination<ViewOrderHistoryDTO>>
+        {
+            Success = true,
+            Message = "Orders retrieved successfully.",
+            Data = pagination
+        };
+    }
+
+    public async Task<ResponseModel> GetOrderByIdAsync(string orderId)
+    {
+        var orderEntity = await _unitOfWork.OrderRepository.GetByIdAsync(
+            id: orderId,
+            includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages,Account,AccountVoucher.Voucher,Points"
+        );
+
+        // Kiểm tra nếu không tìm thấy đơn hàng
+        if (orderEntity == null)
+        {
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "Order not found."
+            };
+        }
+
+        // Chuyển đổi thực thể đơn hàng thành DTO
+        var viewOrderHistoryDetail = new ViewOrderHistoryDetailDTO
+        {
+            OrderId = orderEntity.Id,
+            OrderDate = orderEntity.CreatedAt, // OrderDate từ CreatedDate
+            Status = orderEntity.Status,
+            Customer = new CustomerDTO
+            {
+                Name = orderEntity.Account.LastName + " " + orderEntity.Account.FirstName,
+                Phone = orderEntity.Account.PhoneNumber
+            },
+            Recipient = new RecipientDTO
+            {
+                Name = orderEntity.Account.LastName + " " + orderEntity.Account.FirstName,
+                Phone = orderEntity.Account.PhoneNumber,
+                Address = orderEntity.ShippingAddress
+            },
+            Payment = new PaymentDTO
+            {
+                Cash = "0 ₫",
+                VnpayQR = "0 ₫",
+                Momo = "0 ₫",
+                Paypal = "0 ₫",
+                Subtotal = orderEntity.TotalAmount.ToString(),
+                Discount = orderEntity.Discount.ToString(),
+                ShippingFee = "Miễn phí",
+                Coupon = orderEntity.AccountVoucher != null ? orderEntity.AccountVoucher.Voucher.Code : "0 ₫", // Lấy mã voucher
+                Points = orderEntity.PointUsed.HasValue ? orderEntity.PointUsed.Value.ToString() : "0",
+                Total = orderEntity.TotalAmount.ToString()
+            },
+            Products = orderEntity.OrderDetails.Select(d => new ProductDTO
+            {
+                Id = d.ProductId,
+                Image = d.Product.ProductImages.FirstOrDefault()?.Image.ImageUrl ?? "",
+                Name = d.Product.Name,
+                Quantity = d.Quantity,
+                UnitPrice = d.UnitPrice,
+                TotalPrice = d.UnitPrice * d.Quantity
+            }).ToList()
+        };
+
+        return new SuccessResponseModel<ViewOrderHistoryDetailDTO>
+        {
+            Success = true,
+            Message = "Order retrieved successfully.",
+            Data = viewOrderHistoryDetail
+        };
+    }
+
+    //public async Task<ResponseModel> GetOrderByUserIdAsync(string userId, int pageIndex, int pageSize)
+    //{
+    //    // Lấy danh sách đơn hàng của người dùng từ repository
+    //    var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
+    //        filter: o => o.AccountId == userId,
+    //        includeProperties: "",
+    //        pageIndex: pageIndex,
+    //        pageSize: pageSize
+    //    );
+
+    //    // Chuyển đổi các thực thể đơn hàng thành DTO
+    //    var viewOrderHistoriesByUser = orderEntities.Items.Select(o => new ViewOrderHistoryByUserDTO
+    //    {
+    //        OrderId = o.Id,
+    //        OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
+    //        TotalAmount = o.TotalAmount,
+    //        Status = o.Status
+    //    }).ToList();
+
+    //    return new SuccessResponseModel<List<ViewOrderHistoryByUserDTO>>
+    //    {
+    //        Success = true,
+    //        Message = "Orders retrieved successfully.",
+    //        Data = viewOrderHistoriesByUser
+    //    };
+    //}
+    public async Task<ResponseModel> GetOrderByUserIdAsync(string userId, int pageIndex, int pageSize)
+    {
+        // Xác định tổng số đơn hàng của người dùng để phân trang
+        var totalItemsCount = await _unitOfWork.OrderRepository.CountAsync(o => o.AccountId == userId);
+
+        // Lấy danh sách đơn hàng của người dùng từ repository
+        var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
+            filter: o => o.AccountId == userId,
+            includeProperties: "",
+            pageIndex: pageIndex,
+            pageSize: pageSize
+        );
+
+        // Chuyển đổi các thực thể đơn hàng thành DTO
+        var viewOrderHistoriesByUser = orderEntities.Items.Select(o => new ViewOrderHistoryByUserDTO
+        {
+            OrderId = o.Id,
+            OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
+            TotalAmount = o.TotalAmount,
+            Status = o.Status
+        }).ToList();
+
+        // Tạo đối tượng phân trang
+        var pagination = new Pagination<ViewOrderHistoryByUserDTO>
+        {
+            TotalItemsCount = totalItemsCount,
+            PageSize = pageSize,
+            PageIndex = pageIndex,
+            Items = viewOrderHistoriesByUser
+        };
+
+        return new SuccessResponseModel<Pagination<ViewOrderHistoryByUserDTO>>
+        {
+            Success = true,
+            Message = "Orders retrieved successfully.",
+            Data = pagination
+        };
+    }
+
+    public async Task<ResponseModel> ChangeStatusAsync(string orderId, string status)
+    {
+        // Lấy đơn hàng từ repository
+        var order = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
+        if (order == null)
+        {
+            return new ErrorResponseModel<object>
+            {
+                Success = false,
+                Message = "Order not found.",
+                Errors = new List<string> { "Order not found" }
+            };
+        }
+
+        // Cập nhật trạng thái đơn hàng
+        order.Status = status;
+        _unitOfWork.OrderRepository.Update(order);
+        await _unitOfWork.SaveChangeAsync();
+
+        return new SuccessResponseModel<string>
+        {
+            Success = true,
+            Message = "Order status updated successfully.",
+            Data = order.Status
+        };
+    }
 
 }
