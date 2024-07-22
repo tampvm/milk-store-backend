@@ -23,5 +23,21 @@ namespace MilkStore.Repository.Repositories
 		{
 			return await _context.Vouchers.FirstOrDefaultAsync(x => x.Code.Equals(code));
 		}
+		public async Task<AccountVoucher> AddAccountVoucher(string AccountId, int VoucherId, string usedDate, string Status)
+		{
+			var accountVoucher = new AccountVoucher
+			{
+				AccountId = AccountId,
+				VoucherId = VoucherId,
+				UsedDate = DateTime.Parse(usedDate),
+				Status = Status
+			};
+
+			_context.AccountVouchers.Add(accountVoucher);
+
+			await _context.SaveChangesAsync();
+
+			return accountVoucher;
+		}
 	}
 }

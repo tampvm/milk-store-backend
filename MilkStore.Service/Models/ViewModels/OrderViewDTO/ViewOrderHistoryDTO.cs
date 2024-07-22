@@ -40,12 +40,12 @@ namespace MilkStore.Service.Models.ViewModels.OrderViewDTO
         public string VnpayQR { get; set; }
         public string Momo { get; set; }
         public string Paypal { get; set; }
-        public string Subtotal { get; set; }
-        public string Discount { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal Discount { get; set; }
         public string ShippingFee { get; set; }
         public string Coupon { get; set; }
         public string Points { get; set; }
-        public string Total { get; set; }
+        public decimal Total { get; set; }
     }
 
     public class ProductDTO

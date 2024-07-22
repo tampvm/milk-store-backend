@@ -40,6 +40,7 @@ public class OrderService : IOrderService
     decimal totalAmount = 0;
     List<ItemData> items1 = new List<ItemData>();
     List<OrderDetail> orderDetails = new List<OrderDetail>();
+    
 
     foreach (var cartId in model.cartIds)
     {
@@ -128,9 +129,45 @@ public class OrderService : IOrderService
 
     // Set the account ID to the order
     order.AccountId = currentUserId;
+
+    if (!string.IsNullOrEmpty(model.VoucherCode))
+    {
+        var voucher = await _unitOfWork.VoucherRepository.GetVoucherByCodeAsync(model.VoucherCode);
+        if (voucher != null && voucher.Code.Equals(model.VoucherCode, StringComparison.OrdinalIgnoreCase))
+        {
+            // Validate voucher (e.g., check if it's still valid, not expired, etc.)
+            
+                var accountVoucher = await _unitOfWork.VoucherRepository.AddAccountVoucher(
+                    currentUserId, 
+                    voucher.Id, 
+                    DateTime.Now.ToString(),
+                    AccountVoucherStatusEnums.Used.ToString()
+                );
+                order.AccountVoucherId = accountVoucher.Id;
+
+                // Apply voucher discount
+                decimal discountAmount = CalculateDiscountAmount(voucher, totalAmount);
+                totalAmount -= discountAmount;
+                order.TotalAmount = Convert.ToInt32(totalAmount);
+
+                // Increment UsedCount
+                voucher.UsedCount = (voucher.UsedCount ?? 0) + 1;
+                _unitOfWork.VoucherRepository.Update(voucher);
+            
+        }
+        else
+        {
+            return new ResponseModel
+            {
+                Success = false,
+                Message = "The provided voucher code does not exist or is incorrect."
+            };
+        }
+    }
+
     int orderCode = int.Parse(DateTimeOffset.Now.ToString("ffffff"));
-    
-    PaymentData paymentData = new PaymentData(orderCode, order.TotalAmount, "thanh toanbs", items1, "https://www.youtube.com/watch?v=Z8vDU6vUTj4", "http://localhost:5095/swagger/index.html");
+    String confirmTransactionUrl = String.Format("http://localhost:5173/confirm-transaction/%s", orderCode);
+    PaymentData paymentData = new PaymentData(orderCode, order.TotalAmount, "thanh toanbs", items1, $"http://localhost:5173/confirm-transaction/{orderCode}", $"http://localhost:5173/confirm-transaction/{orderCode}");
     CreatePaymentResult createPayment = await _payOS.createPaymentLink(paymentData);
     order.Id = createPayment.orderCode.ToString();
 
@@ -157,6 +194,27 @@ public class OrderService : IOrderService
         Data = order.Id + " " + createPayment.checkoutUrl
     };
 }
+    private bool IsVoucherValid(Voucher voucher)
+    {
+        // Implement your voucher validation logic here
+        // For example:
+        return voucher.Code == "Active" 
+               && voucher.StartDate <= DateTime.Now 
+               && voucher.EndDate >= DateTime.Now 
+               && (!voucher.UsageLimit.HasValue || voucher.UsedCount < voucher.UsageLimit);
+    }
+
+    private decimal CalculateDiscountAmount(Voucher voucher, decimal totalAmount)
+    {
+        if (voucher.DiscountType == "Percentage")
+        {
+            return totalAmount * (voucher.DiscountValue / 100);
+        }
+        else // Assume it's a fixed amount
+        {
+            return Math.Min(voucher.DiscountValue, totalAmount); // Ensure discount doesn't exceed total amount
+        }
+    }
 
     public async Task<ResponseModel> CheckPaymentStatus(string orderId)
     {
@@ -238,242 +296,4 @@ public class OrderService : IOrderService
             Data = orderDetails
         };
     }
-
-    public async Task<ResponseModel> GetAllOrderAsync(string? orderId, string? status, int pageIndex, int pageSize)
-    {
-        // Xác định điều kiện lọc trạng thái
-        var statusFilter = string.IsNullOrEmpty(status) || status == "All" ? (string?)null : status;
-
-        // Lấy danh sách đơn hàng từ repository
-        var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
-            filter: o => (string.IsNullOrEmpty(orderId) || o.Id.Contains(orderId)) &&
-                         (statusFilter == null || o.Status.Contains(statusFilter)),
-            includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages,Account,AccountVoucher.Voucher,Points", // Bao gồm các liên kết cần thiết
-            pageIndex: pageIndex,
-            pageSize: pageSize
-        );
-
-        // Chuyển đổi các thực thể đơn hàng thành DTO
-        var viewOrderHistories = orderEntities.Items.Select(o => new ViewOrderHistoryDTO
-        {
-            OrderId = o.Id,
-            OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
-            Customer = new CustomerDTO
-            {
-                Name = o.Account.LastName + " " + o.Account.FirstName,
-                Phone = o.Account.PhoneNumber
-            },
-            TotalAmount = o.TotalAmount,
-            Status = o.Status,
-            Type = o.Type,
-            PaymentMethod = o.PaymentMethod,
-            PaymentStatus = o.PaymentStatus,
-            Recipient = new RecipientDTO
-            {
-                Name = o.Account.LastName + " " + o.Account.FirstName,
-                Phone = o.Account.PhoneNumber,
-                Address = o.ShippingAddress
-            },
-            Payment = new PaymentDTO
-            {
-                Cash = "0 ₫",
-                VnpayQR = "0 ₫",
-                Momo = "0 ₫",
-                Paypal = "0 ₫",
-                Subtotal = o.TotalAmount.ToString(),
-                Discount = o.Discount.ToString(),
-                ShippingFee = "Miễn phí",
-                Coupon = o.AccountVoucher != null ? o.AccountVoucher.Voucher.Code : "0 ₫", // Lấy mã voucher
-                Points = o.PointUsed.HasValue ? o.PointUsed.Value.ToString() : "0",
-                Total = o.TotalAmount.ToString()
-            },
-            Products = o.OrderDetails.Select(d => new ProductDTO
-            {
-                Id = d.ProductId,
-                Image = d.Product.ProductImages.FirstOrDefault()?.Image.ImageUrl ?? "",
-                Name = d.Product.Name,
-                Quantity = d.Quantity,
-                UnitPrice = d.UnitPrice,
-                TotalPrice = d.UnitPrice * d.Quantity
-            }).ToList()
-        }).ToList();
-
-        // Tạo đối tượng phân trang
-        var pagination = new Pagination<ViewOrderHistoryDTO>
-        {
-            TotalItemsCount = await _unitOfWork.OrderRepository.CountAsync(
-                filter: o => (string.IsNullOrEmpty(orderId) || o.Id.Contains(orderId)) &&
-                             (statusFilter == null || o.Status.Contains(statusFilter))
-            ),
-            PageSize = pageSize,
-            PageIndex = pageIndex,
-            Items = viewOrderHistories
-        };
-
-        return new SuccessResponseModel<Pagination<ViewOrderHistoryDTO>>
-        {
-            Success = true,
-            Message = "Orders retrieved successfully.",
-            Data = pagination
-        };
-    }
-
-    public async Task<ResponseModel> GetOrderByIdAsync(string orderId)
-    {
-        var orderEntity = await _unitOfWork.OrderRepository.GetByIdAsync(
-            id: orderId,
-            includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages,Account,AccountVoucher.Voucher,Points"
-        );
-
-        // Kiểm tra nếu không tìm thấy đơn hàng
-        if (orderEntity == null)
-        {
-            return new ResponseModel
-            {
-                Success = false,
-                Message = "Order not found."
-            };
-        }
-
-        // Chuyển đổi thực thể đơn hàng thành DTO
-        var viewOrderHistoryDetail = new ViewOrderHistoryDetailDTO
-        {
-            OrderId = orderEntity.Id,
-            OrderDate = orderEntity.CreatedAt, // OrderDate từ CreatedDate
-            Status = orderEntity.Status,
-            Customer = new CustomerDTO
-            {
-                Name = orderEntity.Account.LastName + " " + orderEntity.Account.FirstName,
-                Phone = orderEntity.Account.PhoneNumber
-            },
-            Recipient = new RecipientDTO
-            {
-                Name = orderEntity.Account.LastName + " " + orderEntity.Account.FirstName,
-                Phone = orderEntity.Account.PhoneNumber,
-                Address = orderEntity.ShippingAddress
-            },
-            Payment = new PaymentDTO
-            {
-                Cash = "0 ₫",
-                VnpayQR = "0 ₫",
-                Momo = "0 ₫",
-                Paypal = "0 ₫",
-                Subtotal = orderEntity.TotalAmount.ToString(),
-                Discount = orderEntity.Discount.ToString(),
-                ShippingFee = "Miễn phí",
-                Coupon = orderEntity.AccountVoucher != null ? orderEntity.AccountVoucher.Voucher.Code : "0 ₫", // Lấy mã voucher
-                Points = orderEntity.PointUsed.HasValue ? orderEntity.PointUsed.Value.ToString() : "0",
-                Total = orderEntity.TotalAmount.ToString()
-            },
-            Products = orderEntity.OrderDetails.Select(d => new ProductDTO
-            {
-                Id = d.ProductId,
-                Image = d.Product.ProductImages.FirstOrDefault()?.Image.ImageUrl ?? "",
-                Name = d.Product.Name,
-                Quantity = d.Quantity,
-                UnitPrice = d.UnitPrice,
-                TotalPrice = d.UnitPrice * d.Quantity
-            }).ToList()
-        };
-
-        return new SuccessResponseModel<ViewOrderHistoryDetailDTO>
-        {
-            Success = true,
-            Message = "Order retrieved successfully.",
-            Data = viewOrderHistoryDetail
-        };
-    }
-
-    //public async Task<ResponseModel> GetOrderByUserIdAsync(string userId, int pageIndex, int pageSize)
-    //{
-    //    // Lấy danh sách đơn hàng của người dùng từ repository
-    //    var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
-    //        filter: o => o.AccountId == userId,
-    //        includeProperties: "",
-    //        pageIndex: pageIndex,
-    //        pageSize: pageSize
-    //    );
-
-    //    // Chuyển đổi các thực thể đơn hàng thành DTO
-    //    var viewOrderHistoriesByUser = orderEntities.Items.Select(o => new ViewOrderHistoryByUserDTO
-    //    {
-    //        OrderId = o.Id,
-    //        OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
-    //        TotalAmount = o.TotalAmount,
-    //        Status = o.Status
-    //    }).ToList();
-
-    //    return new SuccessResponseModel<List<ViewOrderHistoryByUserDTO>>
-    //    {
-    //        Success = true,
-    //        Message = "Orders retrieved successfully.",
-    //        Data = viewOrderHistoriesByUser
-    //    };
-    //}
-    public async Task<ResponseModel> GetOrderByUserIdAsync(string userId, int pageIndex, int pageSize)
-    {
-        // Xác định tổng số đơn hàng của người dùng để phân trang
-        var totalItemsCount = await _unitOfWork.OrderRepository.CountAsync(o => o.AccountId == userId);
-
-        // Lấy danh sách đơn hàng của người dùng từ repository
-        var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
-            filter: o => o.AccountId == userId,
-            includeProperties: "",
-            pageIndex: pageIndex,
-            pageSize: pageSize
-        );
-
-        // Chuyển đổi các thực thể đơn hàng thành DTO
-        var viewOrderHistoriesByUser = orderEntities.Items.Select(o => new ViewOrderHistoryByUserDTO
-        {
-            OrderId = o.Id,
-            OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
-            TotalAmount = o.TotalAmount,
-            Status = o.Status
-        }).ToList();
-
-        // Tạo đối tượng phân trang
-        var pagination = new Pagination<ViewOrderHistoryByUserDTO>
-        {
-            TotalItemsCount = totalItemsCount,
-            PageSize = pageSize,
-            PageIndex = pageIndex,
-            Items = viewOrderHistoriesByUser
-        };
-
-        return new SuccessResponseModel<Pagination<ViewOrderHistoryByUserDTO>>
-        {
-            Success = true,
-            Message = "Orders retrieved successfully.",
-            Data = pagination
-        };
-    }
-
-    public async Task<ResponseModel> ChangeStatusAsync(string orderId, string status)
-    {
-        // Lấy đơn hàng từ repository
-        var order = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
-        if (order == null)
-        {
-            return new ErrorResponseModel<object>
-            {
-                Success = false,
-                Message = "Order not found.",
-                Errors = new List<string> { "Order not found" }
-            };
-        }
-
-        // Cập nhật trạng thái đơn hàng
-        order.Status = status;
-        _unitOfWork.OrderRepository.Update(order);
-        await _unitOfWork.SaveChangeAsync();
-
-        return new SuccessResponseModel<string>
-        {
-            Success = true,
-            Message = "Order status updated successfully.",
-            Data = order.Status
-        };
-    }
-
 }
