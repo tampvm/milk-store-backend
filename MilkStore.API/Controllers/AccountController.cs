@@ -17,7 +17,6 @@ namespace MilkStore.API.Controllers
 
         #region View User Profile
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetUserProfileAsync(string userId)
         {
             var response = await _accountService.GetUserProfileAsync(userId);
