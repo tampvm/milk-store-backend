@@ -11,6 +11,7 @@ namespace MilkStore.Domain.Enums
 		Cash,
 		MoMo,
 		Paypal,
-		CreditCard
-	}
+		CreditCard,
+        VNPAY
+    }
 }
