@@ -279,13 +279,13 @@ namespace MilkStore.Service.Services
             }
 
             // ko có trường email
-            //var emailExists = await _userManager.FindByEmailAsync(model.Email);
+            //var emailExists = await _userManager.FindByEmailAsync(model.Username);
             //if (emailExists != null)
             //{
             //    return new RegisterResponseModel
             //    {
             //        Success = false,
-            //        Message = $"{model.Email} already exists"
+            //        Message = $"{model.Username} already exists"
             //    };
             //}
 
@@ -314,7 +314,7 @@ namespace MilkStore.Service.Services
                 //var token = await _userManager.GenerateEmailConfirmationTokenAsync(usern);
                 //var confirmationLink = $"{_configuration["AppSettings:AppUrl"]}/api/account/confirmemail?userId={usern.Id}&token={WebUtility.UrlEncode(token)}";
 
-                //await _emailSender.SendEmailAsync(usern.Email, "Confirm your email", $"Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>");
+                //await _emailSender.SendEmailAsync(usern.Username, "Confirm your email", $"Please confirm your email by clicking <a href=\"{confirmationLink}\">here</a>");
 
                 _cache.Remove($"{model.PhoneNumberOrEmail}_phonge_register_token");
                 _cache.Remove($"{model.PhoneNumberOrEmail}_email_register_token");
@@ -447,7 +447,7 @@ namespace MilkStore.Service.Services
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                //new Claim(JwtRegisteredClaimNames.Email, usern.Email),
+                //new Claim(JwtRegisteredClaimNames.Username, usern.Username),
                 new Claim(JwtRegisteredClaimNames.Name, user.UserName),
                 new Claim(ClaimTypes.Name, user.Id),
                 //new Claim(ClaimTypes.Sid, usern.Id.ToString()),

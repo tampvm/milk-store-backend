@@ -23,7 +23,12 @@ namespace MilkStore.Repository.Repositories
             try
             {
                 List<Product> products = new List<Product>();
-                products = await _context.Products.ToListAsync();
+                products = await _context.Products
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .OrderByDescending(x => x.CreatedAt)
+                    .ToListAsync();
 
                 if (products == null)
                 {
@@ -43,7 +48,12 @@ namespace MilkStore.Repository.Repositories
             try 
             {
                 Product product = new Product();
-                product = await _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+                product = await _context.Products
+                    .Where(x => x.Id == productId)
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .FirstAsync();
                 if (product == null)
                 {
                     throw new Exception("Product not found");
@@ -56,6 +66,77 @@ namespace MilkStore.Repository.Repositories
             }
         }
 
+        public async Task<List<Product>> GetProductsByBrandIdAsync(int brandId)
+        {
+            try
+            {
+                List<Product> products = new List<Product>();
+                products = await _context.Products
+                    .Where(x => x.BrandId == brandId)
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .ToListAsync();
+                if (products == null)
+                {
+                    throw new Exception("Products not found");
+                }
+                return products;
+            }
+            catch
+            {
+                throw new Exception("Get product by brand id failed");
+            }
+        }
+
+        public async Task<Product> GetProductBySKUAsync(string sku)
+        {
+            try {
+                Product product = new Product();
+                product = _context.Products
+                    .Where(x => x.Sku == sku)
+                    .Include(x => x.AgeRange)
+                    .Include(x => x.Type)
+                    .Include(x => x.Brand)
+                    .First();
+                if (product == null)
+                {
+                    throw new Exception("Product not found");
+                }
+                return product;
+            }
+            catch
+            {
+                throw new Exception("Get product by sku failed");
+            }
+        }
+
+        public async Task<Product> GetProductByAgeRangeIdAsync(int ageRangeId)
+        {
+            try
+            {
+                Product product = new Product();
+                product = await _context.Products.Where(x => x.AgeId == ageRangeId).FirstOrDefaultAsync();
+                return product;
+            }
+            catch
+            {
+                throw new Exception("Get product by age range id failed");
+            }
+        }
+
+        public async Task<Product> GetProductByProductTypeIdAsync(int productTypeId)
+        {
+            try {
+                Product product = new Product();
+                product = await _context.Products.Where(x => x.TypeId == productTypeId).FirstOrDefaultAsync();
+                return product;
+            }
+            catch {
+                throw new Exception("Get product by product type id failed");
+            }
+        }
+
         public Task UpdateProductAsync(Product product)
         {
             try
@@ -63,9 +144,9 @@ namespace MilkStore.Repository.Repositories
                 _context.Entry(product).State = EntityState.Modified;
                 return _context.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                throw new Exception("Update product failed");
+                throw new Exception("Update product failed:" + ex.Message);
             }
         }
     }

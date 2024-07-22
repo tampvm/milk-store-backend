@@ -13,9 +13,11 @@ namespace MilkStore.Domain.Enums
 		Preparing,
 		Prepared,
 		Shipping,
-		DeliveryFailed,
+        ShippedAgain,
+        DeliveryFailed,
 		DeliverySuccessful,
 		Received,
-		Completed
+		Completed,
+		Refunded
 	}
 }

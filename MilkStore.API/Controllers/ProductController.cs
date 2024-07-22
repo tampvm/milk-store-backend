@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ViewModels.ProductViewModels;
 
@@ -9,6 +10,7 @@ namespace MilkStore.API.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IProductImageService _productImageService;
         public ProductController(IProductService productService)
         {
             _productService = productService;
@@ -28,10 +30,10 @@ namespace MilkStore.API.Controllers
 
         [HttpGet]
         [Route("GetProductsPagination")]
-        public async Task<IActionResult> GetProductsPaginationAsync(int pageIndex = 0, int pageSize = 10)
+        public async Task<IActionResult> GetProductsPaginationAsync(string? keySearch = null, int pageIndex = 0, int pageSize = 10)
         {
-            var response = await _productService.GetProductsPaginationAsync(pageIndex, pageSize);
-            if (response != null)
+            var response = await _productService.GetProductsPaginationAsync(keySearch, pageIndex, pageSize);
+            if (response.Success)
             {
                 return Ok(response);
             }
@@ -50,7 +52,32 @@ namespace MilkStore.API.Controllers
             return BadRequest(response);
         }
 
+        [HttpGet]
+        [Route("GetProductBySku")]
+        public async Task<IActionResult> GetProductBySkuAsync(String sku)
+        {
+            var response = await _productService.GetProductBySkuAsync(sku);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet]
+        [Route("GetProductsByBrandId")]
+        public async Task<IActionResult> GetProductByBrandIdAsync(int brandId)
+        {
+            var response = await _productService.GetProductsByBrandIdAsync(brandId);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("CreateProduct")]
         public async Task<IActionResult> CreateProductAsync([FromForm]CreateProductDTO model)
         {
@@ -63,6 +90,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("UpdateProduct")]
         public async Task<IActionResult> UpdateProductAsync([FromForm]UpdateProductDTO model)
         {
@@ -75,6 +103,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("DeleteProduct")]
         public async Task<IActionResult> DeleteProductAsync([FromForm]DeleteProductDTO model)
         {
@@ -87,6 +116,7 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("RestoreProduct")]
         public async Task<IActionResult> RestoreProductAsync([FromForm]RestoreProductDTO model)
         {
@@ -99,10 +129,11 @@ namespace MilkStore.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Staff, Admin")]
         [Route("UpdateStatusProduct")]
-        public async Task<IActionResult> UpdateStatusProductAsync(string productId)
+        public async Task<IActionResult> UpdateStatusProductAsync([FromForm]ChangeStatusProductDTO model)
         {
-            var response = await _productService.UpdateProductStatusAsync(productId);
+            var response = await _productService.UpdateProductStatusAsync(model);
             if (response != null)
             {
                 return Ok(response);

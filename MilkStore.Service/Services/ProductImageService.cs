@@ -7,6 +7,7 @@ using MilkStore.Service.Common;
 using MilkStore.Service.Interfaces;
 using MilkStore.Service.Models.ResponseModels;
 using MilkStore.Service.Models.ViewModels.ProductImageViewModels;
+using Org.BouncyCastle.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace MilkStore.Service.Services
         #endregion
 
         #region CreateProductImage
-        public async Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, IFormFile imageFile, IFormFile thumbnailFile)
+        public async Task<ResponseModel> CreateProductImageAsync(CreateProductImageDTO createProductImageDTO, List<IFormFile> imageFiles, IFormFile thumbnailFile)
         {
             try
             {
@@ -74,7 +75,7 @@ namespace MilkStore.Service.Services
                     return new ErrorResponseModel<object> { Success = false, Message = "Empty product image data." };
                 }
 
-                if (imageFile == null)
+                if (imageFiles == null)
                 {
                     return new ErrorResponseModel<object> { Success = false, Message = "Image file is required." };
                 }
@@ -84,43 +85,45 @@ namespace MilkStore.Service.Services
                     return new ErrorResponseModel<object> { Success = false, Message = "Thumbnail file is required." };
                 }
 
-                var imageUrl = await UploadProductImageAsync(imageFile);
-                if (string.IsNullOrEmpty(imageUrl))
-                {
-                    return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
-                }
-
                 var thumbnailUrl = await UploadProductImageAsync(thumbnailFile);
                 if (string.IsNullOrEmpty(thumbnailUrl))
                 {
                     return new ErrorResponseModel<object> { Success = false, Message = "Thumbnail upload failed." };
                 }
 
-                var image = new Image
+                foreach (var imageFile in imageFiles)
                 {
-                    ImageUrl = imageUrl,
-                    ThumbnailUrl = thumbnailUrl,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = createProductImageDTO.CreatedBy,
-                    Type = "Product",
-                    IsDeleted = false
-                };
+                    var imageUrl = await UploadProductImageAsync(imageFile);
+                    if (string.IsNullOrEmpty(imageUrl))
+                    {
+                        return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
+                    }
 
-                await _unitOfWork.ImageRepository.AddAsync(image);
-                await _unitOfWork.SaveChangeAsync();
+                    var image = new Image
+                    {
+                        ImageUrl = imageUrl,
+                        ThumbnailUrl = thumbnailUrl,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = createProductImageDTO.CreatedBy,
+                        Type = "Product",
+                        IsDeleted = false
+                    };
 
-                var productImage = new ProductImage
-                {
-                    ImageId = image.Id,
-                    ProductId = createProductImageDTO.ProductId,
-                    CreatedBy = createProductImageDTO.CreatedBy,
-                    CreatedAt = DateTime.UtcNow,
-                    IsDeleted = false
-                };
+                    await _unitOfWork.ImageRepository.AddAsync(image);
+                    await _unitOfWork.SaveChangeAsync();
 
-                await _unitOfWork.ProductImageRepository.AddAsync(productImage);
-                await _unitOfWork.SaveChangeAsync();
+                    var productImage = new ProductImage
+                    {
+                        ImageId = image.Id,
+                        ProductId = createProductImageDTO.ProductId,
+                        CreatedBy = createProductImageDTO.CreatedBy,
+                        CreatedAt = DateTime.UtcNow,
+                        IsDeleted = false
+                    };
 
+                    await _unitOfWork.ProductImageRepository.AddAsync(productImage);
+                    await _unitOfWork.SaveChangeAsync();
+                }
                 return new SuccessResponseModel<object>
                 {
                     Success = true,
@@ -139,35 +142,27 @@ namespace MilkStore.Service.Services
         #endregion
 
         #region UpdateProductImage
-        public async Task<ResponseModel> UpdateProductImageAsync(UpdateProductImageDTO updateProductImageDTO, IFormFile imageFile, IFormFile thumbnailFile)
+        public async Task<ResponseModel> UpdateProductImageAsync(UpdateProductImageDTO updateProductImageDTO, List<IFormFile> imageFiles, IFormFile thumbnailFile)
         {
             try
             {
-                var image = await _unitOfWork.ImageRepository.GetByIdAsync(updateProductImageDTO.ImageId);
+                List<string> imageIds = new List<string>();
+                if (updateProductImageDTO.imageIds != null)
+                {
+                    imageIds = updateProductImageDTO.imageIds;
+                }
+                //Get product image
+                var productImageOriginal = await _unitOfWork.ProductImageRepository.GetProductImageByProductIdAsync(updateProductImageDTO.ProductId);
+
+                // Get Image
+                var image = await _unitOfWork.ImageRepository.GetByIdAsync(productImageOriginal.FirstOrDefault().ImageId);
                 if (image == null)
                 {
                     return new ErrorResponseModel<object> { Success = false, Message = "Image not found." };
                 }
 
-                var productImages = await _unitOfWork.ProductImageRepository.GetProductImageByProductIdAsync(updateProductImageDTO.ProductId);
-                var productImage = productImages.FirstOrDefault(pi => pi.ImageId == updateProductImageDTO.ImageId);
-                if (productImage == null)
-                {
-                    return new ErrorResponseModel<object> { Success = false, Message = "Product image not found." };
-                }
-
-                string imageUrl = image.ImageUrl;
+                // Check thumbnail
                 string thumbnailUrl = image.ThumbnailUrl;
-
-                if (imageFile != null)
-                {
-                    imageUrl = await UploadProductImageAsync(imageFile);
-                    if (string.IsNullOrEmpty(imageUrl))
-                    {
-                        return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
-                    }
-                }
-
                 if (thumbnailFile != null)
                 {
                     thumbnailUrl = await UploadProductImageAsync(thumbnailFile);
@@ -177,17 +172,98 @@ namespace MilkStore.Service.Services
                     }
                 }
 
-                image.ImageUrl = imageUrl;
-                image.ThumbnailUrl = thumbnailUrl;
-                image.UpdatedBy = updateProductImageDTO.UpdatedBy;
-                image.UpdatedAt = DateTime.UtcNow;
-                await _unitOfWork.ImageRepository.UpdateImageAsync(image);
-                await _unitOfWork.SaveChangeAsync();
+                // Get all images of product
+                var productImages = await _unitOfWork.ProductImageRepository.GetProductImageByProductIdAsync(updateProductImageDTO.ProductId);
 
-                productImage.UpdatedBy = updateProductImageDTO.UpdatedBy;
-                productImage.UpdatedAt = DateTime.UtcNow;
-                await _unitOfWork.ProductImageRepository.UpdateProductImageAsync(productImage);
-                await _unitOfWork.SaveChangeAsync();
+                // Update only thumbnail
+                if (thumbnailFile != null && (imageFiles == null || imageFiles.Count == 0))
+                {
+                    foreach (var productImage in productImages)
+                    {
+                        // Update product image
+                        productImage.UpdatedAt = DateTime.UtcNow;
+                        productImage.UpdatedBy = updateProductImageDTO.UpdatedBy;
+                        await _unitOfWork.ProductImageRepository.UpdateProductImageAsync(productImage);
+                        await _unitOfWork.SaveChangeAsync();
+
+                        // Update image
+                        var imageOld = await _unitOfWork.ImageRepository.GetByIdAsync(productImage.ImageId);
+                        if (imageOld != null)
+                        {
+                            imageOld.ThumbnailUrl = thumbnailUrl;
+                            imageOld.UpdatedAt = DateTime.UtcNow;
+                            imageOld.UpdatedBy = updateProductImageDTO.UpdatedBy;
+                            await _unitOfWork.ImageRepository.UpdateImageAsync(imageOld);
+                            await _unitOfWork.SaveChangeAsync();
+                        }
+                    }
+                }
+
+                // Update images
+                if (imageFiles != null && imageFiles.Count > 0)
+                {
+                    // Remove old images if necessary
+                    if (imageIds != null || imageIds.Count > 0 && imageIds.Count < productImages.Count)
+                    {
+                        foreach (var productImage in productImages)
+                        {
+                            if (imageIds == null || !imageIds.Contains(productImage.ImageId.ToString()))
+                            {
+                                productImage.IsDeleted = true;
+                                productImage.DeletedAt = DateTime.UtcNow;
+                                productImage.DeletedBy = updateProductImageDTO.UpdatedBy;
+                                await _unitOfWork.ProductImageRepository.UpdateProductImageAsync(productImage);
+                                await _unitOfWork.SaveChangeAsync();
+
+                                var imageOld = await _unitOfWork.ImageRepository.GetByIdAsync(productImage.ImageId);
+                                if (imageOld != null)
+                                {
+                                    imageOld.IsDeleted = true;
+                                    imageOld.DeletedAt = DateTime.UtcNow;
+                                    imageOld.DeletedBy = updateProductImageDTO.UpdatedBy;
+                                    await _unitOfWork.ImageRepository.UpdateImageAsync(imageOld);
+                                    await _unitOfWork.SaveChangeAsync();
+                                }
+                            }
+                        }
+                    }
+
+                    // Add new images
+                    foreach (var imageFile in imageFiles)
+                    {
+                        var imageUrl = await UploadProductImageAsync(imageFile);
+                        if (string.IsNullOrEmpty(imageUrl))
+                        {
+                            return new ErrorResponseModel<object> { Success = false, Message = "Image upload failed." };
+                        }
+
+                        var newImage = new Image
+                        {
+                            ImageUrl = imageUrl,
+                            ThumbnailUrl = thumbnailUrl,
+                            CreatedAt = DateTime.UtcNow,
+                            CreatedBy = updateProductImageDTO.UpdatedBy,
+                            Type = "Product",
+                            IsDeleted = false
+                        };
+
+                        await _unitOfWork.ImageRepository.AddAsync(newImage);
+                        await _unitOfWork.SaveChangeAsync();
+
+                        var imageNew = await _unitOfWork.ImageRepository.FindByImageUrlAsync(imageUrl);
+                        var newProductImage = new ProductImage
+                        {
+                            ImageId = imageNew.Id,
+                            ProductId = updateProductImageDTO.ProductId,
+                            CreatedBy = updateProductImageDTO.UpdatedBy,
+                            CreatedAt = DateTime.UtcNow,
+                            IsDeleted = false
+                        };
+
+                        await _unitOfWork.ProductImageRepository.AddAsync(newProductImage);
+                        await _unitOfWork.SaveChangeAsync();
+                    }
+                }
 
                 return new SuccessResponseModel<object>
                 {
