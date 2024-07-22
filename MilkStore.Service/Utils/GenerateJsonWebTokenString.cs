@@ -54,7 +54,7 @@ namespace MilkStore.Service.Utils
         //    var claims = new[]
         //    {
         //            new Claim(ClaimTypes.Name, account.Namee),
-        //            new Claim(ClaimTypes.Email, account.Emaill),
+        //            new Claim(ClaimTypes.Username, account.Emaill),
         //            new Claim(ClaimTypes.Role, account.Rolee),
         //            new Claim("UserId", account.AccountName),
         //            new Claim("Password", account.Passwordd)

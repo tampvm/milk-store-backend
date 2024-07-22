@@ -7,8 +7,11 @@ using System.Threading.Tasks;
 
 namespace MilkStore.Repository.Interfaces
 {
-    public interface IAgeRangeRepository
+    public interface IAgeRangeRepository : IGenericRepository<AgeRange>
     {
         Task<List<AgeRange>> GetAllAgeRangeAsync();
+        Task<AgeRange> GetAgeRangeByIdAsync(int id);
+        Task UpdateAgeRangeAsync(AgeRange ageRange);
+        Task<AgeRange> GetAgeRangeByNameAsync(string name);
     }
 }

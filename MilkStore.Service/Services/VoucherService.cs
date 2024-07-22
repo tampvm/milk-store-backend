@@ -26,10 +26,11 @@ namespace MilkStore.Service.Services
 		}
 
 		#region Voucher management
-		// Get all vouchers
+		// Get all active vouchers
 		public async Task<ResponseModel> GetVouchersAsync(int pageIndex, int pageSize)
 		{
 			var vouchers = await _unitOfWork.VoucherRepository.GetAsync(
+				filter: x => x.IsDeleted == false,
 				pageIndex: pageIndex,
 				pageSize: pageSize
 				);
@@ -101,6 +102,7 @@ namespace MilkStore.Service.Services
 					};
 			}
 
+			voucher.CreatedAt = DateTime.Now;
 			await _unitOfWork.VoucherRepository.AddAsync(voucher);
 			await _unitOfWork.SaveChangeAsync();
 
@@ -155,6 +157,7 @@ namespace MilkStore.Service.Services
 
 			_mapper.Map(model, voucher);
 
+			voucher.UpdatedAt = DateTime.Now;
 			_unitOfWork.VoucherRepository.Update(voucher);
 			await _unitOfWork.SaveChangeAsync();
 
@@ -181,6 +184,7 @@ namespace MilkStore.Service.Services
 			}
 
 			//voucher.IsDeleted = true;
+			voucher.DeletedAt = DateTime.Now;
 			_unitOfWork.VoucherRepository.SoftRemove(voucher);
 			await _unitOfWork.SaveChangeAsync();
 

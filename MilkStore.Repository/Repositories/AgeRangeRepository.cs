@@ -34,5 +34,50 @@ namespace MilkStore.Repository.Repositories
                 throw new Exception("Get all ageRanges failed");
             }
         }
+
+        public async Task<AgeRange> GetAgeRangeByIdAsync(int id)
+        {
+            try
+            {
+                AgeRange ageRange = new AgeRange();
+                ageRange = await _context.AgeRanges.Where(x => x.Id == id).FirstOrDefaultAsync();
+                if (ageRange == null)
+                {
+                    throw new Exception("AgeRange not found");
+                }
+                return ageRange;
+            }
+            catch
+            {
+                throw new Exception("Get ageRange failed");
+            }
+        }
+
+        public async Task<AgeRange> GetAgeRangeByNameAsync(string name)
+        {
+            try
+            {
+                AgeRange ageRange = new AgeRange();
+                ageRange = await _context.AgeRanges.Where(x => x.Name == name).FirstOrDefaultAsync();
+                return ageRange;
+            }
+            catch
+            {
+                throw new Exception("Get ageRange failed");
+            }
+        }
+
+        public Task UpdateAgeRangeAsync(AgeRange ageRange)
+        {
+            try
+            {
+                _context.Entry(ageRange).State = EntityState.Modified;
+                return _context.SaveChangesAsync();
+            }
+            catch
+            {
+                throw new Exception("Update ageRange failed");
+            }
+        }
     }
 }

@@ -9,10 +9,12 @@ namespace MilkStore.API.Controllers
     public class AccountController : BaseController
     {
         private readonly IAccountService _accountService;
+        private readonly IOrderService _orderService;
 
-        public AccountController(IAccountService accountService)
+        public AccountController(IAccountService accountService, IOrderService orderService)
         {
             _accountService = accountService;
+            _orderService = orderService;
         }
 
         #region View User Profile
@@ -135,20 +137,6 @@ namespace MilkStore.API.Controllers
         }
         #endregion
 
-        #region Get All Users For Admin
-        [HttpGet]
-        //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllUsersForAdminAsync(int pageInndex = 0, int pageSize = 10)
-        {
-            var response = await _accountService.GetAllUsersForAdminAsync(pageInndex, pageSize);
-            if (response != null)
-            {
-                return Ok(response);
-            }
-            return BadRequest(response);
-        }
-        #endregion
-
         #region Update User Roles For Admin
         [HttpPost]
         //[Authorize(Roles = "Admin")]
@@ -204,5 +192,121 @@ namespace MilkStore.API.Controllers
             }
         }
         #endregion
+
+        #region Manage User By Admin
+        // Get All Users For Admin
+        [HttpGet]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllUsersForAdminAsync(int pageIndex = 0, int pageSize = 10)
+        {
+            var response = await _accountService.GetAllUsersForAdminAsync(pageIndex, pageSize);
+            if (response != null)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        // Add New User By Admin
+        [HttpPost]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AddNewUserByAdminAsync(CreateAccountDTO model)
+        {
+            //if (ModelState.IsValid)
+            //{
+            //    return BadRequest(ModelState);
+            //}
+
+            var response = await _accountService.AddNewUserByAdminAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        // Edit User By Admin
+        [HttpPut]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> EditUserByAdminAsync(EditAccountDTO model)
+        {
+            var response = await _accountService.EditUserByAdminAsync(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        // Block Or Unblock User By Admin
+        [HttpPut]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> BlockOrUnBlockUserByAdmin(BlockOrUnBlockAccountDTO model)
+        {
+            var response = await _accountService.BlockOrUnBlockUserByAdmin(model);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        // Search Users By Full Name Or Phone And Filter By Status
+        [HttpGet]
+        //[Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SearchUsersAsync(string? keyword, string? status, int pageIndex = 0, int pageSize = 10)
+        {
+            var response = await _accountService.SearchUsersAsync(keyword, status, pageIndex, pageSize);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+        #endregion
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllOrderHistory(string? orderId, string? status, int pageIndex = 0, int pageSize = 10)
+        {
+            var response = await _orderService.GetAllOrderAsync(orderId, status, pageIndex, pageSize);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrderById(string orderId)
+        {
+            var response = await _orderService.GetOrderByIdAsync(orderId);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetOrderByUserId(string userId, int pageIndex = 0, int pageSize = 10)
+        {
+            var response = await _orderService.GetOrderByUserIdAsync(userId, pageIndex, pageSize);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> ChangeOrderStatus(string orderId, string status)
+        {
+            var response = await _orderService.ChangeStatusAsync(orderId, status);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
     }
 }
