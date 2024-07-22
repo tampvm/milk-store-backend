@@ -112,14 +112,55 @@ namespace MilkStore.Service.Services
 
         }
 
-        public Task<ResponseModel> GetAllBlogCategory(int pageIndex, int pageSize)
+        public async  Task<ResponseModel> GetAllBlogCategory(int pageIndex, int pageSize)
         {
-            throw new NotImplementedException();
+          
+            try
+            {
+                var result = await _unitOfWork.BlogCategoryRepository.GetAsync(filter: r => r.IsDeleted.Equals(false),
+                pageIndex: pageIndex,
+                pageSize: pageSize);
+                return new SuccessResponseModel<object>
+                {
+                    Success = true,
+                    Message = "Blog category retrieved successfully.",
+                    Data = result
+                };
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (consider using a logging framework)
+                Console.WriteLine(ex.Message);
+
+                // Return a failure response
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "An error occurred while retrieving the blog category.",
+
+                };
+            }
         }
 
-        public Task<ResponseModel> GetBlogCategoryById(int id)
+        public async Task<ResponseModel> GetBlogCategoryById(int id)
         {
-            throw new NotImplementedException();
+           //get blog category by id
+           var blogCategory = _unitOfWork.BlogCategoryRepository.GetByIdAsync(id);
+           var result = _mapper.Map<GetBlogCategoryDTO>(blogCategory);
+            if (blogCategory == null)
+            {
+                return new ErrorResponseModel<object>
+                {
+                    Success = false,
+                    Message = "Blog category not found."
+                };
+            }
+            return new SuccessResponseModel<object>
+            {
+                Success = true,
+                Message = "Blog category retrieved successfully.",
+                Data = result
+            };
         }
 
         public async Task<ResponseModel> UpdateBlogCategory(UpdateBlogCategoryDTO model, int id)
