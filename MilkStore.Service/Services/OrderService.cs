@@ -223,7 +223,7 @@ public class OrderService : IOrderService
         {
             var order1 = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
             order1.PaymentStatus = OrderPaymentStatusEnums.Paid.ToString();
-            order1.Status = OrderStatusEnums.Preparing.ToString();
+            order1.Status = OrderStatusEnums.Waiting.ToString();
             await _unitOfWork.SaveChangeAsync();
             return new SuccessResponseModel<string>
             {
