@@ -2,6 +2,7 @@ namespace MilkStore.Service.Models.ViewModels.OrderViewDTO;
 
 public class CreateOrderDTO
 {
+    public int Id { get; set; }
     public List<int> cartIds { get; set; }
     public string ShippingAddress { get; set; }
     public decimal Discount { get; set; }
@@ -14,7 +15,7 @@ public class CreateOrderDTO
     public int PointSaved { get; set; } 
     public DateTime CreatedAt { get; set; }
     public string AccountId { get; set; }
-    
+    public string? VoucherCode { get; set; }
     public int? AccountVoucherId { get; set; }
     
 }

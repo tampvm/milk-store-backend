@@ -373,6 +373,16 @@ namespace MilkStore.Service.Services
 
             if (user != null)
             {
+                // Check if the user is blocked
+                if (user.Status == "Blocked")
+                {
+                    return new AuthenticationResponseModel
+                    {
+                        Success = false,
+                        Message = "User account is blocked. Please contact support."
+                    };
+                }
+
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, isPersistent: false, lockoutOnFailure: false);
 
                 if (result.Succeeded)
@@ -905,6 +915,16 @@ namespace MilkStore.Service.Services
                     {
                         await _userManager.AddLoginAsync(user, new UserLoginInfo(dto.Provider, dto.ProviderId, dto.Provider));
                     }
+                }
+
+                // Check if the user is blocked
+                if (user.Status == "Blocked")
+                {
+                    return new AuthenticationResponseModel
+                    {
+                        Success = false,
+                        Message = "User account is blocked. Please contact support."
+                    };
                 }
 
                 // Đăng nhập người dùng
