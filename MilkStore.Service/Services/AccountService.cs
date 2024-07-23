@@ -1052,7 +1052,7 @@ namespace MilkStore.Service.Services
             var orderEntities = await _unitOfWork.OrderRepository.GetAsync(
                 filter: o => (string.IsNullOrEmpty(orderId) || o.Id.Contains(orderId)) &&
                              (statusFilter == null || o.Status.Contains(statusFilter)),
-                includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages,Account,AccountVoucher.Voucher,Points", // Bao gồm các liên kết cần thiết
+                includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages.Image,Account,AccountVoucher.Voucher,Points", // Bao gồm các liên kết cần thiết
                 pageIndex: pageIndex,
                 pageSize: pageSize
             );
@@ -1081,7 +1081,7 @@ namespace MilkStore.Service.Services
                 Payment = new PaymentDTO
                 {
                     Cash = "0 ₫",
-                    VnpayQR = "0 ₫",
+                    VnpayQR = o.TotalAmount,
                     Momo = "0 ₫",
                     Paypal = "0 ₫",
                     Subtotal = o.TotalAmount,
@@ -1094,7 +1094,7 @@ namespace MilkStore.Service.Services
                 Products = o.OrderDetails.Select(d => new ProductDTO
                 {
                     Id = d.ProductId,
-                    Image = d.Product?.ProductImages?.FirstOrDefault()?.Image?.ImageUrl ?? "",
+                    Image = d.Product?.ProductImages?.FirstOrDefault()?.Image?.ImageUrl ?? "", // Ensure proper navigation
                     Name = d.Product?.Name ?? "",
                     Quantity = d.Quantity,
                     UnitPrice = d.UnitPrice,
@@ -1126,7 +1126,7 @@ namespace MilkStore.Service.Services
         {
             var orderEntity = await _unitOfWork.OrderRepository.GetByIdAsync(
                 id: orderId,
-                includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages,Account,AccountVoucher.Voucher,Points"
+                includeProperties: "OrderDetails,OrderDetails.Product,OrderDetails.Product.ProductImages.Image,Account,AccountVoucher.Voucher,Points"
             );
 
             // Kiểm tra nếu không tìm thấy đơn hàng
@@ -1159,7 +1159,7 @@ namespace MilkStore.Service.Services
                 Payment = new PaymentDTO
                 {
                     Cash = "0 ₫",
-                    VnpayQR = "0 ₫",
+                    VnpayQR = orderEntity.TotalAmount,
                     Momo = "0 ₫",
                     Paypal = "0 ₫",
                     Subtotal = orderEntity.TotalAmount,
@@ -1172,7 +1172,7 @@ namespace MilkStore.Service.Services
                 Products = orderEntity.OrderDetails?.Select(d => new ProductDTO
                 {
                     Id = d.ProductId,
-                    Image = d.Product?.ProductImages?.FirstOrDefault()?.Image?.ImageUrl ?? "",
+                    Image = d.Product?.ProductImages?.FirstOrDefault()?.Image?.ImageUrl ?? "", // Corrected navigation for ImageUrl
                     Name = d.Product?.Name ?? "",
                     Quantity = d.Quantity,
                     UnitPrice = d.UnitPrice,
