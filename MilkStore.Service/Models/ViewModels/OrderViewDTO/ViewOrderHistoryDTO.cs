@@ -37,7 +37,7 @@ namespace MilkStore.Service.Models.ViewModels.OrderViewDTO
     public class PaymentDTO
     {
         public string Cash { get; set; }
-        public string VnpayQR { get; set; }
+        public decimal VnpayQR { get; set; }
         public string Momo { get; set; }
         public string Paypal { get; set; }
         public decimal Subtotal { get; set; }
