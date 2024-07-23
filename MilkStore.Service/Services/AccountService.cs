@@ -1064,8 +1064,8 @@ namespace MilkStore.Service.Services
                 OrderDate = o.CreatedAt, // OrderDate từ CreatedDate
                 Customer = new CustomerDTO
                 {
-                    Name = o.Account.LastName + " " + o.Account.FirstName,
-                    Phone = o.Account.PhoneNumber
+                    Name = (o.Account?.LastName ?? "") + " " + (o.Account?.FirstName ?? ""),
+                    Phone = o.Account?.PhoneNumber ?? ""
                 },
                 TotalAmount = o.TotalAmount,
                 Status = o.Status,
@@ -1074,9 +1074,9 @@ namespace MilkStore.Service.Services
                 PaymentStatus = o.PaymentStatus,
                 Recipient = new RecipientDTO
                 {
-                    Name = o.Account.LastName + " " + o.Account.FirstName,
-                    Phone = o.Account.PhoneNumber,
-                    Address = o.ShippingAddress
+                    Name = (o.Account?.LastName ?? "") + " " + (o.Account?.FirstName ?? ""),
+                    Phone = o.Account?.PhoneNumber ?? "",
+                    Address = o.ShippingAddress ?? ""
                 },
                 Payment = new PaymentDTO
                 {
@@ -1087,15 +1087,15 @@ namespace MilkStore.Service.Services
                     Subtotal = o.TotalAmount,
                     Discount = o.Discount,
                     ShippingFee = "Miễn phí",
-                    Coupon = o.AccountVoucher != null ? o.AccountVoucher.Voucher.Code : "0 ₫", // Lấy mã voucher
+                    Coupon = o.AccountVoucher?.Voucher?.Code ?? "0 ₫", // Lấy mã voucher
                     Points = o.PointUsed.HasValue ? o.PointUsed.Value.ToString() : "0",
                     Total = o.TotalAmount
                 },
                 Products = o.OrderDetails.Select(d => new ProductDTO
                 {
                     Id = d.ProductId,
-                    Image = d.Product.ProductImages.FirstOrDefault()?.Image.ImageUrl ?? "",
-                    Name = d.Product.Name,
+                    Image = d.Product?.ProductImages?.FirstOrDefault()?.Image?.ImageUrl ?? "",
+                    Name = d.Product?.Name ?? "",
                     Quantity = d.Quantity,
                     UnitPrice = d.UnitPrice,
                     TotalPrice = d.UnitPrice * d.Quantity
@@ -1147,14 +1147,14 @@ namespace MilkStore.Service.Services
                 Status = orderEntity.Status,
                 Customer = new CustomerDTO
                 {
-                    Name = orderEntity.Account.LastName + " " + orderEntity.Account.FirstName,
-                    Phone = orderEntity.Account.PhoneNumber
+                    Name = (orderEntity.Account?.LastName ?? "") + " " + (orderEntity.Account?.FirstName ?? ""),
+                    Phone = orderEntity.Account?.PhoneNumber ?? ""
                 },
                 Recipient = new RecipientDTO
                 {
-                    Name = orderEntity.Account.LastName + " " + orderEntity.Account.FirstName,
-                    Phone = orderEntity.Account.PhoneNumber,
-                    Address = orderEntity.ShippingAddress
+                    Name = (orderEntity.Account?.LastName ?? "") + " " + (orderEntity.Account?.FirstName ?? ""),
+                    Phone = orderEntity.Account?.PhoneNumber ?? "",
+                    Address = orderEntity.ShippingAddress ?? ""
                 },
                 Payment = new PaymentDTO
                 {
@@ -1165,19 +1165,19 @@ namespace MilkStore.Service.Services
                     Subtotal = orderEntity.TotalAmount,
                     Discount = orderEntity.Discount,
                     ShippingFee = "Miễn phí",
-                    Coupon = orderEntity.AccountVoucher != null ? orderEntity.AccountVoucher.Voucher.Code : "0 ₫", // Lấy mã voucher
-                    Points = orderEntity.PointUsed.HasValue ? orderEntity.PointUsed.Value.ToString() : "0",
+                    Coupon = orderEntity.AccountVoucher?.Voucher?.Code ?? "0 ₫", // Lấy mã voucher
+                    Points = orderEntity.PointUsed?.ToString() ?? "0",
                     Total = orderEntity.TotalAmount
                 },
-                Products = orderEntity.OrderDetails.Select(d => new ProductDTO
+                Products = orderEntity.OrderDetails?.Select(d => new ProductDTO
                 {
                     Id = d.ProductId,
-                    Image = d.Product.ProductImages.FirstOrDefault()?.Image.ImageUrl ?? "",
-                    Name = d.Product.Name,
+                    Image = d.Product?.ProductImages?.FirstOrDefault()?.Image?.ImageUrl ?? "",
+                    Name = d.Product?.Name ?? "",
                     Quantity = d.Quantity,
                     UnitPrice = d.UnitPrice,
                     TotalPrice = d.UnitPrice * d.Quantity
-                }).ToList()
+                }).ToList() ?? new List<ProductDTO>()
             };
 
             return new SuccessResponseModel<ViewOrderHistoryDetailDTO>
