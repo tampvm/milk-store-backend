@@ -234,6 +234,10 @@ public class OrderService : IOrderService
         }
         else
         {
+        var order1 = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
+            order1.PaymentStatus = OrderPaymentStatusEnums.UnPaid.ToString();
+            order1.Status = OrderStatusEnums.Fail.ToString();
+            await _unitOfWork.SaveChangeAsync();
             return new SuccessResponseModel<string>
             {
                 Success = true,
