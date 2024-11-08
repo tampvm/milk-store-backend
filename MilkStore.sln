@@ -5,11 +5,16 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MilkStore.API", "MilkStore.API\MilkStore.API.csproj", "{94D7166A-47B6-4025-BE69-29C4D3768031}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.Domain", "MilkStore.Domain\MilkStore.Domain.csproj", "{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MilkStore.Domain", "MilkStore.Domain\MilkStore.Domain.csproj", "{AF3A2264-54BB-41F2-9A73-06E70E2A12EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.Repository", "MilkStore.Repository\MilkStore.Repository.csproj", "{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MilkStore.Repository", "MilkStore.Repository\MilkStore.Repository.csproj", "{03C49569-E681-42AC-BD4C-D85CE9FEAE0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MilkStore.Service", "MilkStore.Service\MilkStore.Service.csproj", "{E50BB0C9-447B-4E92-960E-1C54D35B6102}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MilkStore.Service", "MilkStore.Service\MilkStore.Service.csproj", "{E50BB0C9-447B-4E92-960E-1C54D35B6102}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71A341E8-353C-4D05-B0D1-4C2677AE5994}"
+	ProjectSection(SolutionItems) = preProject
+		railway.toml = railway.toml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

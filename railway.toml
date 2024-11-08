@@ -1,0 +1,9 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "./MilkStore.API/Dockerfile"
+
+[deploy]
+startCommand = "dotnet MilkStore.API.dll"
+restartPolicyType = "always"
+healthCheckPath = "/health"
+port = 8080  
